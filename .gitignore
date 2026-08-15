@@ -1,0 +1,90 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code related
+.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+pubspec.lock
+pubspec_overrides.yaml
+build/
+
+# Android related
+**/android/**/gradle-wrapper.jar
+**/android/.gradle
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
+**/android/app/release/
+**/android/key.properties
+**/android/app/upload-keystore.jks
+**/android/app/*.jks
+**/android/app/*.keystore
+
+# iOS/XCode related
+**/ios/**/*.mode1v3
+**/ios/**/*.mode2v3
+**/ios/**/*.moved-aside
+**/ios/**/*.pbxuser
+**/ios/**/*.perspectivev3
+**/ios/**/*.xcuserstate
+**/ios/**/*.xcscmblueprint
+**/ios/**/*.xccheckout
+**/ios/**/*.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+**/ios/**/GeneratedPluginRegistrant.*
+
+# Web related
+lib/generated_plugin_registrant.dart
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Exceptions
+!**/ios/**/default.xcworkspace
+!**/ios/**/Pods/
+!**/ios/**/Runner.xcodeproj/project.pbxproj
+!**/ios/**/Runner.xcworkspace/contents.xcworkspacedata
+
+# Environment / secrets
+.env
+.env.*
+*.env
+
+# Test
+coverage/
+test/.test_coverage.dart
+
+# FVM
+.fvm/.env
+*.jks
+*.keystore
+key.properties
+android/local.properties
+.DS_Store
+*.g.dart
+

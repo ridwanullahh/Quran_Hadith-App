@@ -1,0 +1,124 @@
+name: minhaajulhudaa
+version: 0.1.0+1
+description: A premium, fully offline Qur'an and Hadith application built with Flutter.
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+
+  # State Management
+  flutter_riverpod: ^2.4.11
+  riverpod_annotation: ^2.3.5
+
+  # Routing
+  go_router: ^13.1.0
+
+  # Database
+  drift: ^2.15.1
+  sqlite3_flutter_libs: ^0.5.18
+  path_provider: ^2.1.2
+  path: ^1.8.3
+
+  # Storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # Audio
+  just_audio: ^0.9.37
+  audio_service: ^0.18.13
+  audio_session: ^0.1.18
+
+  # Network (for audio download only)
+  dio: ^5.4.1
+
+  # UI
+  flutter_animate: ^4.4.0
+  google_fonts: ^6.1.0
+  cached_network_image: ^3.3.1
+  shimmer: ^3.0.0
+  flutter_svg: ^2.0.10
+  badges: ^3.1.2
+  percent_indicator: ^4.2.3
+  fl_chart: ^0.66.0
+
+  # Utilities
+  intl: ^0.19.0
+  collection: ^1.18.0
+  uuid: ^4.3.3
+  share_plus: ^7.2.2
+  file_picker: ^6.1.1
+  permission_handler: ^11.3.0
+  json_annotation: ^4.8.1
+  freezed_annotation: ^2.4.1
+  equatable: ^2.0.5
+  Either: ^0.4.2
+  dartz: ^0.10.1
+  rxdart: ^0.27.7
+  infinite_scroll_pagination: ^4.0.0
+
+  # Arabic text
+  arabic_numbers: ^1.0.1
+
+  # Notifications
+  flutter_local_notifications: ^17.0.0
+
+  # Icons
+  flutter_icon_data: ^0.0.4
+
+  # Markdown (for tafseer rendering)
+  flutter_markdown: ^0.6.19
+  markdown: ^7.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  build_runner: ^2.4.8
+  riverpod_generator: ^2.3.11
+  drift_dev: ^2.15.1
+  json_serializable: ^6.7.1
+  freezed: ^2.4.7
+  custom_lint: ^0.5.8
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.3.8
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/data/
+    - assets/fonts/
+    - assets/images/
+
+  fonts:
+    - family: Amiri
+      fonts:
+        - asset: assets/fonts/Amiri-Regular.ttf
+        - asset: assets/fonts/Amiri-Bold.ttf
+          weight: 700
+    - family: ScheherazadeNew
+      fonts:
+        - asset: assets/fonts/ScheherazadeNew-Regular.ttf
+        - asset: assets/fonts/ScheherazadeNew-Bold.ttf
+          weight: 700
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
+
+flutter_native_splash:
+  color: "#0A1628"
+  image: assets/images/splash.png
+  android: true
+  ios: false
+  android_gravity: center
