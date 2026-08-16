@@ -84,14 +84,20 @@
 -keepattributes EnclosingMethod
 
 # ── Missing class suppressions ──────────────────────────────────────
-# Flutter references Play Core split-install classes for deferred
-# components, but this app does not use Play Feature Delivery, so the
-# classes are absent from the classpath. R8 treats this as an error;
-# suppress it.
+# Flutter references Play Core classes for deferred components and
+# SplitCompatApplication, but this app does not use Play Feature Delivery,
+# so the classes are absent from the classpath. R8 full mode (AGP 8+)
+# treats missing class references as build errors even with -dontwarn in
+# some cases. Suppress broadly for the entire Play Core package.
+-dontwarn com.google.android.play.core.**
+-keep class com.google.android.play.core.** { *; }
+
+# Specifically referenced classes (for R8 full mode missing-class report):
+-dontwarn com.google.android.play.core.splitcompat.**
+-dontwarn com.google.android.play.core.splitcompat.SplitCompatApplication
 -dontwarn com.google.android.play.core.splitinstall.**
 -dontwarn com.google.android.play.core.splitinstall.SplitInstallException
--keep class com.google.android.play.core.splitinstall.SplitInstallException { *; }
-
-# Play Core also references reviewing + asset delivery in some Flutter versions
 -dontwarn com.google.android.play.core.review.**
 -dontwarn com.google.android.play.core.assetpacks.**
+-dontwarn com.google.android.play.core.common.**
+-dontwarn com.google.android.play.core.tasks.**
