@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!--
+      Default: block all cleartext (HTTP) traffic. Only HTTPS is allowed.
+      This protects against MITM attacks on public Wi-Fi and enforces
+      encryption for all network calls (audio downloads, update checks).
+    -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!--
+      Explicit HTTPS-only config for the audio CDN.
+    -->
+    <domain-config>
+        <domain includeSubdomains="true">audio.qurancdn.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!--
+      Explicit HTTPS-only config for GitHub release-check + download hosts.
+    -->
+    <domain-config>
+        <domain includeSubdomains="true">github.com</domain>
+        <domain includeSubdomains="true">api.github.com</domain>
+        <domain includeSubdomains="true">objects.githubusercontent.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!--
+      Debug-only override: allow cleartext + user-installed CAs in debug
+      builds so developers can intercept traffic with mitmproxy/Charles
+      for debugging. This is automatically stripped from release builds.
+    -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>

@@ -1,20 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Network: required for audio downloads + GitHub release update check -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Foreground service: required for audio playback while app is backgrounded -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <!-- Wake lock: keep CPU alive during long audio playback -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Notifications: prayer/verse/hadith reminders -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- Exact alarm: schedule precise prayer-time notifications -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <!-- Re-schedule notifications after device reboot -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!--
+      NOTE: The following permissions were REMOVED for hardening:
+        * WRITE_EXTERNAL_STORAGE / READ_EXTERNAL_STORAGE — not needed because
+          audio downloads use app-private storage via path_provider.
+        * SYSTEM_ALERT_WINDOW — not needed because the popup overlay is an
+          in-app widget, not a system-level overlay.
+    -->
 
     <application
         android:label="Minhaajulhudaa"
         android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="true">
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:usesCleartextTraffic="false"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules">
 
         <activity
             android:name=".MainActivity"
