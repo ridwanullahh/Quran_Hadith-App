@@ -119,8 +119,7 @@ class QiblaScreen extends ConsumerWidget {
                         ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
                         : null,
                     onTap: () {
-                      ref.read(prayerSettingsProvider.notifier).state =
-                          settings.copyWith(location: city);
+                      ref.read(prayerSettingsProvider.notifier).updateLocation(city);
                       Navigator.pop(ctx);
                     },
                   );

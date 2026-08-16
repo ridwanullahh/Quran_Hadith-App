@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive/hive.dart';
 
 // ── Models ─────────────────────────────────────────────────────────────
 
@@ -95,6 +97,50 @@ class PrayerSettings {
       asrOffset: asrOffset ?? this.asrOffset,
       maghribOffset: maghribOffset ?? this.maghribOffset,
       ishaOffset: ishaOffset ?? this.ishaOffset,
+    );
+  }
+
+  /// Serialize to a JSON map for Hive persistence.
+  Map<String, dynamic> toJson() => {
+        'location_name': location.name,
+        'location_name_ar': location.nameAr,
+        'latitude': location.latitude,
+        'longitude': location.longitude,
+        'asr_method': asrMethod.index,
+        'fajr_angle': fajrAngle,
+        'isha_angle': ishaAngle,
+        'fajr_offset': fajrOffset,
+        'sunrise_offset': sunriseOffset,
+        'dhuhr_offset': dhuhrOffset,
+        'asr_offset': asrOffset,
+        'maghrib_offset': maghribOffset,
+        'isha_offset': ishaOffset,
+      };
+
+  /// Deserialize from a JSON map. Falls back to defaults for missing fields.
+  factory PrayerSettings.fromJson(Map<String, dynamic> json) {
+    final asrIdx = json['asr_method'] as int? ?? 0;
+    return PrayerSettings(
+      location: PrayerLocation(
+        name: json['location_name'] as String? ?? _defaultMecca.name,
+        nameAr:
+            json['location_name_ar'] as String? ?? _defaultMecca.nameAr,
+        latitude: (json['latitude'] as num?)?.toDouble() ??
+            _defaultMecca.latitude,
+        longitude: (json['longitude'] as num?)?.toDouble() ??
+            _defaultMecca.longitude,
+      ),
+      asrMethod: asrIdx >= 0 && asrIdx < AsrMethod.values.length
+          ? AsrMethod.values[asrIdx]
+          : AsrMethod.shafii,
+      fajrAngle: json['fajr_angle'] as int? ?? 18,
+      ishaAngle: json['isha_angle'] as int? ?? 17,
+      fajrOffset: json['fajr_offset'] as int? ?? 0,
+      sunriseOffset: json['sunrise_offset'] as int? ?? 0,
+      dhuhrOffset: json['dhuhr_offset'] as int? ?? 0,
+      asrOffset: json['asr_offset'] as int? ?? 0,
+      maghribOffset: json['maghrib_offset'] as int? ?? 0,
+      ishaOffset: json['isha_offset'] as int? ?? 0,
     );
   }
 }
@@ -284,8 +330,70 @@ class PrayerCalculator {
 
 // ── Providers ───────────────────────────────────────────────────────────
 
+/// Hive-backed StateNotifier for [PrayerSettings].
+///
+/// Loads the previously-saved settings from Hive on construction (falling
+/// back to defaults if the box is missing or corrupt), and writes every
+/// state change back to Hive so the user's chosen city and calculation
+/// method survive app restarts.
+class PrayerSettingsNotifier extends StateNotifier<PrayerSettings> {
+  static const _boxName = 'prayer_settings';
+  static const _key = 'settings';
+  Box? _box;
+
+  PrayerSettingsNotifier() : super(const PrayerSettings()) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      _box = await Hive.openBox(_boxName);
+      final raw = _box!.get(_key);
+      if (raw is Map) {
+        state = PrayerSettings.fromJson(
+          raw.map((k, v) => MapEntry(k.toString(), v)),
+        );
+      }
+    } catch (e, st) {
+      debugPrint('[PrayerSettingsNotifier] load failed: $e\n$st');
+      // Keep default state on error.
+    }
+  }
+
+  Future<void> _persist() async {
+    try {
+      await _box?.put(_key, state.toJson());
+    } catch (e, st) {
+      debugPrint('[PrayerSettingsNotifier] persist failed: $e\n$st');
+    }
+  }
+
+  void update(PrayerSettings settings) {
+    state = settings;
+    _persist();
+  }
+
+  void updateLocation(PrayerLocation location) {
+    state = state.copyWith(location: location);
+    _persist();
+  }
+
+  void updateAsrMethod(AsrMethod method) {
+    state = state.copyWith(asrMethod: method);
+    _persist();
+  }
+
+  @override
+  void dispose() {
+    _box?.close();
+    super.dispose();
+  }
+}
+
 final prayerSettingsProvider =
-    StateProvider<PrayerSettings>((ref) => const PrayerSettings());
+    StateNotifierProvider<PrayerSettingsNotifier, PrayerSettings>(
+  (ref) => PrayerSettingsNotifier(),
+);
 
 final prayerTimesProvider = Provider<PrayerTimes>((ref) {
   final settings = ref.watch(prayerSettingsProvider);

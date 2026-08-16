@@ -45,8 +45,7 @@ class PrayerScreen extends ConsumerWidget {
             _LocationSelector(
               current: settings.location,
               onSelected: (loc) {
-                ref.read(prayerSettingsProvider.notifier).state =
-                    settings.copyWith(location: loc);
+                ref.read(prayerSettingsProvider.notifier).updateLocation(loc);
               },
             ),
             const SizedBox(height: 16),
@@ -794,16 +793,18 @@ class _PrayerSettingsSheetState extends ConsumerState<_PrayerSettingsSheet> {
             FilledButton.icon(
               onPressed: () {
                 final s = widget.ref.read(prayerSettingsProvider);
-                widget.ref.read(prayerSettingsProvider.notifier).state = s.copyWith(
-                  asrMethod: _asrMethod,
-                  fajrAngle: _fajrAngle,
-                  ishaAngle: _ishaAngle,
-                  fajrOffset: _fajrOffset,
-                  sunriseOffset: _sunriseOffset,
-                  dhuhrOffset: _dhuhrOffset,
-                  asrOffset: _asrOffset,
-                  maghribOffset: _maghribOffset,
-                  ishaOffset: _ishaOffset,
+                widget.ref.read(prayerSettingsProvider.notifier).update(
+                  s.copyWith(
+                    asrMethod: _asrMethod,
+                    fajrAngle: _fajrAngle,
+                    ishaAngle: _ishaAngle,
+                    fajrOffset: _fajrOffset,
+                    sunriseOffset: _sunriseOffset,
+                    dhuhrOffset: _dhuhrOffset,
+                    asrOffset: _asrOffset,
+                    maghribOffset: _maghribOffset,
+                    ishaOffset: _ishaOffset,
+                  ),
                 );
                 Navigator.pop(context);
               },
