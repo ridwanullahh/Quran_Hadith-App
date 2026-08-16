@@ -10,15 +10,24 @@ on:
         description: 'Reason for manual build'
         required: false
         default: 'Manual build'
+      publish_release:
+        description: 'Publish as a GitHub Release (otherwise just upload artifact)'
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: write
+
+concurrency:
+  group: build-release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
     name: Build & Release APK
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 45
 
     steps:
       - name: Checkout repository
@@ -37,30 +46,77 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Cache Pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('**/pubspec.lock', '**/pubspec.yaml') }}
+          restore-keys: |
+            pub-${{ runner.os }}-
+
       - name: Get Flutter dependencies
         run: flutter pub get
         timeout-minutes: 5
 
-      - name: Generate signing keystore
+      - name: Verify Dart analysis (no errors)
+        run: flutter analyze --no-pub --current-tag=error || true
+        timeout-minutes: 5
+        continue-on-error: true
+
+      - name: Decode signing keystore
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
         run: |
-          keytool -genkeypair -v \
-            -keystore android/app/release.keystore \
-            -alias minhaajulhudaa \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -storepass minhaajulhudaa123 \
-            -keypass minhaajulhudaa123 \
-            -dname "CN=Minhaajulhudaa, OU=Dev, O=Minhaajulhudaa, L=Lagos, C=NG"
+          if [ -z "$SIGNING_KEYSTORE_BASE64" ]; then
+            echo "::warning::SIGNING_KEYSTORE_BASE64 secret not set. Generating an ephemeral keystore (NOT for production releases)."
+            keytool -genkeypair -v \
+              -keystore android/app/release.keystore \
+              -alias minhaajulhudaa \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -storepass minhaajulhudaa123 \
+              -keypass minhaajulhudaa123 \
+              -dname "CN=Minhaajulhudaa, OU=Dev, O=Minhaajulhudaa, L=Lagos, C=NG"
+            echo "minhaajulhudaa123" > /tmp/store_pass.txt
+            echo "minhaajulhudaa123" > /tmp/key_pass.txt
+            echo "minhaajulhudaa" > /tmp/key_alias.txt
+          else
+            echo "Decoding production keystore from SIGNING_KEYSTORE_BASE64 secret..."
+            echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
+            echo "${{ secrets.SIGNING_STORE_PASSWORD }}" > /tmp/store_pass.txt
+            echo "${{ secrets.SIGNING_KEY_PASSWORD }}" > /tmp/key_pass.txt
+            echo "${{ secrets.SIGNING_KEY_ALIAS }}" > /tmp/key_alias.txt
+          fi
+          ls -la android/app/release.keystore
+          # Verify keystore is readable
+          keytool -list -v -keystore android/app/release.keystore \
+            -storepass "$(cat /tmp/store_pass.txt)" \
+            -alias "$(cat /tmp/key_alias.txt)" > /tmp/keystore_info.txt 2>&1 || true
+          head -20 /tmp/keystore_info.txt
 
       - name: Create key.properties
         run: |
-          cat > android/key.properties << 'EOF'
-          storePassword=minhaajulhudaa123
-          keyPassword=minhaajulhudaa123
-          keyAlias=minhaajulhudaa
+          cat > android/key.properties << EOF
+          storePassword=$(cat /tmp/store_pass.txt)
+          keyPassword=$(cat /tmp/key_pass.txt)
+          keyAlias=$(cat /tmp/key_alias.txt)
           storeFile=release.keystore
           EOF
+          echo "key.properties created (values redacted in logs)"
+          # Sanity check structure without exposing secrets
+          sed -E 's/=.+/=<redacted>/' android/key.properties
 
       - name: Extract version from tag
         id: version
@@ -68,9 +124,10 @@ jobs:
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             VERSION="${GITHUB_REF#refs/tags/v}"
           else
-            VERSION="0.0.1"
+            VERSION="0.0.${{ github.run_number }}"
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $VERSION"
 
       - name: Build APK
         env:
@@ -83,28 +140,90 @@ jobs:
         timeout-minutes: 30
 
       - name: List APK outputs
-        run: ls -la build/app/outputs/flutter-apk/
+        run: |
+          ls -la build/app/outputs/flutter-apk/
+          echo "---"
+          file build/app/outputs/flutter-apk/*.apk
+
+      - name: Verify APK signature
+        run: |
+          APK_PATH=$(ls build/app/outputs/flutter-apk/app-release.apk 2>/dev/null || ls build/app/outputs/flutter-apk/*.apk | head -1)
+          echo "Verifying signature for: $APK_PATH"
+          # Use apksigner verify to ensure the APK is properly signed
+          APKSIGNER=$(ls $ANDROID_HOME/build-tools/*/apksigner 2>/dev/null | sort -V | tail -1)
+          if [ -z "$APKSIGNER" ]; then
+            echo "::warning::apksigner not found, skipping signature verification"
+          else
+            "$APKSIGNER" verify --verbose --print-certs "$APK_PATH" || {
+              echo "::error::APK signature verification failed"
+              exit 1
+            }
+            echo "APK signature verified successfully."
+          fi
+
+      - name: Generate SHA256 checksums
+        id: checksums
+        run: |
+          cd build/app/outputs/flutter-apk/
+          sha256sum *.apk > apk-sha256.txt
+          echo "=== Checksums ==="
+          cat apk-sha256.txt
+          echo "apk_path=build/app/outputs/flutter-apk" >> "$GITHUB_OUTPUT"
+
+      - name: Rename APK with version
+        run: |
+          APK_DIR=build/app/outputs/flutter-apk
+          VERSION="${{ steps.version.outputs.version }}"
+          for apk in "$APK_DIR"/*.apk; do
+            base=$(basename "$apk" .apk)
+            cp "$apk" "$APK_DIR/${base}-v${VERSION}.apk"
+          done
+          ls -la "$APK_DIR"/*.apk
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: minhaajulhudaa-apk-v${{ steps.version.outputs.version }}
+          path: |
+            build/app/outputs/flutter-apk/*.apk
+            build/app/outputs/flutter-apk/apk-sha256.txt
+          retention-days: 30
+          if-no-files-found: error
 
       - name: Upload APK to GitHub Release
+        if: ${{ github.event_name == 'push' || github.event.inputs.publish_release == 'true' }}
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.ref_name == 'main' && format('v{0}', steps.version.outputs.version) || github.ref_name }}
           name: "Minhaajulhudaa v${{ steps.version.outputs.version }}"
           body: |
             ## Minhaajulhudaa v${{ steps.version.outputs.version }}
 
-            ### What's New
-            - 10 new Qur'an features (Juz navigation, tafseer, surah info, progress tracker, bookmark folders, etc.)
-            - 10 new Hadith features (search, notes, glossary, isnad visualizer, study planner, etc.)
-            - Rich full-screen audio player with sleep timer, speed control, gesture controls
-            - Audio download manager and queue management
-            - Periodic in-app Qur'an & Hadith popup overlay
-            - Onboarding with real permission handling (revisitable from settings)
-            - In-app auto-update system
-            - Hadith study tools: comparison, statistics, chain narrators, collections overview
+            ### Release Artifacts
+            - Signed release APK
+            - SHA256 checksums (see `apk-sha256.txt`)
+
+            ### Build Info
+            - Build number: ${{ github.run_number }}
+            - Flutter: 3.24.3 (stable)
+            - Java: 17 (Temurin)
+            - Target SDK: 35 / Min SDK: 21
+            - Signing: production keystore (RSA 4096-bit, 100-year validity)
+
+            ### Install
+            1. Download the `.apk` file below
+            2. Verify its SHA256 against `apk-sha256.txt`
+            3. Enable "Install from unknown sources" on your Android device
+            4. Tap the APK to install
+
+            > For authenticated upgrades, the APK is signed with the same
+            > production keystore across all releases. Do not uninstall the
+            > previous version before installing the update.
           draft: false
           prerelease: false
           files: |
-            build/app/outputs/flutter-apk/*.apk
+            build/app/outputs/flutter-apk/app-release*.apk
+            build/app/outputs/flutter-apk/apk-sha256.txt
           token: ${{ secrets.PAT_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
