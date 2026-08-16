@@ -2,7 +2,10 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:hive/hive.dart';
+
+import '../../../../core/services/location/location_service.dart';
 
 // ── Models ─────────────────────────────────────────────────────────────
 
@@ -381,6 +384,46 @@ class PrayerSettingsNotifier extends StateNotifier<PrayerSettings> {
   void updateAsrMethod(AsrMethod method) {
     state = state.copyWith(asrMethod: method);
     _persist();
+  }
+
+  /// Use the device GPS to get the current location and update settings.
+  ///
+  /// Returns a human-readable status message suitable for showing in a
+  /// SnackBar:
+  ///   - "Using your location: <city>" on success
+  ///   - "Location permission denied" / "Location services disabled" on failure
+  ///
+  /// The caller (UI) is responsible for showing a loading indicator while
+  /// this Future is pending and a SnackBar with the returned message when
+  /// it completes.
+  Future<String> useDeviceLocation() async {
+    final result = await LocationService.instance.getCurrentLocation();
+    if (result == null) {
+      // Distinguish between "services disabled" and "permission denied"
+      // for a more helpful error message.
+      final enabled = await LocationService.instance.isLocationServiceEnabled();
+      if (!enabled) {
+        return 'Location services are disabled. Enable GPS in device settings.';
+      }
+      final permission = await LocationService.instance.checkPermission();
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return 'Location permission denied. Grant location access in app settings.';
+      }
+      return 'Could not determine your location. Try again.';
+    }
+
+    final displayName = result.cityName ?? 'Current Location';
+    state = state.copyWith(
+      location: PrayerLocation(
+        name: displayName,
+        nameAr: result.cityName ?? 'موقعك الحالي',
+        latitude: result.latitude,
+        longitude: result.longitude,
+      ),
+    );
+    await _persist();
+    return 'Using your location: $displayName';
   }
 
   @override

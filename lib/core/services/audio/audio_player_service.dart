@@ -1,15 +1,28 @@
 import 'dart:async';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../constants/app_constants.dart';
 import '../../../data/repositories/audio_repository.dart';
+import 'audio_session_service.dart';
 
-/// Simple audio player service that wraps [just_audio.AudioPlayer]
-/// without any dependency on the audio_service package.
+/// Audio player service that wraps a [just_audio.AudioPlayer] owned by the
+/// shared [MinhaajulHudaaAudioHandler].
+///
+/// By sharing the player instance with the [AudioHandler], every playback
+/// action (play, pause, seek, skip) is automatically mirrored to the Android
+/// system media session — lock-screen controls, notification media widget,
+/// Bluetooth media buttons, and Android Auto all stay in sync with no extra
+/// wiring in the UI layer.
+///
+/// Call [AudioSessionService.init] once during app startup (in main.dart)
+/// before constructing this service.
 class AudioPlayerService {
-  final AudioPlayer _player = AudioPlayer();
+  /// The single shared [AudioPlayer] — owned by the [AudioHandler] so the
+  /// system media notification stays in sync.
+  late final AudioPlayer _player;
   final AudioRepository _audioRepository;
 
   // ── Playback queue ─────────────────────────────────────────────
@@ -26,7 +39,40 @@ class AudioPlayerService {
     const {'currentAyah': 0, 'totalAyahs': 0},
   );
 
-  AudioPlayerService(this._audioRepository);
+  AudioPlayerService(this._audioRepository) {
+    if (!AudioSessionService.isInitialized) {
+      // Defensive: this should never happen because main.dart calls
+      // AudioSessionService.init() during startup. If it does, we throw
+      // immediately so the developer notices.
+      throw StateError(
+        'AudioSessionService.init() must be called in main.dart before '
+        'constructing AudioPlayerService.',
+      );
+    }
+    _player = AudioSessionService.handler.player;
+    _listenForTrackChanges();
+  }
+
+  /// When just_audio's currentIndex changes (because we set a ConcatenatingAudioSource),
+  /// update the system mediaItem so the notification shows the correct track.
+  void _listenForTrackChanges() {
+    _player.sequenceStateStream.listen((state) {
+      final idx = state?.currentIndex;
+      if (idx != null && idx >= 0 && idx < _queue.length) {
+        final item = _queue[idx];
+        final mediaItem = MediaItem(
+          id: 'surah_${item.surahNumber}_ayah_${item.ayahNumber}',
+          album: 'Surah ${item.surahNumber}',
+          title: item.title,
+          artist: item.artist,
+          artUri: Uri.parse(
+            'https://quran.com/favicon.ico',
+          ),
+        );
+        AudioSessionService.handler.mediaItem.add(mediaItem);
+      }
+    });
+  }
 
   // ═══════════════════════════════════════════════════════════════
   // Queue Management

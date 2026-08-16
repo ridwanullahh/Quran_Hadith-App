@@ -32,6 +32,7 @@ dependencies:
 
   # Audio
   just_audio: ^0.9.37
+  audio_service: ^0.18.15
   # audio_session is a transitive dependency of just_audio; we don't
   # import it directly in lib/, so we don't list it explicitly here.
 
@@ -54,6 +55,19 @@ dependencies:
 
   # Permissions
   permission_handler: ^11.3.0
+
+  # Geo / location (for GPS-based prayer times + Qibla)
+  geolocator: ^11.0.0
+  geocoding: ^3.0.0
+
+  # Compass (for live Qibla bearing)
+  flutter_compass: ^0.8.0
+
+  # App version (for in-app update check)
+  package_info_plus: ^8.0.0
+
+  # APK install intent (for in-app self-update)
+  open_filex: ^4.5.0
 
 dev_dependencies:
   flutter_test:

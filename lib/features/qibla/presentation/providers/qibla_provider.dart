@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/services/compass/compass_service.dart';
 import '../../../prayer/presentation/providers/prayer_provider.dart';
 
 // ── Models ─────────────────────────────────────────────────────────────
@@ -110,4 +112,33 @@ final qiblaProvider = Provider<QiblaResult>((ref) {
     latitude: settings.location.latitude,
     longitude: settings.location.longitude,
   );
+});
+
+/// Live compass heading in degrees [0, 360) from magnetic north.
+///
+/// Emits null when the device has no magnetometer (e.g. on emulators or
+/// devices without a compass sensor). The UI should fall back to a static
+/// Qibla arrow when this stream emits null.
+final compassHeadingProvider = StreamProvider<double?>((ref) async* {
+  try {
+    final available = await CompassService.instance.isAvailable();
+    if (!available) {
+      yield null;
+      return;
+    }
+    await for (final heading in CompassService.instance.headingStream) {
+      yield heading;
+    }
+  } catch (_) {
+    yield null;
+  }
+});
+
+/// Whether the device has a usable compass sensor.
+final isCompassAvailableProvider = FutureProvider<bool>((ref) async {
+  try {
+    return await CompassService.instance.isAvailable();
+  } catch (_) {
+    return false;
+  }
 });

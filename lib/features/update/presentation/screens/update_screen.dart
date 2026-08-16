@@ -224,14 +224,25 @@ class _UpdateAvailableCard extends ConsumerWidget {
           ] else ...[
             FilledButton.icon(
               onPressed: release.apkDownloadUrl != null
-                  ? () {
-                      ref.read(updateProvider.notifier).downloadApk();
+                  ? () async {
+                      final msg = await ref
+                          .read(updateProvider.notifier)
+                          .downloadAndInstallApk();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(msg),
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 4),
+                          ),
+                        );
+                      }
                     }
                   : null,
               icon: const Icon(Icons.download_rounded, size: 18),
               label: Text(
                 release.apkDownloadUrl != null
-                    ? 'Download Update'
+                    ? 'Download & Install Update'
                     : 'No APK Available',
               ),
               style: FilledButton.styleFrom(

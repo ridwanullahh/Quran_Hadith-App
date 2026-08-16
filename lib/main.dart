@@ -9,6 +9,7 @@ import 'app/app.dart';
 import 'app/shell/mini_audio_player_provider.dart';
 import 'app/theme/app_colors.dart';
 import 'core/services/audio/audio_player_service.dart';
+import 'core/services/audio/audio_session_service.dart';
 import 'core/services/database/database.dart';
 import 'core/services/popup/popup_service.dart';
 import 'data/repositories/audio_repository.dart';
@@ -36,6 +37,10 @@ final _initProvider = FutureProvider<_AppInitResult>((ref) async {
   await database.getReadingHistory(limit: 1);
 
   // ── Audio Service ─────────────────────────────────────────────
+  // Initialize the audio_service media handler BEFORE constructing
+  // AudioPlayerService — the handler owns the shared AudioPlayer and
+  // registers the system media session (notification, lock-screen, BT).
+  await AudioSessionService.init();
   final audioRepository = AudioRepository();
   final audioPlayerService = AudioPlayerService(audioRepository);
 

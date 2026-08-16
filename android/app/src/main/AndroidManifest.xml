@@ -8,13 +8,16 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <!-- Wake lock: keep CPU alive during long audio playback -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <!-- Notifications: prayer/verse/hadith reminders -->
+    <!-- Notifications: prayer/verse/hadith reminders + media-style notification -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Exact alarm: schedule precise prayer-time notifications -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <!-- Re-schedule notifications after device reboot -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Location: required for GPS-based prayer times + Qibla bearing -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <!--
       NOTE: The following permissions were REMOVED for hardening:
@@ -54,5 +57,37 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- audio_service: background audio playback service + media button receiver.
+             Required for lock-screen / notification media controls and for
+             playback to continue when the app is backgrounded. -->
+        <service
+            android:name="com.ryanheise.audioservice.AudioService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
+        <receiver
+            android:name="com.ryanheise.audioservice.MediaButtonReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
+
+        <!-- FileProvider for sharing the downloaded update APK with the
+             Android system package installer (open_filex). Required on
+             Android 7+ (API 24+) where strict file:// URIs are forbidden. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 </manifest>

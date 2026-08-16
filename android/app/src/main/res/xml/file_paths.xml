@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Allow sharing files from the app's private files directory
+         (getApplicationFilesDirectory / getApplicationDocumentsDirectory).
+         Used by open_filex to share the downloaded update APK with the
+         Android system package installer. -->
+    <files-path name="files" path="." />
+    <files-path name="updates" path="updates/" />
+    <cache-path name="cache" path="." />
+    <external-files-path name="external_files" path="." />
+</paths>

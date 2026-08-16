@@ -1,9 +1,14 @@
-import 'dart:convert';
+import 'dart:async';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
-import 'package:dio/dio.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 // ═══════════════════════════════════════════════════════════════════
 // Update Data Models
@@ -123,12 +128,34 @@ class UpdateNotifier extends StateNotifier<UpdateState> {
     _loadCurrentVersion();
   }
 
-  void _loadCurrentVersion() {
+  /// Read the actual installed app version from the OS via [PackageInfo].
+  ///
+  /// This is the authoritative source — it reflects exactly what the user
+  /// installed from the APK's pubspec version. We previously read a
+  /// Hive-stored string with default '0.1.0', which was wrong because:
+  ///   1. It never matched the actual installed version after an update.
+  ///   2. The default '0.1.0' was higher than the v0.0.1 release tag,
+  ///      causing the update check to think the installed version was
+  ///      newer than the available release.
+  Future<void> _loadCurrentVersion() async {
     try {
+      final info = await PackageInfo.fromPlatform();
+      final version = '${info.version}+${info.buildNumber}';
+      // Strip the build number for the comparison — we compare against
+      // GitHub tag names like "v0.0.1" which don't include build numbers.
+      final cleanVersion = info.version;
+      state = state.copyWith(currentVersion: cleanVersion);
+
+      // Persist to Hive for debugging / fast access (but never read it
+      // back as the source of truth — always re-read from PackageInfo).
       final box = Hive.box('settings');
-      final savedVersion = box.get('current_version', defaultValue: '0.1.0') as String;
-      state = state.copyWith(currentVersion: savedVersion);
-    } catch (_) {}
+      await box.put('current_version', version);
+    } catch (e) {
+      debugPrint('[UpdateNotifier] _loadCurrentVersion failed: $e');
+      // Fall back to a safe default that is older than any real release
+      // so the update check still offers the latest release.
+      state = state.copyWith(currentVersion: '0.0.0');
+    }
   }
 
   /// Parse semantic version string to comparable list of integers
@@ -217,17 +244,39 @@ class UpdateNotifier extends StateNotifier<UpdateState> {
     } catch (_) {}
   }
 
-  /// Download the APK from the release
-  Future<String?> downloadApk({String? savePath}) async {
+  /// Download the APK from the release to a writable app-private
+  /// directory and trigger the Android package installer intent.
+  ///
+  /// Returns a human-readable status message suitable for a SnackBar.
+  /// On success, the system Package Installer UI is launched — the user
+  /// confirms the install and Android replaces the existing app.
+  Future<String> downloadAndInstallApk() async {
     final release = state.latestRelease;
-    if (release == null || release.apkDownloadUrl == null) return null;
+    if (release == null || release.apkDownloadUrl == null) {
+      return 'No update available to download.';
+    }
 
-    state = state.copyWith(isDownloading: true, downloadProgress: 0.0);
+    state = state.copyWith(isDownloading: true, downloadProgress: 0.0, error: null);
 
+    String? savedPath;
     try {
-      final response = await _dio.download(
+      // Use getApplicationDocumentsDirectory() — app-private, always
+      // writable, no storage permission needed on Android 10+.
+      final dir = await getApplicationDocumentsDirectory();
+      final fileName = release.apkDownloadUrl!.split('/').last;
+      final downloadPath = p.join(dir.path, 'updates', fileName);
+      // Ensure the 'updates' subdirectory exists.
+      await Directory(p.dirname(downloadPath)).create(recursive: true);
+
+      await _dio.download(
         release.apkDownloadUrl!,
-        savePath ?? '/tmp/quran_hadith_update.apk',
+        downloadPath,
+        options: Options(
+          headers: const {'Accept': 'application/octet-stream'},
+          followRedirects: true,
+          maxRedirects: 5,
+          receiveTimeout: const Duration(minutes: 10),
+        ),
         onReceiveProgress: (received, total) {
           if (total > 0) {
             state = state.copyWith(
@@ -237,19 +286,46 @@ class UpdateNotifier extends StateNotifier<UpdateState> {
         },
       );
 
+      savedPath = downloadPath;
       state = state.copyWith(
         isDownloading: false,
         downloadProgress: 1.0,
       );
 
-      return response.data;
+      // Verify the file was actually written and is non-empty.
+      final file = File(savedPath);
+      if (!await file.exists() || await file.length() == 0) {
+        return 'Download failed: APK file is empty or missing.';
+      }
+
+      // Trigger the Android package installer via open_filex. This
+      // launches the system "Install / Update app" dialog. The user
+      // must confirm; we cannot silently install.
+      final result = await OpenFilex.open(savedPath, type: 'application/vnd.android.package-archive');
+      if (result.type != ResultType.done) {
+        return 'Could not launch installer: ${result.message}';
+      }
+      return 'Update downloaded. Confirm the install in the system dialog.';
+    } on DioException catch (e) {
+      state = state.copyWith(
+        isDownloading: false,
+        error: 'Network error: ${e.message}',
+      );
+      return 'Download failed (network): ${e.message}';
     } catch (e) {
       state = state.copyWith(
         isDownloading: false,
-        error: 'Download failed: ${e.toString()}',
+        error: 'Error: ${e.toString()}',
       );
-      return null;
+      return 'Download failed: $e';
     }
+  }
+
+  /// Legacy alias kept for backward compatibility with any caller that
+  /// still uses the old [downloadApk] name. Delegates to
+  /// [downloadAndInstallApk].
+  Future<String?> downloadApk({String? savePath}) async {
+    return downloadAndInstallApk();
   }
 
   /// Dismiss the update notification

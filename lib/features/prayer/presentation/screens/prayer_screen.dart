@@ -200,17 +200,17 @@ class _DateHeader extends ConsumerWidget {
   }
 }
 
-class _LocationSelector extends StatelessWidget {
+class _LocationSelector extends ConsumerWidget {
   final PrayerLocation current;
   final ValueChanged<PrayerLocation> onSelected;
 
   const _LocationSelector({required this.current, required this.onSelected});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return InkWell(
       borderRadius: BorderRadius.circular(12),
-      onTap: () => _showCityPicker(context),
+      onTap: () => _showCityPicker(context, ref),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
@@ -265,7 +265,7 @@ class _LocationSelector extends StatelessWidget {
     );
   }
 
-  void _showCityPicker(BuildContext context) {
+  void _showCityPicker(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -277,66 +277,158 @@ class _LocationSelector extends StatelessWidget {
         minChildSize: 0.4,
         maxChildSize: 0.85,
         expand: false,
-        builder: (ctx, scrollCtrl) => Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Text(
-                    'Select City',
-                    style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+        builder: (ctx, scrollCtrl) => StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Select City',
+                        style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
                   ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 1),
-            Expanded(
-              child: ListView.builder(
-                controller: scrollCtrl,
-                itemCount: predefinedCities.length,
-                itemBuilder: (ctx, i) {
-                  final city = predefinedCities[i];
-                  final isSelected = city.name == current.name;
-                  return ListTile(
-                    leading: Icon(
-                      Icons.location_on_rounded,
-                      color: isSelected ? AppColors.primary : null,
-                    ),
-                    title: Text(
-                      city.name,
-                      style: TextStyle(
-                        fontFamily: AppTheme.latinFontFamily,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                ),
+                // ── Use My Location (GPS) ───────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  child: Card(
+                    elevation: 0,
+                    color: AppColors.primary.withOpacity(0.08),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: AppColors.primary.withOpacity(0.3),
+                        width: 0.5,
                       ),
                     ),
-                    subtitle: Text(
-                      city.nameAr,
-                      style: TextStyle(
-                        fontFamily: AppTheme.arabicFontFamily,
-                      ),
+                    child: _UseMyLocationTile(
+                      onResult: (msg) {
+                        Navigator.pop(ctx);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(msg),
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                        }
+                      },
                     ),
-                    trailing: isSelected
-                        ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
-                        : null,
-                    onTap: () {
-                      onSelected(city);
-                      Navigator.pop(ctx);
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollCtrl,
+                    itemCount: predefinedCities.length,
+                    itemBuilder: (ctx, i) {
+                      final city = predefinedCities[i];
+                      final isSelected = city.name == current.name;
+                      return ListTile(
+                        leading: Icon(
+                          Icons.location_on_rounded,
+                          color: isSelected ? AppColors.primary : null,
+                        ),
+                        title: Text(
+                          city.name,
+                          style: TextStyle(
+                            fontFamily: AppTheme.latinFontFamily,
+                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                          ),
+                        ),
+                        subtitle: Text(
+                          city.nameAr,
+                          style: TextStyle(
+                            fontFamily: AppTheme.arabicFontFamily,
+                          ),
+                        ),
+                        trailing: isSelected
+                            ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
+                            : null,
+                        onTap: () {
+                          onSelected(city);
+                          Navigator.pop(ctx);
+                        },
+                      );
                     },
-                  );
-                },
-              ),
-            ),
-          ],
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
+    );
+  }
+}
+
+/// A tile that triggers GPS-based location detection and shows a loading
+/// spinner while waiting for a fix. Calls [onResult] with a human-readable
+/// status message when done (success or failure).
+class _UseMyLocationTile extends ConsumerStatefulWidget {
+  final ValueChanged<String> onResult;
+
+  const _UseMyLocationTile({required this.onResult});
+
+  @override
+  ConsumerState<_UseMyLocationTile> createState() => _UseMyLocationTileState();
+}
+
+class _UseMyLocationTileState extends ConsumerState<_UseMyLocationTile> {
+  bool _isLoading = false;
+
+  Future<void> _handleTap() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+    try {
+      final msg = await ref.read(prayerSettingsProvider.notifier).useDeviceLocation();
+      if (mounted) widget.onResult(msg);
+    } catch (e) {
+      if (mounted) widget.onResult('Failed to get location: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: _isLoading
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator.adaptive(strokeWidth: 2),
+            )
+          : const Icon(Icons.my_location_rounded, color: AppColors.primary),
+      title: Text(
+        _isLoading ? 'Detecting your location...' : 'Use my current location',
+        style: TextStyle(
+          fontFamily: AppTheme.latinFontFamily,
+          fontWeight: FontWeight.w600,
+          color: AppColors.primary,
+        ),
+      ),
+      subtitle: Text(
+        'Use GPS for accurate prayer times',
+        style: TextStyle(
+          fontFamily: AppTheme.latinFontFamily,
+          fontSize: 11,
+          color: AppColors.primary.withOpacity(0.7),
+        ),
+      ),
+      onTap: _isLoading ? null : _handleTap,
     );
   }
 }

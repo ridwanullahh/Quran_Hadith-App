@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/services/compass/compass_service.dart';
 import '../../../prayer/presentation/providers/prayer_provider.dart';
 import '../providers/qibla_provider.dart';
 
@@ -16,6 +17,29 @@ class QiblaScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final settings = ref.watch(prayerSettingsProvider);
     final qibla = ref.watch(qiblaProvider);
+    final compassAsync = ref.watch(compassHeadingProvider);
+    final compassAvailableAsync = ref.watch(isCompassAvailableProvider);
+
+    // The compass heading from the device's magnetometer (degrees from
+    // magnetic north, 0-360). Null when the sensor is unavailable.
+    final compassHeading = compassAsync.valueOrNull;
+
+    // When the compass is available, rotate the arrow relative to the
+    // phone's heading so it points toward Mecca in real time. When the
+    // compass is unavailable (no magnetometer), fall back to the static
+    // Qibla bearing from true north.
+    final double effectiveBearing;
+    final bool isLiveCompass;
+    if (compassHeading != null) {
+      isLiveCompass = true;
+      effectiveBearing = CompassService.qiblaDirectionFromCompass(
+        compassHeading: compassHeading,
+        qiblaBearingFromTrueNorth: qibla.bearing,
+      );
+    } else {
+      isLiveCompass = false;
+      effectiveBearing = qibla.bearing;
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -36,8 +60,12 @@ class QiblaScreen extends ConsumerWidget {
         child: Column(
           children: [
             // ── Compass ──────────────────────────────────────────────
-            _CompassWidget(bearing: qibla.bearing, isDark: isDark)
-                .animate().fadeIn(duration: 500.ms),
+            _CompassWidget(
+              bearing: effectiveBearing,
+              isDark: isDark,
+              isLive: isLiveCompass,
+              compassAccuracy: compassAvailableAsync.valueOrNull == true,
+            ).animate().fadeIn(duration: 500.ms),
             const SizedBox(height: 24),
 
             // ── Info Cards ──────────────────────────────────────────
@@ -49,7 +77,7 @@ class QiblaScreen extends ConsumerWidget {
             const SizedBox(height: 16),
 
             // ── Note ────────────────────────────────────────────────
-            _NoteCard(isDark: isDark),
+            _NoteCard(isDark: isDark, isLiveCompass: isLiveCompass),
           ],
         ),
       ),
@@ -140,8 +168,15 @@ class QiblaScreen extends ConsumerWidget {
 class _CompassWidget extends StatelessWidget {
   final double bearing;
   final bool isDark;
+  final bool isLive;
+  final bool compassAccuracy;
 
-  const _CompassWidget({required this.bearing, required this.isDark});
+  const _CompassWidget({
+    required this.bearing,
+    required this.isDark,
+    this.isLive = false,
+    this.compassAccuracy = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -188,8 +223,9 @@ class _CompassWidget extends StatelessWidget {
             ),
 
             // Qibla arrow (rotated to point to Qibla)
-            Transform.rotate(
-              angle: _degToRad(bearing),
+            AnimatedRotation(
+              turns: bearing / 360.0,
+              duration: const Duration(milliseconds: 150),
               child: SizedBox(
                 width: size * 0.65,
                 height: size * 0.65,
@@ -221,6 +257,44 @@ class _CompassWidget extends StatelessWidget {
                 size: 22,
               ),
             ),
+
+            // Live compass indicator (top-right)
+            if (isLive)
+              Positioned(
+                top: size * 0.04,
+                right: size * 0.04,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.hifdhGreen.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'LIVE',
+                        style: TextStyle(
+                          fontFamily: AppTheme.latinFontFamily,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
 
             // Bearing text at bottom
             Positioned(
@@ -553,28 +627,40 @@ class _LocationCard extends StatelessWidget {
 
 class _NoteCard extends StatelessWidget {
   final bool isDark;
-  const _NoteCard({required this.isDark});
+  final bool isLiveCompass;
+  const _NoteCard({required this.isDark, this.isLiveCompass = false});
 
   @override
   Widget build(BuildContext context) {
+    final message = isLiveCompass
+        ? 'Live compass is active. Rotate your phone so the arrow points to the green LIVE indicator — the Kaaba icon then points toward Mecca.'
+        : 'This device does not have a compass sensor (or it is unavailable). The arrow shows the calculated Qibla bearing from true north based on your selected city. To get a live compass, use a device with a magnetometer.';
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.info.withOpacity(0.08),
+        color: (isLiveCompass ? AppColors.hifdhGreen : AppColors.info)
+            .withOpacity(0.08),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.info.withOpacity(0.2),
+          color: (isLiveCompass ? AppColors.hifdhGreen : AppColors.info)
+              .withOpacity(0.2),
           width: 0.5,
         ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline_rounded, size: 18, color: AppColors.info),
+          Icon(
+            isLiveCompass
+                ? Icons.check_circle_outline_rounded
+                : Icons.info_outline_rounded,
+            size: 18,
+            color: isLiveCompass ? AppColors.hifdhGreen : AppColors.info,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'The compass shows the calculated Qibla direction based on your selected city. For live compass using device sensors, enable location services in a future update.',
+              message,
               style: TextStyle(
                 fontFamily: AppTheme.latinFontFamily,
                 fontSize: 12,
