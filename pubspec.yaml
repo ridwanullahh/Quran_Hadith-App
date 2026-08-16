@@ -76,16 +76,6 @@ dev_dependencies:
   flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.3.8
 
-dependency_overrides:
-  # Force geolocator_android to 5.x. Version 4.6.2 (pulled in by
-  # geolocator 11.x) uses `android.flutter.compileSdkVersion` in its
-  # build.gradle which fails on Flutter 3.24 + AGP 8.5 with:
-  #   "Could not get unknown property 'flutter' for extension 'android'
-  #    of type com.android.build.gradle.LibraryExtension."
-  # geolocator_android 5.x is API-compatible with geolocator_platform_interface
-  # ^4.1.0 (which geolocator 11.x uses) and fixes the build.gradle pattern.
-  geolocator_android: ^5.0.3
-
 flutter:
   uses-material-design: true
 
