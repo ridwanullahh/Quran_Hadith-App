@@ -51,7 +51,7 @@ dependencies:
   rxdart: ^0.27.7
 
   # Arabic text
-  arabic_numbers: ^1.0.1
+  arabic_numbers: ^1.0.0
 
   # Markdown (for tafseer rendering)
   flutter_markdown: ^0.6.19
