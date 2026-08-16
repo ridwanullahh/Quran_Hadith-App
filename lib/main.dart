@@ -29,7 +29,7 @@ final _initProvider = FutureProvider<_AppInitResult>((ref) async {
   // ── Audio Service ─────────────────────────────────────────────
   final audioRepository = AudioRepository();
   final audioHandler = await AudioService.init<QuranAudioHandler>(
-    create: () => QuranAudioHandler(audioRepository),
+    builder: () => QuranAudioHandler(audioRepository),
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'com.minhaajulhudaa.audio',
       androidNotificationChannelName: 'Quran Audio',

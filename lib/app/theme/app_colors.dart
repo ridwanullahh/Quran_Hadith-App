@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/painting.dart';
 
 /// Central color palette for MinhaajulHudaa.
 /// All colors are defined here so both light and dark themes

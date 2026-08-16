@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive/hive_flutter.dart';
 
 /// Extended theme modes supporting Light, Dark, and Amoled (true black).
 enum AppThemeMode {
@@ -61,7 +60,7 @@ class ThemeModeNotifier extends StateNotifier<AppThemeMode> {
 /// Provider for the extended theme mode (Light / Dark / Amoled).
 final themeModeProvider =
     StateNotifierProvider<ThemeModeNotifier, AppThemeMode>(
-  ThemeModeNotifier.new,
+  (ref) => ThemeModeNotifier(),
 );
 
 /// Convenience provider that maps [AppThemeMode] → Flutter's [ThemeMode]
