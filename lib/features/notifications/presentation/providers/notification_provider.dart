@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
@@ -70,11 +67,13 @@ const List<Map<String, String>> _ayahOfTheDayCollection = [
 final flutterLocalNotificationsPlugin = Provider<FlutterLocalNotificationsPlugin>((ref) {
   final plugin = FlutterLocalNotificationsPlugin();
   plugin.initialize(
-    const AndroidInitializationSettings('@mipmap/ic_launcher'),
-    DarwinInitializationSettings(
-      requestAlertPermission: false,
-      requestBadgePermission: false,
-      requestSoundPermission: false,
+    const InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      iOS: DarwinInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
+      ),
     ),
   );
   return plugin;
@@ -129,7 +128,7 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
     final plugin = FlutterLocalNotificationsPlugin();
     final androidPlugin = plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
     if (androidPlugin != null) {
-      final granted = await androidPlugin.requestNotificationsPermission();
+      final granted = await androidPlugin.requestNotificationsPermission() ?? false;
       state = state.copyWith(permissionsGranted: granted);
       await _saveSettings();
       return granted;
@@ -196,8 +195,8 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
 
     await plugin.zonedSchedule(
       0,
-      '☀️ Ayah of the Day',
-      '${ayah['english']}\n\n${ayah['arabic']}\n— ${ayah['ref']}',
+      'Ayah of the Day',
+      '${ayah['english']}\n\n${ayah['arabic']}\n- ${ayah['ref']}',
       scheduledTime,
       const NotificationDetails(
         android: AndroidNotificationDetails(
@@ -211,6 +210,8 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 
@@ -223,12 +224,9 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
     );
     final scheduledTime = scheduled.isAfter(now) ? scheduled : scheduled.add(const Duration(days: 1));
 
-    // Import from hadith_of_day_screen
-    final hadithIndex = now.difference(const DateTime(2024, 1, 1)).inDays % 60;
-
     await plugin.zonedSchedule(
       1,
-      '🌙 Hadith of the Day',
+      'Hadith of the Day',
       'Read today\'s authentic hadith and increase your knowledge.',
       scheduledTime,
       const NotificationDetails(
@@ -243,12 +241,13 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 
   Future<void> scheduleFridayNotification() async {
     final plugin = FlutterLocalNotificationsPlugin();
-    // Friday = weekday 5 in Dart
     final now = DateTime.now();
     var nextFriday = DateTime(now.year, now.month, now.day);
     while (nextFriday.weekday != DateTime.friday || nextFriday.isBefore(now)) {
@@ -257,8 +256,8 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
 
     await plugin.zonedSchedule(
       2,
-      '🕌 Friday Reminder — Surah Al-Kahf',
-      'The Prophet ﷺ said: "Whoever reads Surah Al-Kahf on Friday, a light will shine for him between the two Fridays." (Al-Bayhaqi)\n\nRead Surah Al-Kahf today!',
+      'Friday Reminder - Surah Al-Kahf',
+      'Read Surah Al-Kahf today for its immense blessings.',
       nextFriday,
       const NotificationDetails(
         android: AndroidNotificationDetails(
@@ -272,6 +271,8 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 

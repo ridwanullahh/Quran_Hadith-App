@@ -210,17 +210,6 @@ class AppTheme {
         clipBehavior: Clip.antiAlias,
       ),
 
-      // ── Elevated Card ───────────────────────────────────────────
-      elevatedCardTheme: CardTheme(
-        elevation: 4,
-        shadowColor: isDark ? Colors.black54 : AppColors.shadow,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        color: colorScheme.surface,
-        surfaceTintColor: Colors.transparent,
-      ),
-
       // ── Bottom Navigation Bar ───────────────────────────────────
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         type: BottomNavigationBarType.fixed,

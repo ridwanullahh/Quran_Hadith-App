@@ -241,7 +241,7 @@ class AudioPlayerService {
 
     switch (repeatMode) {
       case RepeatMode.none:
-        _player.setLoopMode(LoopMode.none);
+        _player.setLoopMode(LoopMode.off);
         break;
       case RepeatMode.one:
         _player.setLoopMode(LoopMode.one);
