@@ -13,8 +13,12 @@ enum AppThemeMode {
 
 /// Persists the user's theme preference and provides the correct
 /// [ThemeData] (including the Amoled variant).
+///
+/// Defaults to [AppThemeMode.light] as requested by the product brief
+/// ("light by default and support dark mode"). Users can switch to Dark
+/// or Amoled from the Settings screen; the choice is persisted via Hive.
 class ThemeModeNotifier extends StateNotifier<AppThemeMode> {
-  ThemeModeNotifier() : super(AppThemeMode.dark);
+  ThemeModeNotifier() : super(AppThemeMode.light);
 
   void setThemeMode(AppThemeMode mode) {
     state = mode;
@@ -32,15 +36,18 @@ class ThemeModeNotifier extends StateNotifier<AppThemeMode> {
   }
 
   /// Convert the persisted string back to [AppThemeMode].
+  /// Defaults to light for any unrecognized value (including legacy
+  /// "dark" installs — those users will see light on first launch
+  /// after this update, then can switch back to dark from Settings).
   static AppThemeMode fromString(String value) {
     switch (value) {
-      case 'light':
-        return AppThemeMode.light;
+      case 'dark':
+        return AppThemeMode.dark;
       case 'amoled':
         return AppThemeMode.amoled;
-      case 'dark':
+      case 'light':
       default:
-        return AppThemeMode.dark;
+        return AppThemeMode.light;
     }
   }
 

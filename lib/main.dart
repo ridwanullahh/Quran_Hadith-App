@@ -135,11 +135,17 @@ class _InitGateway extends ConsumerWidget {
           overrides: [
             audioHandlerProvider.overrideWithValue(result.audioPlayerService),
             themeModeProvider.overrideWith((ref) {
-              final savedMode =
-                  result.settingsBox.get('theme_mode', defaultValue: 'dark') as String;
+              // Default to light theme. Users can switch to Dark / Amoled
+              // from Settings; the choice is persisted to Hive.
+              final savedMode = result.settingsBox
+                  .get('theme_mode', defaultValue: 'light') as String;
               final notifier = ThemeModeNotifier();
               final initialMode = ThemeModeNotifier.fromString(savedMode);
               notifier.setThemeMode(initialMode);
+              // Persist future changes so the choice survives app restarts.
+              ref.listen<AppThemeMode>(themeModeProvider, (_, next) {
+                result.settingsBox.put('theme_mode', ThemeModeNotifier.toStringValue(next));
+              });
               return notifier;
             }),
           ],
@@ -184,10 +190,19 @@ class _SplashScreenState extends State<_SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final platformBrightness = MediaQuery.platformBrightnessOf(context);
+    final isDark = platformBrightness == Brightness.dark;
+    final backgroundColor = isDark
+        ? AppColors.darkBackground
+        : AppColors.lightBackground;
+    final secondaryColor = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.lightTextSecondary;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(brightness: platformBrightness, useMaterial3: true),
       home: Scaffold(
-        backgroundColor: AppColors.darkBackground,
+        backgroundColor: backgroundColor,
         body: Center(
           child: AnimatedBuilder(
             animation: _pulseAnimation,
@@ -221,8 +236,7 @@ class _SplashScreenState extends State<_SplashScreen>
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 3.0,
-                        color: AppColors.darkTextSecondary
-                            .withOpacity(0.7),
+                        color: secondaryColor.withOpacity(0.7),
                       ),
                     ),
                   ],
@@ -244,10 +258,22 @@ class _ErrorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final platformBrightness = MediaQuery.platformBrightnessOf(context);
+    final isDark = platformBrightness == Brightness.dark;
+    final backgroundColor = isDark
+        ? AppColors.darkBackground
+        : AppColors.lightBackground;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.lightTextPrimary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.lightTextSecondary;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(brightness: platformBrightness, useMaterial3: true),
       home: Scaffold(
-        backgroundColor: AppColors.darkBackground,
+        backgroundColor: backgroundColor,
         body: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 48),
@@ -260,23 +286,23 @@ class _ErrorScreen extends StatelessWidget {
                   color: AppColors.error,
                 ),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   'Failed to start',
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.darkTextPrimary,
+                    color: textPrimary,
                   ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   error?.toString() ?? 'An unknown error occurred.',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 14,
-                    color: AppColors.darkTextSecondary,
+                    color: textSecondary,
                     height: 1.6,
                   ),
                 ),

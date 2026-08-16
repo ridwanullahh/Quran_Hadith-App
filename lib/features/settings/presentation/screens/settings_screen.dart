@@ -27,7 +27,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String _translationLanguage = 'en';
   String _defaultReciter = 'mishary';
   String _audioQuality = 'high';
-  AppThemeMode _themeMode = AppThemeMode.dark;
+  AppThemeMode _themeMode = AppThemeMode.light;
 
   @override
   void initState() {
@@ -42,7 +42,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       _translationLanguage = box.get('translation_language', defaultValue: 'en') as String;
       _defaultReciter = box.get('default_reciter', defaultValue: 'mishary') as String;
       _audioQuality = box.get('audio_quality', defaultValue: 'high') as String;
-      final savedMode = box.get('theme_mode', defaultValue: 'dark') as String;
+      // Default to light theme (per product brief: "light by default").
+      final savedMode = box.get('theme_mode', defaultValue: 'light') as String;
       _themeMode = ThemeModeNotifier.fromString(savedMode);
     });
   }
