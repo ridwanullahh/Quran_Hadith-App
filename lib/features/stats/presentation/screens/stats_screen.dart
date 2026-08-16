@@ -366,35 +366,6 @@ class StatsScreen extends ConsumerWidget {
               ),
             ),
             borderData: FlBorderData(show: false),
-            tooltipData: LineChartTooltipData(
-              getTooltipColor: (_) => AppColors.darkSurface,
-              tooltipRoundedRadius: 8,
-              getTooltipItems: (touchedSpots) {
-                return touchedSpots.map((spot) {
-                  final idx = spot.x.toInt();
-                  final date = idx < history.length ? history[idx].date : null;
-                  return LineTooltipItem(
-                    '${date != null ? DateFormat('MMM d').format(date) : ''}\n',
-                    const TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 12,
-                      color: AppColors.darkTextSecondary,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: '${spot.y.toInt()} ayahs',
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ],
-                  );
-                }).toList();
-              },
-            ),
           ),
         ),
       ),

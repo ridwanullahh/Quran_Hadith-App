@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 
@@ -18,7 +19,7 @@ class EngagementData {
   final List<DailyRecord> dailyRecords;
   final Map<String, int> surahReadCounts;
 
-  const EngagementData({
+  EngagementData({
     this.currentStreak = 0,
     this.longestStreak = 0,
     this.totalSessions = 0,
@@ -97,7 +98,7 @@ final engagementProvider =
 });
 
 class EngagementNotifier extends StateNotifier<EngagementData> {
-  EngagementNotifier() : super(const EngagementData()) {
+  EngagementNotifier() : super(EngagementData()) {
     _loadData();
   }
 

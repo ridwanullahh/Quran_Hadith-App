@@ -3,7 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
-import 'providers/notification_provider.dart';
+import '../providers/notification_provider.dart';
 
 // ═══════════════════════════════════════════════════════════════════
 // Notification Settings Screen
@@ -101,7 +101,7 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
               if (settings.morningEnabled) ...[
                 const _Divider(),
                 _SettingsTile(
-                  icon: Icons.schedule_rounded,
+                  icon: const Icon(Icons.schedule_rounded, size: 18),
                   iconColor: AppColors.secondary,
                   title: 'Time',
                   subtitle: _formatTimeOfDay(settings.morningTime),
@@ -144,7 +144,7 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
               if (settings.eveningEnabled) ...[
                 const _Divider(),
                 _SettingsTile(
-                  icon: Icons.schedule_rounded,
+                  icon: const Icon(Icons.schedule_rounded, size: 18),
                   iconColor: AppColors.revisionBlue,
                   title: 'Time',
                   subtitle: _formatTimeOfDay(settings.eveningTime),

@@ -277,13 +277,13 @@ class _IsnadCard extends StatelessWidget {
             child: Column(
               children: [
                 _ChainNode(label: 'Prophet Muhammad ﷺ', isStart: true, isEnd: false),
-                Container(width: 2, height: 20, color: AppColors.revisionBlue, indent: 20),
+                Container(width: 2, height: 20, color: AppColors.revisionBlue),
                 _ChainNode(label: 'Companion (Sahabi)', isStart: false, isEnd: false),
-                Container(width: 2, height: 20, color: AppColors.revisionBlue, indent: 20),
+                Container(width: 2, height: 20, color: AppColors.revisionBlue),
                 _ChainNode(label: 'Successor (Tabi\'i)', isStart: false, isEnd: false),
-                Container(width: 2, height: 20, color: AppColors.revisionBlue, indent: 20),
+                Container(width: 2, height: 20, color: AppColors.revisionBlue),
                 _ChainNode(label: 'Scholar (Muhaddith)', isStart: false, isEnd: false),
-                Container(width: 2, height: 20, color: AppColors.revisionBlue, indent: 20),
+                Container(width: 2, height: 20, color: AppColors.revisionBlue),
                 _ChainNode(label: 'Compiler (Imam)', isStart: false, isEnd: true),
               ],
             ),

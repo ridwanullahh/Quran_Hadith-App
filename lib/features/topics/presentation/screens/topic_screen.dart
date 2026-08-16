@@ -38,7 +38,7 @@ class TopicScreen extends ConsumerWidget {
                     ]
                   : null,
               onChanged: (v) => ref.read(topicProvider.notifier).updateSearch(v),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             ),
           ),
         ),

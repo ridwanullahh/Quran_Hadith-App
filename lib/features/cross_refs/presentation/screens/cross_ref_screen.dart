@@ -42,7 +42,7 @@ class CrossRefScreen extends ConsumerWidget {
                   ),
               ],
               onChanged: (v) => ref.read(crossRefProvider.notifier).updateSearch(v),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             ),
           ),
         ),

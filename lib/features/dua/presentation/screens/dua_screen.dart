@@ -11,7 +11,7 @@ class DuaScreen extends ConsumerStatefulWidget {
   const DuaScreen({super.key});
 
   @override
-  ConsumerState<DuaScreen> createState() => _DuaScreenState;
+  ConsumerState<DuaScreen> createState() => _DuaScreenState();
 }
 
 class _DuaScreenState extends ConsumerState<DuaScreen>

@@ -210,15 +210,6 @@ class AppTheme {
         clipBehavior: Clip.antiAlias,
       ),
 
-      // ── Filled Card (elevated look) ─────────────────────────────
-      filledCardTheme: CardTheme(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        color: colorScheme.surfaceContainerHighest,
-      ),
-
       // ── Elevated Card ───────────────────────────────────────────
       elevatedCardTheme: CardTheme(
         elevation: 4,
@@ -295,7 +286,7 @@ class AppTheme {
             color: colorScheme.onPrimary,
           ),
         ).copyWith(
-          mouseCursor: WidgetStateProperty.all(MouseCursor.clickable),
+          mouseCursor: WidgetStateProperty.all(MouseCursor.defer),
         ),
       ),
 
@@ -354,7 +345,6 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          constraints: const BoxConstraints(minSize: 44, minWidth: 44),
           tapTargetSize: MaterialTapTargetSize.padded,
         ),
       ),

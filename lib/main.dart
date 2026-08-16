@@ -1,7 +1,7 @@
-import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 import 'app/app.dart';
 import 'app/shell/mini_audio_player_provider.dart';
@@ -16,6 +16,9 @@ import 'features/settings/presentation/providers/theme_provider.dart';
 final _initProvider = FutureProvider<_AppInitResult>((ref) async {
   // ── Hive ───────────────────────────────────────────────────────
   await Hive.initFlutter();
+
+  // ── Timezone ────────────────────────────────────────────────────
+  tz.initializeTimeZones();
   final settingsBox = await Hive.openBox('settings');
   await Hive.openBox('reading_cache');
   await Hive.openBox('search_cache');
@@ -28,39 +31,29 @@ final _initProvider = FutureProvider<_AppInitResult>((ref) async {
 
   // ── Audio Service ─────────────────────────────────────────────
   final audioRepository = AudioRepository();
-  final audioHandler = await AudioService.init<QuranAudioHandler>(
-    builder: () => QuranAudioHandler(audioRepository),
-    config: const AudioServiceConfig(
-      androidNotificationChannelId: 'com.minhaajulhudaa.audio',
-      androidNotificationChannelName: 'Quran Audio',
-      androidNotificationOngoing: true,
-      androidStopForegroundOnPause: true,
-      androidNotificationIcon: 'drawable/ic_stat_music_note',
-      notificationColor: Color(0xFF0D6E5B),
-    ),
-  );
+  final audioPlayerService = AudioPlayerService(audioRepository);
 
   return _AppInitResult(
     settingsBox: settingsBox,
-    audioHandler: audioHandler,
+    audioPlayerService: audioPlayerService,
     onboardingCompleted: settingsBox.get('onboarding_completed', defaultValue: false) as bool,
   );
 });
 
 class _AppInitResult {
   final Box settingsBox;
-  final QuranAudioHandler audioHandler;
+  final AudioPlayerService audioPlayerService;
   final bool onboardingCompleted;
 
   const _AppInitResult({
     required this.settingsBox,
-    required this.audioHandler,
+    required this.audioPlayerService,
     required this.onboardingCompleted,
   });
 }
 
 /// Global Riverpod container reference, used for accessing providers
-/// outside the widget tree (e.g. in audio_service callbacks).
+/// outside the widget tree (e.g. in audio callbacks).
 late ProviderContainer globalProviderContainer;
 
 void main() {
@@ -96,10 +89,10 @@ class _InitGateway extends ConsumerWidget {
       error: (error, stack) => _ErrorScreen(error: error),
       data: (result) {
         // Build the real app with overrides for the initialized
-        // audio handler and persisted theme preference.
+        // audio service and persisted theme preference.
         return ProviderScope(
           overrides: [
-            audioHandlerProvider.overrideWithValue(result.audioHandler),
+            audioHandlerProvider.overrideWithValue(result.audioPlayerService),
             themeModeProvider.overrideWith((ref) {
               final savedMode =
                   result.settingsBox.get('theme_mode', defaultValue: 'dark') as String;

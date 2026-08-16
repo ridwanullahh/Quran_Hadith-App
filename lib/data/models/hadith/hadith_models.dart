@@ -201,7 +201,7 @@ class Hadith {
   });
 
   /// Unique identifier
-  String get uniqueId => '${collectionId}_$bookNumber_$hadithNumber';
+  String get uniqueId => '${collectionId}_${bookNumber}_$hadithNumber';
 
   /// Get the text in the specified language
   String getText(String language) {

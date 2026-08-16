@@ -3,7 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
-import 'providers/update_provider.dart';
+import '../providers/update_provider.dart';
 
 // ═══════════════════════════════════════════════════════════════════
 // Update Screen

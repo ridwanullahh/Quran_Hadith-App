@@ -537,7 +537,7 @@ class _RecentSearchTile extends StatelessWidget {
                   ),
                   onPressed: onRemove,
                   constraints:
-                      const BoxConstraints(minSize: 32, minWidth: 32),
+                      const BoxConstraints(minWidth: 32, minHeight: 32),
                   padding: EdgeInsets.zero,
                 ),
               ],

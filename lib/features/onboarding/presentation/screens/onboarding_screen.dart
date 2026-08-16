@@ -6,6 +6,7 @@ import 'package:hive/hive.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/app.dart';
+import '../../../settings/presentation/providers/theme_provider.dart';
 
 /// Whether the user has completed onboarding.
 final onboardingCompletedProvider = Provider<bool>((ref) {
@@ -53,7 +54,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     await box.put('theme_mode', modeString);
 
     // Apply theme immediately
-    ref.read(themeModeProvider.notifier).setThemeMode(_selectedTheme);
+    final appThemeMode = _selectedTheme == ThemeMode.light
+        ? AppThemeMode.light
+        : AppThemeMode.dark;
+    ref.read(themeModeProvider.notifier).setThemeMode(appThemeMode);
 
     if (mounted) {
       context.go('/quran');

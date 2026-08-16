@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:audio_service/audio_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -110,29 +109,27 @@ class MiniAudioPlayerState {
   }
 }
 
-/// Provider that exposes a reference to the audio handler via the
-/// audio_service singleton, converted to Riverpod's AsyncValue.
+/// Provider that exposes a reference to the audio player service.
 ///
-/// The audio handler is initialized in main.dart and stored in the
+/// The service is initialized in main.dart and stored in the
 /// Riverpod container as an override. This provider reads it back.
-final audioHandlerProvider = Provider<QuranAudioHandler?>((ref) {
-  // The handler is provided via ProviderScope overrides in main.dart.
-  // We expose it here so downstream widgets can call play/pause/seek.
+final audioHandlerProvider = Provider<AudioPlayerService?>((ref) {
+  // The service is provided via ProviderScope overrides in main.dart.
   return null; // Will be overridden at the ProviderScope level.
 });
 
 /// Provides a live stream of [MiniAudioPlayerState] derived from
-/// the audio handler's reactive streams.
+/// the audio player service's reactive streams.
 ///
-/// This combines multiple streams from the audio handler into a single
+/// This combines multiple streams from the service into a single
 /// state object, updating the UI at ~10 Hz to stay smooth.
 final miniAudioPlayerProvider = StreamProvider<MiniAudioPlayerState>((ref) {
-  final handler = ref.watch(audioHandlerProvider);
-  if (handler == null) {
+  final service = ref.watch(audioHandlerProvider);
+  if (service == null) {
     return Stream.value(const MiniAudioPlayerState());
   }
 
-  // Build a combined stream from the handler's reactive properties.
+  // Build a combined stream from the service's reactive properties.
   // We sample position every 200ms to avoid excessive rebuilds.
   return Rx.combineLatest6<
       bool,
@@ -143,17 +140,19 @@ final miniAudioPlayerProvider = StreamProvider<MiniAudioPlayerState>((ref) {
       bool,
       MiniAudioPlayerState>(
     // 1. Is playing
-    handler.playbackState.map((s) => s.playing),
+    service.playerStateStream.map((s) => s.playing),
     // 2. Position (sampled)
-    handler.positionStream.sampleTime(const Duration(milliseconds: 200)),
+    service.positionStream.sampleTime(const Duration(milliseconds: 200)),
     // 3. Duration
-    handler.durationStream,
+    service.durationStream,
     // 4. Buffered position
-    handler.bufferedPositionStream.sampleTime(const Duration(milliseconds: 500)),
+    service.bufferedPositionStream.sampleTime(const Duration(milliseconds: 500)),
     // 5. Has queue
-    Stream.value(handler.hasQueue),
+    Stream.value(service.hasQueue),
     // 6. Is buffering
-    handler.playerStateStream.map((s) => s.processingState == AudioProcessingState.buffering || s.processingState == AudioProcessingState.loading),
+    service.playerStateStream.map((s) =>
+        s.processingState == ProcessingState.buffering ||
+        s.processingState == ProcessingState.loading),
     (
       isPlaying,
       position,
@@ -162,22 +161,17 @@ final miniAudioPlayerProvider = StreamProvider<MiniAudioPlayerState>((ref) {
       hasQueue,
       isBuffering,
     ) {
-      // Extract surah name from the current media item
-      final mediaItem = handler.mediaItem.valueOrNull;
-      final surahName = mediaItem?.title ?? '';
-      final reciterName = mediaItem?.artist ?? '';
+      final surahName = service.currentTitle;
+      final reciterName = service.currentArtist;
 
-      final progress = handler.surahProgress;
+      final progress = service.surahProgress;
       final currentAyah = progress['currentAyah'] ?? 0;
       final totalAyahs = progress['totalAyahs'] ?? 0;
-      final surahNumber = handler.currentSurahNumber;
+      final surahNumber = service.currentSurahNumber;
 
-      // Look up Arabic surah name from the extras or use number.
-      // In a production app this would use SurahInfo lookup.
+      // Look up Arabic surah name from the number.
       String surahNameArabic = '';
       if (surahNumber > 0 && surahNumber <= 114) {
-        // We rely on a simple mapping here; the full app would
-        // inject SurahInfo from the repository.
         surahNameArabic = 'سورة $surahNumber';
       }
 
@@ -201,7 +195,7 @@ final miniAudioPlayerProvider = StreamProvider<MiniAudioPlayerState>((ref) {
 /// A simple notifier that provides audio control methods that
 /// downstream widgets can call (play, pause, next, previous, seek).
 class MiniAudioPlayerController extends Notifier<void> {
-  QuranAudioHandler? get _handler {
+  AudioPlayerService? get _service {
     return ref.read(audioHandlerProvider);
   }
 
@@ -211,42 +205,42 @@ class MiniAudioPlayerController extends Notifier<void> {
   }
 
   void play() {
-    _handler?.play();
+    _service?.play();
   }
 
   void pause() {
-    _handler?.pause();
+    _service?.pause();
   }
 
   void playPause() {
-    final h = _handler;
-    if (h == null || !h.hasQueue) return;
-    if (h.isPlaying) {
-      h.pause();
+    final s = _service;
+    if (s == null || !s.hasQueue) return;
+    if (s.isPlaying) {
+      s.pause();
     } else {
-      h.resume();
+      s.resume();
     }
   }
 
   void next() {
-    _handler?.skipToNext();
+    _service?.skipToNext();
   }
 
   void previous() {
-    _handler?.skipToPrevious();
+    _service?.skipToPrevious();
   }
 
   void seekToPosition(double fraction) {
-    final h = _handler;
-    if (h == null) return;
-    final durationMs = h.duration.inMilliseconds;
+    final s = _service;
+    if (s == null) return;
+    final durationMs = s.duration.inMilliseconds;
     if (durationMs == 0) return;
     final targetMs = (fraction * durationMs).round();
-    h.seek(Duration(milliseconds: targetMs));
+    s.seek(Duration(milliseconds: targetMs));
   }
 
   void stop() {
-    _handler?.stop();
+    _service?.stop();
   }
 }
 

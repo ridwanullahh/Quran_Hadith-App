@@ -182,7 +182,6 @@ class BackupScreen extends ConsumerWidget {
               ),
             ),
           ),
-          ],
 
           const SizedBox(height: 40),
         ],
@@ -350,7 +349,7 @@ class BackupScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-              ).animate fadeIn(duration: 300.ms).scale(delay: (index * 50).ms);
+              ).animate().fadeIn(duration: 300.ms).scale(delay: (index * 50).ms);
             },
           ),
         ],

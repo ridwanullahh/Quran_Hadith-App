@@ -102,7 +102,7 @@ class WordDetailSheet extends ConsumerWidget {
                             : AppColors.lightTextSecondary,
                       ),
                       onPressed: () => Navigator.of(context).pop(),
-                      constraints: const BoxConstraints(minSize: 32, minWidth: 32),
+                      constraints: const BoxConstraints(minHeight: 32, minWidth: 32),
                       padding: EdgeInsets.zero,
                     ),
                   ],

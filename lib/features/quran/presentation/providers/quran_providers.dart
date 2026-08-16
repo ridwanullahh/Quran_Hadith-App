@@ -243,7 +243,7 @@ class SurahAudioNotifier extends StateNotifier<SurahAudioState> {
 
   SurahAudioNotifier(this._ref) : super(const SurahAudioState());
 
-  QuranAudioHandler? get _handler => _ref.read(audioHandlerProvider);
+  AudioPlayerService? get _handler => _ref.read(audioHandlerProvider);
 
   Future<void> playSurah({
     required int surahNumber,

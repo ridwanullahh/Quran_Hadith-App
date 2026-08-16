@@ -351,9 +351,9 @@ class _EmptyState extends StatelessWidget {
               subMessage,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withOpacity(0.5),
+                height: 1.5,
               ),
               textAlign: TextAlign.center,
-              height: 1.5,
             ),
           ],
         ),

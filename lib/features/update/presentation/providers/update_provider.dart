@@ -213,7 +213,7 @@ class UpdateNotifier extends StateNotifier<UpdateState> {
   }
 
   /// Download the APK from the release
-  Future<String?> downloadApk(String? savePath) async {
+  Future<String?> downloadApk({String? savePath}) async {
     final release = state.latestRelease;
     if (release == null || release.apkDownloadUrl == null) return null;
 

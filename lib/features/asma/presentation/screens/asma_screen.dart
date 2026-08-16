@@ -11,7 +11,7 @@ class AsmaScreen extends ConsumerStatefulWidget {
   const AsmaScreen({super.key});
 
   @override
-  ConsumerState<AsmaScreen> createState() => _AsmaScreenState;
+  ConsumerState<AsmaScreen> createState() => _AsmaScreenState();
 }
 
 class _AsmaScreenState extends ConsumerState<AsmaScreen> {

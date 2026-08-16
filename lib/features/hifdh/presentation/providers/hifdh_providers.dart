@@ -275,8 +275,8 @@ class HifdhTestState {
     this.results = const [],
     this.isRevealed = false,
     this.finalResult,
-    this.testStartTime = DateTime.now(),
-  });
+    DateTime? testStartTime,
+  }) : this.testStartTime = testStartTime ?? DateTime.now();
 
   HifdhTestState copyWith({
     HifdhTestPhase? phase,

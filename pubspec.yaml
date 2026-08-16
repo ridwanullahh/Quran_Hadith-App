@@ -26,9 +26,12 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
 
+  # Notifications
+  flutter_local_notifications: ^17.1.2
+  timezone: ^0.9.2
+
   # Audio
   just_audio: ^0.9.37
-  audio_service: ^0.18.13
   audio_session: ^0.1.18
 
   # Network (for audio download only)

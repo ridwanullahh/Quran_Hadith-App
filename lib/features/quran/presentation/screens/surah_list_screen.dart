@@ -259,6 +259,7 @@ class _SurahListScreenState extends ConsumerState<SurahListScreen> {
   }
 
   Widget _buildRevelationFilter(bool isDark) {
+    final revelationFilter = ref.watch(revelationFilterProvider);
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
