@@ -74,7 +74,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final int _totalPages = 4;
 
   // Preferences (Page 4)
-  AppThemeMode _selectedTheme = AppThemeMode.dark;
+  AppThemeMode _selectedTheme = AppThemeMode.light;
   double _dailyReadingGoal = 4.0;
 
   // Permission statuses (Page 3) – keyed by permission index.
@@ -88,6 +88,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _isRequestingPermission = false;
 
   // Permission definitions (ordered)
+  // NOTE: Storage and SystemAlertWindow permissions were REMOVED because:
+  //   - Storage is not needed (audio downloads use app-private storage via
+  //     path_provider, which requires no runtime permission on Android 10+).
+  //     On Android 13+ Permission.storage always returns denied anyway.
+  //   - SystemAlertWindow is not needed (the popup feature is an in-app
+  //     widget using showDialog, not a system-level overlay).
+  // Listing them would mislead users into thinking the app needs them.
   static const List<_PermissionEntry> _permissions = [
     _PermissionEntry(
       title: 'Notifications',
@@ -97,18 +104,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       permission: Permission.notification,
     ),
     _PermissionEntry(
-      title: 'Storage',
-      description: 'To download audio recitations and backup data',
-      icon: Icons.folder_rounded,
+      title: 'Location',
+      description: 'To compute accurate prayer times and Qibla direction',
+      icon: Icons.location_on_rounded,
       color: AppColors.secondary,
-      permission: Permission.storage,
-    ),
-    _PermissionEntry(
-      title: 'Overlay',
-      description: 'To show periodic Qur\'an and Hadith popups',
-      icon: Icons.layers_rounded,
-      color: AppColors.revisionBlue,
-      permission: Permission.systemAlertWindow,
+      permission: Permission.location,
     ),
     _PermissionEntry(
       title: 'Exact Alarms',
@@ -168,7 +168,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   void _loadCurrentPreferences() {
     final box = Hive.box('settings');
-    final savedMode = box.get('theme_mode', defaultValue: 'dark') as String;
+    final savedMode = box.get('theme_mode', defaultValue: 'light') as String;
     _selectedTheme = ThemeModeNotifier.fromString(savedMode);
     _dailyReadingGoal =
         box.get('daily_reading_goal', defaultValue: 4.0) as double;

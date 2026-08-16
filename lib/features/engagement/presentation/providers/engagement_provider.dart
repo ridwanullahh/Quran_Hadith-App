@@ -121,8 +121,11 @@ class EngagementNotifier extends StateNotifier<EngagementData> {
         dailyRecords = decoded.map((e) => DailyRecord.fromJson(e as Map<String, dynamic>)).toList();
       }
 
-      final surahCounts = Map<String, int>.from(
-        box.get('surah_read_counts', defaultValue: <String, int>{}) as Map,
+      // Hive stores Maps as Map<dynamic, dynamic>. Convert safely —
+      // values may be num/int depending on how they were written.
+      final rawCounts = box.get('surah_read_counts') as Map? ?? <String, int>{};
+      final surahCounts = rawCounts.map(
+        (k, v) => MapEntry(k.toString(), (v as num).toInt()),
       );
 
       state = EngagementData(
@@ -136,20 +139,26 @@ class EngagementNotifier extends StateNotifier<EngagementData> {
         dailyRecords: dailyRecords,
         surahReadCounts: surahCounts,
       );
-    } catch (_) {}
+    } catch (e, st) {
+      debugPrint('[EngagementNotifier._loadData] failed: $e\n$st');
+    }
   }
 
   Future<void> _saveData() async {
-    final box = Hive.box('engagement');
-    await box.put('current_streak', state.currentStreak);
-    await box.put('longest_streak', state.longestStreak);
-    await box.put('total_sessions', state.totalSessions);
-    await box.put('total_ayahs_read', state.totalAyahsRead);
-    await box.put('total_hadiths_read', state.totalHadithsRead);
-    await box.put('total_minutes_spent', state.totalMinutesSpent);
-    await box.put('last_active_date', state.lastActiveDate.toIso8601String());
-    await box.put('daily_records', jsonEncode(state.dailyRecords.map((r) => r.toJson()).toList()));
-    await box.put('surah_read_counts', state.surahReadCounts);
+    try {
+      final box = Hive.box('engagement');
+      await box.put('current_streak', state.currentStreak);
+      await box.put('longest_streak', state.longestStreak);
+      await box.put('total_sessions', state.totalSessions);
+      await box.put('total_ayahs_read', state.totalAyahsRead);
+      await box.put('total_hadiths_read', state.totalHadithsRead);
+      await box.put('total_minutes_spent', state.totalMinutesSpent);
+      await box.put('last_active_date', state.lastActiveDate.toIso8601String());
+      await box.put('daily_records', jsonEncode(state.dailyRecords.map((r) => r.toJson()).toList()));
+      await box.put('surah_read_counts', state.surahReadCounts);
+    } catch (e, st) {
+      debugPrint('[EngagementNotifier._saveData] failed: $e\n$st');
+    }
   }
 
   Future<void> recordAppOpen() async {

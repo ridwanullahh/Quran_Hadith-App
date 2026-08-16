@@ -68,20 +68,30 @@ class AudioRepository {
   // Audio URL Generation
   // ═══════════════════════════════════════════════════════════════
 
-  /// Get the remote URL for an audio file
+  /// Get the remote URL for an audio file.
+  ///
+  /// Per-ayah files use everyayah.com with the 6-digit
+  /// `{surah:03}{ayah:03}.mp3` naming convention (e.g. 001001.mp3).
+  /// Full-surah files use quranicaudio.com with `{surah:03}.mp3`.
+  ///
+  /// The previous implementation used `audio.qurancdn.com/{reciter}/...`
+  /// which does not exist — every URL 404'd, causing every audio playback
+  /// to fail silently (caught in AudioPlayerService.play → skipToNext).
   String getAudioUrl({
     required int surah,
     required int ayah,
     required String reciter,
   }) {
+    final urlPath = AppConstants.reciterUrlPath(reciter);
     if (ayah == 0) {
-      // Full surah URL
+      // Full surah URL — quranicaudio.com.
       final padded = surah.toString().padLeft(3, '0');
-      return '${AppConstants.audioBaseUrls.replaceAll('{reciter}', reciter)}$padded${AppConstants.audioFileExtension}';
+      return '${AppConstants.fullSurahAudioBaseUrl}/$urlPath/$padded${AppConstants.audioFileExtension}';
     } else {
+      // Per-ayah URL — everyayah.com 6-digit naming.
       final paddedSurah = surah.toString().padLeft(3, '0');
       final paddedAyah = ayah.toString().padLeft(3, '0');
-      return '${AppConstants.audioBaseUrls.replaceAll('{reciter}', reciter)}$paddedSurah/$paddedAyah${AppConstants.audioFileExtension}';
+      return '${AppConstants.perAyahAudioBaseUrl}/$urlPath/$paddedSurah$paddedAyah${AppConstants.audioFileExtension}';
     }
   }
 

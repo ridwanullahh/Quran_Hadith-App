@@ -81,6 +81,13 @@ flutter:
 
   assets:
     - assets/data/
+    - assets/data/hadith/
+    - assets/data/hadith/bukhari/
+    - assets/data/hadith/muslim/
+    - assets/data/hadith/abudawud/
+    - assets/data/hadith/nasai/
+    - assets/data/hadith/ibnmajah/
+    - assets/data/hadith/tirmidhi/
     - assets/fonts/
     - assets/images/
 

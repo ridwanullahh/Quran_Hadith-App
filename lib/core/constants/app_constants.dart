@@ -219,33 +219,61 @@ class AppConstants {
   static const int defaultRetryCount = 3;
   static const int downloadTimeoutSeconds = 120;
 
+  /// Per-ayah audio CDN: everyayah.com.
+  /// File naming: {surah:03}{ayah:03}.mp3 (e.g. 001001.mp3 = Al-Fatiha ayah 1).
+  /// Reciter `urlPath` values are the everyayah.com directory names.
+  static const String perAyahAudioBaseUrl = 'https://everyayah.com/data';
+
+  /// Full-surah audio CDN: quranicaudio.com.
+  /// File naming: {surah:03}.mp3 (e.g. 001.mp3 = complete Al-Fatiha).
+  static const String fullSurahAudioBaseUrl = 'https://download.quranicaudio.com/quran';
+
+  /// Reciter list with `urlPath` = the everyayah.com directory name.
+  /// These are the correct, verifiable directory names from
+  /// https://everyayah.com/data/ — verified to resolve.
   static const List<Map<String, String>> reciters = [
     {
       'id': 'mishary',
       'name': 'Mishary Rashid Alafasy',
       'style': 'Mujawwad',
+      'urlPath': 'Alafasy_128kbps',
     },
     {
       'id': 'abdulbasit',
-      'name': 'Abdul Basit',
+      'name': 'Abdul Basit Abdus Samad',
       'style': 'Mujawwad',
+      'urlPath': 'Abdul_Basit_Murattal_64kbps',
     },
     {
       'id': 'husary',
       'name': 'Mahmoud Khalil Al-Husary',
       'style': 'Mujawwad',
+      'urlPath': 'Husary_64kbps',
     },
     {
       'id': 'minshawi',
       'name': 'Mohamed Siddiq El-Minshawi',
       'style': 'Mujawwad',
+      'urlPath': 'Minshawy_Murattal_128kbps',
     },
     {
       'id': 'abdurrahman',
       'name': 'Abdur-Rahman As-Sudais',
       'style': 'Mujawwad',
+      'urlPath': 'Abdurrahmaan_As-Sudais_192kbps',
     },
   ];
+
+  /// Look up the everyayah.com urlPath for a reciter id.
+  /// Falls back to the first reciter's urlPath if not found.
+  static String reciterUrlPath(String reciterId) {
+    for (final r in reciters) {
+      if (r['id'] == reciterId) {
+        return r['urlPath'] ?? r['id']!;
+      }
+    }
+    return reciters.first['urlPath'] ?? reciters.first['id']!;
+  }
 
   // ── Translation Languages ────────────────────────────────────────
   static const Map<String, String> translationLanguages = {
@@ -313,8 +341,10 @@ class AppConstants {
   static const String hadithBasePath = 'assets/data/hadith/';
 
   // ── Audio Base URLs ──────────────────────────────────────────────
+  // Deprecated: use perAyahAudioBaseUrl + fullSurahAudioBaseUrl above.
+  // Kept only for backward-compat with any code that still references it.
   static const String audioBaseUrls =
-      'https://audio.qurancdn.com/{reciter}/';
+      'https://everyayah.com/data/{reciter}/';
 
   // ── Cache ────────────────────────────────────────────────────────
   static const int maxSearchHistoryEntries = 50;

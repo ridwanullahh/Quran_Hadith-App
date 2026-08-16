@@ -31,6 +31,26 @@ final _initProvider = FutureProvider<_AppInitResult>((ref) async {
   await Hive.openBox('search_cache');
   await Hive.openBox('download_state');
 
+  // ── Open all feature Hive boxes in parallel ──────────────────────
+  // These boxes are accessed by various features (bookmarks, notes,
+  // plans, history, stats, favorites, engagement, prayer settings).
+  // If they aren't opened before the first read, Hive throws
+  // "Box not found. Did you forget to call Hive.openBox()?" which
+  // either crashes or (when wrapped in try/catch) silently disables
+  // persistence for that feature. Open them all up front.
+  await Future.wait([
+    Hive.openBox('engagement'),
+    Hive.openBox('hadith_bookmarks'),
+    Hive.openBox('hadith_history'),
+    Hive.openBox('hadith_notes'),
+    Hive.openBox('hadith_plans'),
+    Hive.openBox('hadith_daily_tracker'),
+    Hive.openBox('hadith_stats'),
+    Hive.openBox('hadith_bookmark_folders'),
+    Hive.openBox('favorites'),
+    Hive.openBox('prayer_settings'),
+  ]);
+
   // ── Database ──────────────────────────────────────────────────
   await AppDatabase.ensureInitialized();
   final database = AppDatabase.instance;

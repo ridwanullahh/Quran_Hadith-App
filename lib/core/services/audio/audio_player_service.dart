@@ -30,6 +30,11 @@ class AudioPlayerService {
   int _currentIndex = 0;
   String _currentReciterId = AppConstants.defaultReciterId;
   int _currentSurahNumber = 0;
+  /// The ayah number of the first item in [_queue]. Used by [seekToAyah]
+  /// and [playAyah] to translate absolute ayah numbers to queue indices
+  /// when the queue was built with a non-1 start ayah.
+  int _queueStartAyah = 1;
+  StreamSubscription? _trackChangeSub;
 
   // ── State subjects for UI binding ───────────────────────────────
   final _repeatModeSubject = BehaviorSubject<RepeatMode>.seeded(
@@ -53,23 +58,32 @@ class AudioPlayerService {
     _listenForTrackChanges();
   }
 
-  /// When just_audio's currentIndex changes (because we set a ConcatenatingAudioSource),
-  /// update the system mediaItem so the notification shows the correct track.
+  /// When just_audio's currentIndex changes (because we set a
+  /// ConcatenatingAudioSource), update the system mediaItem so the
+  /// notification shows the correct track, AND update [_currentIndex]
+  /// + [_surahProgressSubject] so the mini player + auto-scroll stay
+  /// in sync during playback.
   void _listenForTrackChanges() {
-    _player.sequenceStateStream.listen((state) {
+    _trackChangeSub = _player.sequenceStateStream.listen((state) {
       final idx = state?.currentIndex;
       if (idx != null && idx >= 0 && idx < _queue.length) {
+        _currentIndex = idx;
         final item = _queue[idx];
+        // Update the system media notification with the current track.
         final mediaItem = MediaItem(
           id: 'surah_${item.surahNumber}_ayah_${item.ayahNumber}',
           album: 'Surah ${item.surahNumber}',
           title: item.title,
           artist: item.artist,
-          artUri: Uri.parse(
-            'https://quran.com/favicon.ico',
-          ),
+          artUri: Uri.parse('https://quran.com/favicon.ico'),
         );
         AudioSessionService.handler.mediaItem.add(mediaItem);
+        // Update the surah progress subject so the mini player + surah
+        // reading screen auto-scroll to the current ayah during playback.
+        _surahProgressSubject.add({
+          'currentAyah': item.ayahNumber,
+          'totalAyahs': _queue.length + _queueStartAyah - 1,
+        });
       }
     });
   }
@@ -110,6 +124,7 @@ class AudioPlayerService {
     }
 
     _currentIndex = 0;
+    _queueStartAyah = startAyah;
 
     _surahProgressSubject.add({
       'currentAyah': startAyah,
@@ -149,10 +164,11 @@ class AudioPlayerService {
     }
 
     _currentIndex = 0;
+    _queueStartAyah = ayahStart;
 
     _surahProgressSubject.add({
       'currentAyah': ayahStart,
-      'totalAyahs': ayahEnd - ayahStart + 1,
+      'totalAyahs': ayahEnd,
     });
   }
 
@@ -205,7 +221,14 @@ class AudioPlayerService {
     await play();
   }
 
-  /// Play a specific ayah
+  /// Play a specific ayah.
+  ///
+  /// Builds a queue starting at [ayahNumber] (so queue[0] = [ayahNumber])
+  /// and plays from index 0. The previous implementation set
+  /// `_currentIndex = ayahNumber - 1` which was a RangeError when
+  /// [ayahNumber] was greater than 1 (e.g. playing ayah 100 of a surah
+  /// set `_currentIndex = 99` but the queue only had ~186 items starting
+  /// at ayah 100, so index 99 was out of range).
   Future<void> playAyah({
     required int surahNumber,
     required int ayahNumber,
@@ -218,7 +241,8 @@ class AudioPlayerService {
       reciterId: reciterId,
       startAyah: ayahNumber,
     );
-    _currentIndex = ayahNumber - 1;
+    // Queue starts at ayahNumber, so index 0 IS ayahNumber.
+    _currentIndex = 0;
     await play();
   }
 
@@ -271,9 +295,15 @@ class AudioPlayerService {
 
   Future<void> seek(Duration position) => _player.seek(position);
 
-  /// Seek to a specific ayah in the current surah queue
+  /// Seek to a specific ayah in the current surah queue.
+  ///
+  /// Translates the absolute [ayahNumber] to a queue index using
+  /// [_queueStartAyah]. The previous implementation used
+  /// `ayahNumber - 1` which was wrong when the queue was built with
+  /// `startAyah > 1` (e.g. queue starting at ayah 5, seeking to ayah 6
+  /// should be index 1, not 5).
   Future<void> seekToAyah(int ayahNumber) async {
-    final targetIndex = ayahNumber - 1;
+    final targetIndex = ayahNumber - _queueStartAyah;
     if (targetIndex >= 0 && targetIndex < _queue.length) {
       _currentIndex = targetIndex;
       await play();
@@ -323,8 +353,13 @@ class AudioPlayerService {
   double get speed => _player.speed;
   RepeatMode get repeatMode => _repeatModeSubject.value;
   int get currentSurahNumber => _currentSurahNumber;
+  /// The actual ayah number of the currently-playing queue item.
+  /// Reads from the queue item directly so it's correct even when the
+  /// queue was built with a non-1 start ayah.
   int get currentAyahNumber =>
-      _currentIndex + 1; // 1-indexed
+      _queue.isNotEmpty && _currentIndex >= 0 && _currentIndex < _queue.length
+          ? _queue[_currentIndex].ayahNumber
+          : _queueStartAyah;
   int get totalQueueItems => _queue.length;
   bool get hasQueue => _queue.isNotEmpty;
   String get currentTitle =>
@@ -343,6 +378,7 @@ class AudioPlayerService {
   // ═══════════════════════════════════════════════════════════════
 
   Future<void> dispose() async {
+    await _trackChangeSub?.cancel();
     await _player.dispose();
     await _repeatModeSubject.close();
     await _surahProgressSubject.close();
