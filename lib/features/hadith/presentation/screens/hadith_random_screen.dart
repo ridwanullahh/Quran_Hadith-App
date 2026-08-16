@@ -292,53 +292,43 @@ class _HadithRandomScreenState extends State<HadithRandomScreen>
               child: Column(
                 children: [
                   // Generate button
-                  ListenableBuilder(
-                    listenable: _pulseController,
-                    builder: (context, child) {
-                      final scale = 1.0 + (_isAnimating ? 0.05 * _pulseController.value : 0.0);
-                      return Transform.scale(
-                        scale: scale,
-                        child: child,
-                      );
-                    },
-                    child: GestureDetector(
-                      onTap: _generate,
-                      child: Container(
-                        width: 140,
-                        height: 140,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: AppColors.primaryGradient,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withOpacity(0.25),
-                              blurRadius: 30,
-                              offset: const Offset(0, 10),
+                  GestureDetector(
+                    onTap: _generate,
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: AppColors.primaryGradient,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.25),
+                            blurRadius: 30,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.casino_rounded,
+                            size: 40,
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Tap to Explore',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: Colors.white.withOpacity(0.85),
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
                             ),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.casino_rounded,
-                              size: 40,
-                              color: Colors.white.withOpacity(0.9),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Tap to Explore',
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: Colors.white.withOpacity(0.85),
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
+                  ).animate().scale(begin: 0.95, end: 1.0, duration: 1500.ms).then(),
 
                   const SizedBox(height: 32),
 
