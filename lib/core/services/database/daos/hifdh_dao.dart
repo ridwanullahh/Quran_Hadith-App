@@ -1,7 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../tables.dart';
-import '../../../../constants/app_constants.dart';
+import '../../../constants/app_constants.dart';
 import '../database.dart'
     show notifyProgressChanged, notifyRevisionsChanged, notifyMistakesChanged;
 

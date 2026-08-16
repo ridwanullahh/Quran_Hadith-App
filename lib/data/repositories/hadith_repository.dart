@@ -255,6 +255,7 @@ class HadithRepository {
                 continue;
               }
             }
+            }
           } catch (_) {
             continue;
           }

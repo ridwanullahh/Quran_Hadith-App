@@ -5,7 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-import '../../../constants/app_constants.dart';
+import '../../constants/app_constants.dart';
 import 'tables.dart';
 export 'tables.dart';
 import 'daos/bookmark_dao.dart';

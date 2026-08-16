@@ -753,7 +753,7 @@ class _SessionHistorySheet extends StatelessWidget {
           Row(
             children: [
               Text(
-                'Today's Sessions',
+                "Today's Sessions",
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontFamily: AppTheme.latinFontFamily,
                   fontWeight: FontWeight.w700,

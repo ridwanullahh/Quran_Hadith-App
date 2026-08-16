@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
-import '../../prayer/presentation/providers/prayer_provider.dart';
+import '../../../prayer/presentation/providers/prayer_provider.dart';
 import '../providers/qibla_provider.dart';
 
 class QiblaScreen extends ConsumerWidget {

@@ -435,6 +435,7 @@ class _WeeklyBarChart extends StatelessWidget {
             },
             reservedSize: 28,
           ),
+          ),
           leftTitles: const AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),

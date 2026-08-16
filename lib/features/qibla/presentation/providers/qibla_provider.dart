@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../prayer/presentation/providers/prayer_provider.dart';
+import '../../../prayer/presentation/providers/prayer_provider.dart';
 
 // ── Models ─────────────────────────────────────────────────────────────
 

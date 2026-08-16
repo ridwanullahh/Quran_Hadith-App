@@ -91,7 +91,7 @@ const List<Reciter> kReciters = [
  Reciter(
   id: 'aishe',
   arabicName: 'ماهر المعيقلي',
-  englishName: 'Mahir Al-Mu'aiqly',
+  englishName: "Mahir Al-Mu'aiqly",
   style: 'Mujawwad',
   hasMurattal: false,
   hasMujawwad: true,
