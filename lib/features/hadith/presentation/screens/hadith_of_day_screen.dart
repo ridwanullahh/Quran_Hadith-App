@@ -731,7 +731,7 @@ class HadithOfDayScreen extends ConsumerWidget {
             )
                 .animate()
                 .fadeIn(duration: 600.ms, delay: 200.ms)
-                .scale(begin: 0.96, end: 1.0,
+                .scale(begin: Offset(0.96, 0.96), end: Offset(1.0, 1.0),
                     duration: 500.ms, delay: 200.ms),
 
             const SizedBox(height: 20),
