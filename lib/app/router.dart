@@ -11,6 +11,11 @@ import '../../features/quran/presentation/screens/surah_list_screen.dart';
 import '../../features/quran/presentation/screens/mushaf_screen.dart';
 import '../../features/quran/presentation/screens/surah_reading_screen.dart';
 import '../../features/quran/presentation/screens/quran_search_screen.dart';
+import '../../features/quran/presentation/screens/juz_reading_screen.dart';
+import '../../features/quran/presentation/screens/tafseer_screen.dart';
+import '../../features/quran/presentation/screens/bookmark_folders_screen.dart';
+import '../../features/quran/presentation/screens/recitation_tracker_screen.dart';
+import '../../features/quran/presentation/screens/surah_info_screen.dart';
 import '../../features/hifdh/presentation/screens/hifdh_dashboard_screen.dart';
 import '../../features/hifdh/presentation/screens/hifdh_test_screen.dart';
 import '../../features/hadith/presentation/screens/hadith_collections_screen.dart';
@@ -37,10 +42,29 @@ import '../../features/hadith/presentation/screens/hadith_favorites_screen.dart'
 import '../../features/hadith/presentation/screens/hadith_collection_detail_screen.dart';
 import '../../features/hadith/presentation/screens/narrator_screen.dart';
 import '../../features/hadith/presentation/screens/grading_screen.dart';
+import '../../features/hadith/presentation/screens/hadith_search_screen.dart';
+import '../../features/hadith/presentation/screens/hadith_notes_screen.dart';
+import '../../features/hadith/presentation/screens/hadith_bookmarks_screen.dart';
+import '../../features/hadith/presentation/screens/hadith_topics_screen.dart';
+import '../../features/hadith/presentation/screens/hadith_settings_screen.dart';
+import '../../features/hadith/presentation/screens/hadith_random_screen.dart';
+import '../../features/hadith/presentation/screens/hadith_isnad_visualizer_screen.dart';
+import '../../features/hadith/presentation/screens/hadith_comparison_screen.dart';
+import '../../features/hadith/presentation/screens/hadith_statistics_screen.dart';
+import '../../features/hadith/presentation/screens/hadith_glossary_screen.dart';
+import '../../features/hadith/presentation/screens/hadith_study_planner_screen.dart';
+import '../../features/hadith/presentation/screens/hadith_daily_tracker_screen.dart';
+import '../../features/hadith/presentation/screens/hadith_bookmark_folders_screen.dart';
+import '../../features/hadith/presentation/screens/hadith_chain_narrators_screen.dart';
+import '../../features/hadith/presentation/screens/hadith_collection_overview_screen.dart';
 import '../../features/notifications/presentation/screens/notification_settings_screen.dart';
 import '../../features/engagement/presentation/screens/engagement_screen.dart';
 import '../../features/engagement/presentation/screens/weekly_digest_screen.dart';
 import '../../features/update/presentation/screens/update_screen.dart';
+import '../../features/reciters/presentation/screens/full_audio_player_screen.dart';
+import '../../features/reciters/presentation/screens/audio_download_manager_screen.dart';
+import '../../features/reciters/presentation/screens/queue_screen.dart';
+import '../../features/reciters/presentation/screens/audio_settings_screen.dart';
 
 /// Top-level route paths used throughout the app.
 abstract class AppRoutes {
@@ -48,6 +72,11 @@ abstract class AppRoutes {
   static const String quranMushaf = '/quran/mushaf';
   static const String quranSurah = '/quran/:surahNumber';
   static const String quranSearch = '/quran/search';
+  static const String quranJuz = '/quran/juz';
+  static const String quranTafseer = '/quran/tafseer/:surahNumber';
+  static const String quranBookmarkFolders = '/quran/bookmark-folders';
+  static const String quranProgress = '/quran/progress';
+  static const String quranSurahInfo = '/quran/:surahNumber/info';
   static const String hifdh = '/hifdh';
   static const String hifdhTest = '/hifdh/test';
   static const String hadith = '/hadith';
@@ -74,11 +103,31 @@ abstract class AppRoutes {
   static const String hadithFavorites = '/hadith/favorites';
   static const String hadithCollectionDetail = '/hadith/detail/:collectionId';
   static const String hadithNarrators = '/hadith/narrators';
+  static const String hadithNarratorDetail = '/hadith/narrators/:narratorId';
   static const String hadithGrading = '/hadith/grading';
+  static const String hadithSearch = '/hadith/search';
+  static const String hadithNotes = '/hadith/notes';
+  static const String hadithBookmarks = '/hadith/bookmarks';
+  static const String hadithTopics = '/hadith/topics';
+  static const String hadithSettings = '/hadith/settings';
+  static const String hadithRandom = '/hadith/random';
+  static const String hadithIsnad = '/hadith/isnad';
+  static const String hadithComparison = '/hadith/comparison';
+  static const String hadithStatistics = '/hadith/statistics';
+  static const String hadithGlossary = '/hadith/glossary';
+  static const String hadithStudyPlanner = '/hadith/study-planner';
+  static const String hadithDailyTracker = '/hadith/daily-tracker';
+  static const String hadithBookmarkFolders = '/hadith/bookmark-folders';
+  static const String hadithChainNarrators = '/hadith/chain-narrators';
+  static const String hadithCollectionOverview = '/hadith/collection-overview';
   static const String notifications = '/notifications';
   static const String engagement = '/engagement';
   static const String weeklyDigest = '/weekly-digest';
   static const String update = '/update';
+  static const String audioPlayer = '/audio/player';
+  static const String audioDownloads = '/audio/downloads';
+  static const String audioQueue = '/audio/queue';
+  static const String audioSettings = '/audio/settings';
 }
 
 /// Provides the [GoRouter] instance for the application.
@@ -138,6 +187,66 @@ final routerProvider = Provider<GoRouter>((ref) {
                 ),
               ),
             ],
+          ),
+
+          // Juz Reading
+          GoRoute(
+            path: '/quran/juz',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: JuzListScreen(),
+            ),
+            routes: [
+              GoRoute(
+                path: ':juzNumber',
+                pageBuilder: (context, state) {
+                  final juzNumber =
+                      int.tryParse(state.pathParameters['juzNumber'] ?? '') ?? 1;
+                  return NoTransitionPage(
+                    child: JuzReadingScreen(juzNumber: juzNumber),
+                  );
+                },
+              ),
+            ],
+          ),
+
+          // Tafseer Screen
+          GoRoute(
+            path: '/quran/tafseer/:surahNumber',
+            pageBuilder: (context, state) {
+              final surahNumber =
+                  int.tryParse(state.pathParameters['surahNumber'] ?? '') ?? 1;
+              return NoTransitionPage(
+                child: TafseerScreen(surahNumber: surahNumber),
+              );
+            },
+          ),
+
+          // Bookmark Folders
+          GoRoute(
+            path: '/quran/bookmark-folders',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: BookmarkFoldersScreen(),
+            ),
+          ),
+
+          // Recitation Progress Tracker
+          GoRoute(
+            path: '/quran/progress',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: RecitationTrackerScreen(),
+            ),
+          ),
+
+          // Surah Info Screen
+          GoRoute(
+            path: '/quran/:surahNumber/info',
+            pageBuilder: (context, state) {
+              final surahNumber =
+                  int.tryParse(state.pathParameters['surahNumber'] ?? '') ?? 1;
+              return NoTransitionPage(
+                child: SurahInfoScreen(surahNumber: surahNumber),
+              );
+            },
           ),
 
           // Hifdh Tab
@@ -345,9 +454,27 @@ final routerProvider = Provider<GoRouter>((ref) {
           // Hadith Narrators
           GoRoute(
             path: '/hadith/narrators',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: NarratorScreen(),
-            ),
+            pageBuilder: (context, state) {
+              // If there's a narratorId path segment, show detail
+              final uri = state.uri;
+              final pathSegments = uri.pathSegments;
+              // /hadith/narrators => list, /hadith/narrators/:id => detail
+              return NoTransitionPage(
+                child: NarratorScreen(),
+              );
+            },
+            routes: [
+              GoRoute(
+                path: ':narratorId',
+                pageBuilder: (context, state) {
+                  final narratorId =
+                      state.pathParameters['narratorId'] ?? '';
+                  return NoTransitionPage(
+                    child: NarratorDetailScreen(narratorId: narratorId),
+                  );
+                },
+              ),
+            ],
           ),
 
           // Hadith Grading
@@ -355,6 +482,126 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/hadith/grading',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: GradingScreen(),
+            ),
+          ),
+
+          // Hadith Search
+          GoRoute(
+            path: '/hadith/search',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: HadithSearchScreen(),
+            ),
+          ),
+
+          // Hadith Notes
+          GoRoute(
+            path: '/hadith/notes',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: HadithNotesScreen(),
+            ),
+          ),
+
+          // Hadith Bookmarks
+          GoRoute(
+            path: '/hadith/bookmarks',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: HadithBookmarksScreen(),
+            ),
+          ),
+
+          // Hadith Topics
+          GoRoute(
+            path: '/hadith/topics',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: HadithTopicsScreen(),
+            ),
+          ),
+
+          // Hadith Settings
+          GoRoute(
+            path: '/hadith/settings',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: HadithSettingsScreen(),
+            ),
+          ),
+
+          // Hadith Random Explorer
+          GoRoute(
+            path: '/hadith/random',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: HadithRandomScreen(),
+            ),
+          ),
+
+          // Hadith Isnad Visualizer
+          GoRoute(
+            path: '/hadith/isnad',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: HadithIsnadVisualizerScreen(),
+            ),
+          ),
+
+          // Hadith Comparison
+          GoRoute(
+            path: '/hadith/comparison',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: HadithComparisonScreen(),
+            ),
+          ),
+
+          // Hadith Statistics
+          GoRoute(
+            path: '/hadith/statistics',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: HadithStatisticsScreen(),
+            ),
+          ),
+
+          // Hadith Glossary
+          GoRoute(
+            path: '/hadith/glossary',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: HadithGlossaryScreen(),
+            ),
+          ),
+
+          // Hadith Study Planner
+          GoRoute(
+            path: '/hadith/study-planner',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: HadithStudyPlannerScreen(),
+            ),
+          ),
+
+          // Hadith Daily Tracker
+          GoRoute(
+            path: '/hadith/daily-tracker',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: HadithDailyTrackerScreen(),
+            ),
+          ),
+
+          // Hadith Bookmark Folders
+          GoRoute(
+            path: '/hadith/bookmark-folders',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: HadithBookmarkFoldersScreen(),
+            ),
+          ),
+
+          // Hadith Chain Narrators
+          GoRoute(
+            path: '/hadith/chain-narrators',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: HadithChainNarratorsScreen(),
+            ),
+          ),
+
+          // Hadith Collection Overview
+          GoRoute(
+            path: '/hadith/collection-overview',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: HadithCollectionOverviewScreen(),
             ),
           ),
 
@@ -390,6 +637,32 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ),
         ],
+      ),
+
+      // Audio Player (outside shell - full screen)
+      GoRoute(
+        path: '/audio/player',
+        pageBuilder: (context, state) => const MaterialPage(
+          child: FullAudioPlayerScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/audio/downloads',
+        pageBuilder: (context, state) => const NoTransitionPage(
+          child: AudioDownloadManagerScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/audio/queue',
+        pageBuilder: (context, state) => const NoTransitionPage(
+          child: QueueScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/audio/settings',
+        pageBuilder: (context, state) => const NoTransitionPage(
+          child: AudioSettingsScreen(),
+        ),
       ),
 
       // Onboarding (outside shell)
@@ -594,6 +867,304 @@ class _MoreScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
+          // ── Hadith Study Section ────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
+            child: Row(
+              children: [
+                Icon(Icons.auto_stories_rounded, size: 16, color: AppColors.secondary),
+                const SizedBox(width: 6),
+                Text(
+                  'Hadith Study',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: AppColors.secondary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkBorder
+                    : AppColors.lightBorder,
+                width: 0.5,
+              ),
+            ),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.topic_rounded, size: 18, color: AppColors.secondary),
+                  ),
+                  title: const Text('Hadith Topics'),
+                  subtitle: const Text('Browse hadiths by subject'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/hadith/topics'),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: AppColors.darkBorder),
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.edit_note_rounded, size: 18, color: AppColors.primary),
+                  ),
+                  title: const Text('Hadith Notes'),
+                  subtitle: const Text('Your personal hadith notes'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/hadith/notes'),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: AppColors.darkBorder),
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.hifdhGreen.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.bookmark_rounded, size: 18, color: AppColors.hifdhGreen),
+                  ),
+                  title: const Text('Hadith Bookmarks'),
+                  subtitle: const Text('Saved hadith references'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/hadith/bookmarks'),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: AppColors.darkBorder),
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.info.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.tune_rounded, size: 18, color: AppColors.info),
+                  ),
+                  title: const Text('Hadith Settings'),
+                  subtitle: const Text('Font sizes, display options'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/hadith/settings'),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: AppColors.darkBorder),
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.medinanBadge.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.casino_rounded, size: 18, color: AppColors.medinanBadge),
+                  ),
+                  title: const Text('Random Explorer'),
+                  subtitle: const Text('Discover random hadiths'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/hadith/random'),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: AppColors.darkBorder),
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.account_tree_rounded, size: 18, color: AppColors.primary),
+                  ),
+                  title: const Text('Isnad Visualizer'),
+                  subtitle: const Text('Explore narration chains'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/hadith/isnad'),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: AppColors.darkBorder),
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.compare_rounded, size: 18, color: AppColors.secondary),
+                  ),
+                  title: const Text('Hadith Comparison'),
+                  subtitle: const Text('Compare across collections'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/hadith/comparison'),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: AppColors.darkBorder),
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.bar_chart_rounded, size: 18, color: AppColors.success),
+                  ),
+                  title: const Text('Hadith Statistics'),
+                  subtitle: const Text('Your reading progress'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/hadith/statistics'),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: AppColors.darkBorder),
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.info.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.menu_book_rounded, size: 18, color: AppColors.info),
+                  ),
+                  title: const Text('Hadith Glossary'),
+                  subtitle: const Text('Islamic terminology guide'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/hadith/glossary'),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: AppColors.darkBorder),
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.warning.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.event_note_rounded, size: 18, color: AppColors.warning),
+                  ),
+                  title: const Text('Study Planner'),
+                  subtitle: const Text('Plan your hadith study'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/hadith/study-planner'),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: AppColors.darkBorder),
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.revisionBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.today_rounded, size: 18, color: AppColors.revisionBlue),
+                  ),
+                  title: const Text('Daily Tracker'),
+                  subtitle: const Text('Track daily hadith reading'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/hadith/daily-tracker'),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: AppColors.darkBorder),
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.bookmarkGold.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.folder_special_rounded, size: 18, color: AppColors.bookmarkGold),
+                  ),
+                  title: const Text('Bookmark Folders'),
+                  subtitle: const Text('Organize hadith bookmarks'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/hadith/bookmark-folders'),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: AppColors.darkBorder),
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.people_rounded, size: 18, color: AppColors.primary),
+                  ),
+                  title: const Text('Chain Narrators'),
+                  subtitle: const Text('Key narrators of hadith'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/hadith/chain-narrators'),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: AppColors.darkBorder),
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.library_books_rounded, size: 18, color: AppColors.secondary),
+                  ),
+                  title: const Text('Collections Overview'),
+                  subtitle: const Text('Kutub al-Sittah dashboard'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/hadith/collection-overview'),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
           // ── Quran Study Section ─────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
@@ -696,6 +1267,101 @@ class _MoreScreen extends StatelessWidget {
                   subtitle: const Text('Manage audio reciters'),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => context.push('/reciters'),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: AppColors.darkBorder),
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.download_for_offline_rounded, size: 18, color: AppColors.primary),
+                  ),
+                  title: const Text('Audio Downloads'),
+                  subtitle: const Text('Manage downloaded audio files'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/audio/downloads'),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: AppColors.darkBorder),
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.graphic_eq_rounded, size: 18, color: AppColors.secondary),
+                  ),
+                  title: const Text('Audio Settings'),
+                  subtitle: const Text('Playback, downloads, quality'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/audio/settings'),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: AppColors.darkBorder),
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.view_agenda_rounded, size: 18, color: AppColors.primary),
+                  ),
+                  title: const Text('Juz Reading'),
+                  subtitle: const Text('Read Quran by Juz'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/quran/juz'),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: AppColors.darkBorder),
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.trending_up_rounded, size: 18, color: AppColors.success),
+                  ),
+                  title: const Text('Recitation Progress'),
+                  subtitle: const Text('Track your Quran reading'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/quran/progress'),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: AppColors.darkBorder),
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.bookmarkGold.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.folder_special_rounded, size: 18, color: AppColors.bookmarkGold),
+                  ),
+                  title: const Text('Bookmark Folders'),
+                  subtitle: const Text('Organize your bookmarks'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/quran/bookmark-folders'),
                 ),
               ],
             ),

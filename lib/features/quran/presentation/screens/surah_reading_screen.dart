@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/quran_providers.dart';
+import '../widgets/surah_actions_sheet.dart';
 import '../../../../app/shell/mini_audio_player_provider.dart';
 import '../widgets/ayah_widget.dart';
 import '../widgets/word_detail_sheet.dart';
@@ -264,6 +265,36 @@ class _SurahReadingScreenState extends ConsumerState<SurahReadingScreen> {
               }
             });
           },
+        ),
+        PopupMenuButton<String>(
+          icon: Icon(
+            Icons.more_vert_rounded,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+          ),
+          onSelected: (value) {
+            switch (value) {
+              case 'actions':
+                SurahActionsSheet.show(
+                  context: context,
+                  surahNumber: widget.surahNumber,
+                  surahNameEnglish: surah.nameEnglish,
+                  surahNameArabic: surah.nameArabic,
+                  totalAyahs: surah.totalAyahs,
+                );
+                break;
+              case 'info':
+                context.push('/quran/${widget.surahNumber}/info');
+                break;
+              case 'tafseer':
+                context.push('/quran/tafseer/${widget.surahNumber}');
+                break;
+            }
+          },
+          itemBuilder: (context) => [
+            const PopupMenuItem(value: 'actions', child: Text('Quick Actions')),
+            const PopupMenuItem(value: 'info', child: Text('Surah Info')),
+            const PopupMenuItem(value: 'tafseer', child: Text('View Tafseer')),
+          ],
         ),
       ],
     );

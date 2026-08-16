@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'router.dart';
 import 'theme/app_theme.dart';
+import '../core/services/popup/popup_overlay.dart';
 import '../features/settings/presentation/providers/theme_provider.dart';
 
 /// The root application widget.
@@ -53,7 +54,7 @@ class MinhaajulHudaaApp extends ConsumerWidget {
       builder: (context, child) {
         return Directionality(
           textDirection: TextDirection.rtl,
-          child: child ?? const SizedBox.shrink(),
+          child: PopupOverlay(child: child ?? const SizedBox.shrink()),
         );
       },
     );

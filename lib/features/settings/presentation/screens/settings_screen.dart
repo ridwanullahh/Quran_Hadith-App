@@ -293,6 +293,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const _Divider(),
               _SettingsTile(
+                icon: Icons.replay_rounded,
+                iconColor: AppColors.secondary,
+                title: 'Replay Onboarding',
+                subtitle: 'Go through the setup wizard again',
+                onTap: () async {
+                  final box = Hive.box('settings');
+                  await box.put('onboarding_completed', false);
+                  if (mounted) {
+                    context.go('/onboarding');
+                  }
+                },
+              ),
+              const _Divider(),
+              _SettingsTile(
                 icon: Icons.code_rounded,
                 iconColor: AppColors.darkTextTertiary,
                 title: 'MinhaajulHudaa',

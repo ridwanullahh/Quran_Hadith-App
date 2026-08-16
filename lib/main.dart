@@ -8,6 +8,7 @@ import 'app/shell/mini_audio_player_provider.dart';
 import 'app/theme/app_colors.dart';
 import 'core/services/audio/audio_player_service.dart';
 import 'core/services/database/database.dart';
+import 'core/services/popup/popup_service.dart';
 import 'data/repositories/audio_repository.dart';
 import 'features/settings/presentation/providers/theme_provider.dart';
 
@@ -32,6 +33,9 @@ final _initProvider = FutureProvider<_AppInitResult>((ref) async {
   // ── Audio Service ─────────────────────────────────────────────
   final audioRepository = AudioRepository();
   final audioPlayerService = AudioPlayerService(audioRepository);
+
+  // ── Popup Service (ensure defaults are in Hive) ──────────────
+  PopupService.instance.isEnabled;
 
   return _AppInitResult(
     settingsBox: settingsBox,

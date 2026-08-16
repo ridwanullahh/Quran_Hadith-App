@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/app.dart';
@@ -18,9 +19,50 @@ final onboardingCompletedProvider = Provider<bool>((ref) {
   }
 });
 
-/// A beautiful 4-page onboarding flow shown only on first launch.
+/// Permission status enum for the onboarding flow.
+enum _PermStatus { notAsked, granted, denied }
+
+/// A permission entry shown on the permissions page.
+class _PermissionEntry {
+  final String title;
+  final String description;
+  final IconData icon;
+  final Color color;
+  final Permission permission;
+
+  const _PermissionEntry({
+    required this.title,
+    required this.description,
+    required this.icon,
+    required this.color,
+    required this.permission,
+  });
+}
+
+/// A feature entry shown on the features page.
+class _FeatureEntry {
+  final String title;
+  final String line1;
+  final String line2;
+  final IconData icon;
+  final Color color;
+
+  const _FeatureEntry({
+    required this.title,
+    required this.line1,
+    required this.line2,
+    required this.icon,
+    required this.color,
+  });
+}
+
+/// A beautiful 4-page onboarding flow shown on first launch and
+/// revisitable from Settings.
 class OnboardingScreen extends ConsumerStatefulWidget {
-  const OnboardingScreen({super.key});
+  /// If non-null, the PageView will jump to this page index on init.
+  final int? initialPage;
+
+  const OnboardingScreen({super.key, this.initialPage});
 
   @override
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -29,12 +71,108 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  final int _totalPages = 4;
 
-  String _selectedLanguage = 'en';
-  ThemeMode _selectedTheme = ThemeMode.dark;
-  String _notifPermissionStatus = 'Pending';
-  String _storagePermissionStatus = 'Pending';
-  String _overlayPermissionStatus = 'Pending';
+  // Preferences (Page 4)
+  AppThemeMode _selectedTheme = AppThemeMode.dark;
+  double _dailyReadingGoal = 4.0;
+
+  // Permission statuses (Page 3) – keyed by permission index.
+  final Map<int, _PermStatus> _permStatuses = {
+    0: _PermStatus.notAsked,
+    1: _PermStatus.notAsked,
+    2: _PermStatus.notAsked,
+    3: _PermStatus.notAsked,
+  };
+
+  bool _isRequestingPermission = false;
+
+  // Permission definitions (ordered)
+  static const List<_PermissionEntry> _permissions = [
+    _PermissionEntry(
+      title: 'Notifications',
+      description: 'To send daily verse reminders and hadith notifications',
+      icon: Icons.notifications_rounded,
+      color: AppColors.primary,
+      permission: Permission.notification,
+    ),
+    _PermissionEntry(
+      title: 'Storage',
+      description: 'To download audio recitations and backup data',
+      icon: Icons.folder_rounded,
+      color: AppColors.secondary,
+      permission: Permission.storage,
+    ),
+    _PermissionEntry(
+      title: 'Overlay',
+      description: 'To show periodic Qur\'an and Hadith popups',
+      icon: Icons.layers_rounded,
+      color: AppColors.revisionBlue,
+      permission: Permission.systemAlertWindow,
+    ),
+    _PermissionEntry(
+      title: 'Exact Alarms',
+      description: 'To schedule precise notification times',
+      icon: Icons.alarm_rounded,
+      color: AppColors.hifdhGreen,
+      permission: Permission.scheduleExactAlarm,
+    ),
+  ];
+
+  // Feature definitions (2×2 grid)
+  static const List<_FeatureEntry> _features = [
+    _FeatureEntry(
+      title: 'Quran',
+      line1: 'Complete Uthmani text, translations,',
+      line2: 'word-by-word, tafseer',
+      icon: Icons.auto_stories_rounded,
+      color: AppColors.primary,
+    ),
+    _FeatureEntry(
+      title: 'Hadith',
+      line1: '6 major collections, narrator',
+      line2: 'chains, grading',
+      icon: Icons.school_rounded,
+      color: AppColors.secondary,
+    ),
+    _FeatureEntry(
+      title: 'Hifdh',
+      line1: 'SM-2 spaced repetition, mistake',
+      line2: 'tracking, revision scheduler',
+      icon: Icons.psychology_rounded,
+      color: AppColors.hifdhGreen,
+    ),
+    _FeatureEntry(
+      title: 'Audio',
+      line1: 'Multiple reciters, background',
+      line2: 'playback, download manager',
+      icon: Icons.headphones_rounded,
+      color: AppColors.revisionBlue,
+    ),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentPreferences();
+    // Jump to a specific page if requested (e.g. permissions page from settings).
+    if (widget.initialPage != null) {
+      _currentPage = widget.initialPage!;
+      Future.microtask(() {
+        if (_pageController.hasClients) {
+          _pageController.jumpToPage(_currentPage);
+        }
+      });
+    }
+  }
+
+  void _loadCurrentPreferences() {
+    final box = Hive.box('settings');
+    final savedMode = box.get('theme_mode', defaultValue: 'dark') as String;
+    _selectedTheme = ThemeModeNotifier.fromString(savedMode);
+    _dailyReadingGoal =
+        box.get('daily_reading_goal', defaultValue: 4.0) as double;
+  }
 
   @override
   void dispose() {
@@ -42,27 +180,78 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     super.dispose();
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // Permission Handling
+  // ═══════════════════════════════════════════════════════════════
+
+  Future<void> _requestPermission(int index) async {
+    if (_isRequestingPermission) return;
+    setState(() => _isRequestingPermission = true);
+
+    try {
+      final status = await _permissions[index].permission.request();
+      if (!mounted) return;
+      setState(() {
+        if (status.isGranted) {
+          _permStatuses[index] = _PermStatus.granted;
+        } else if (status.isDenied) {
+          _permStatuses[index] = _PermStatus.denied;
+        } else if (status.isPermanentlyDenied) {
+          _permStatuses[index] = _PermStatus.denied;
+        } else {
+          _permStatuses[index] = _PermStatus.notAsked;
+        }
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() => _permStatuses[index] = _PermStatus.denied);
+      }
+    } finally {
+      if (mounted) setState(() => _isRequestingPermission = false);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // Complete Onboarding
+  // ═══════════════════════════════════════════════════════════════
+
   Future<void> _completeOnboarding() async {
     final box = Hive.box('settings');
     await box.put('onboarding_completed', true);
-    await box.put('translation_language', _selectedLanguage);
-    final modeString = switch (_selectedTheme) {
-      ThemeMode.light => 'light',
-      ThemeMode.dark => 'dark',
-      ThemeMode.system => 'system',
-    };
-    await box.put('theme_mode', modeString);
+    await box.put('translation_language', 'en');
+    await box.put('theme_mode', ThemeModeNotifier.toStringValue(_selectedTheme));
+    await box.put('daily_reading_goal', _dailyReadingGoal);
 
-    // Apply theme immediately
-    final appThemeMode = _selectedTheme == ThemeMode.light
-        ? AppThemeMode.light
-        : AppThemeMode.dark;
-    ref.read(themeModeProvider.notifier).setThemeMode(appThemeMode);
+    // Apply theme immediately.
+    ref.read(themeModeProvider.notifier).setThemeMode(_selectedTheme);
 
-    if (mounted) {
-      context.go('/quran');
+    if (mounted) context.go('/quran');
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // Navigation
+  // ═══════════════════════════════════════════════════════════════
+
+  void _nextPage() {
+    if (_currentPage < _totalPages - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
     }
   }
+
+  void _onButtonPressed() {
+    if (_currentPage < _totalPages - 1) {
+      _nextPage();
+    } else {
+      _completeOnboarding();
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // Build
+  // ═══════════════════════════════════════════════════════════════
 
   @override
   Widget build(BuildContext context) {
@@ -71,19 +260,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // ── Skip Button ─────────────────────────────────────────
+            // ── Skip Button ─────────────────────────────────────
             Align(
               alignment: Alignment.topLeft,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: TextButton(
-                  onPressed: _currentPage == 3 ? null : _completeOnboarding,
+                  onPressed:
+                      _currentPage == _totalPages - 1 ? null : _completeOnboarding,
                   child: const Text('Skip'),
                 ),
               ),
             ),
 
-            // ── Page Content ────────────────────────────────────────
+            // ── Page Content ───────────────────────────────────
             Expanded(
               child: PageView(
                 controller: _pageController,
@@ -91,13 +281,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 children: [
                   _buildWelcomePage(),
                   _buildFeaturesPage(),
-                  _buildSetupPage(),
                   _buildPermissionsPage(),
+                  _buildPreferencesPage(),
                 ],
               ),
             ),
 
-            // ── Bottom Navigation ─────────────────────────────────
+            // ── Bottom Navigation ───────────────────────────────
             _buildBottomNav(),
           ],
         ),
@@ -105,9 +295,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   // Page 1: Welcome
-  // ═══════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
 
   Widget _buildWelcomePage() {
     return Padding(
@@ -115,7 +305,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Decorative Islamic pattern circle
+          // Decorative pulsing circle
           Container(
             width: 120,
             height: 120,
@@ -131,11 +321,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ],
             ),
             child: const Center(
-              child: Icon(
-                Icons.menu_book_rounded,
-                size: 48,
-                color: Colors.white,
-              ),
+              child: Icon(Icons.menu_book_rounded, size: 48, color: Colors.white),
             ),
           )
               .animate(onPlay: (c) => c.repeat())
@@ -148,11 +334,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
           const SizedBox(height: 40),
 
-          // App name in Arabic
+          // Arabic logo with gold gradient
           ShaderMask(
-            shaderCallback: (bounds) => AppColors.goldGradient.createShader(bounds),
+            shaderCallback: (bounds) =>
+                AppColors.goldGradient.createShader(bounds),
             child: const Text(
-              '\u0645ِنْهَاجُ الْهُدَى',
+              '\u0645\u0650\u0646\u0652\u0647\u064E\u0627\u062C\u064F \u0627\u0644\u0652\u0647\u064F\u062F\u064E\u0649',
               style: TextStyle(
                 fontFamily: 'ScheherazadeNew',
                 fontSize: 40,
@@ -178,18 +365,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               letterSpacing: 3.0,
               color: AppColors.darkTextSecondary.withOpacity(0.7),
             ),
-          )
-              .animate()
-              .fadeIn(duration: 600.ms, delay: 400.ms),
+          ).animate().fadeIn(duration: 600.ms, delay: 400.ms),
 
           const SizedBox(height: 24),
 
           Text(
-            'Your companion on the path of guidance.\nRead, memorize, and reflect on the\nNoble Quran and authentic Hadith.',
+            'Your Premium Quran & Hadith Companion',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: 'Inter',
-              fontSize: 15,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
               height: 1.7,
               color: AppColors.darkTextSecondary,
             ),
@@ -197,43 +383,45 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               .animate()
               .fadeIn(duration: 600.ms, delay: 600.ms)
               .slideY(begin: 0.1, end: 0),
+
+          const SizedBox(height: 40),
+
+          // 'Get Started' button on Welcome page
+          FilledButton(
+            onPressed: _nextPage,
+            style: FilledButton.styleFrom(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Get Started',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
+                SizedBox(width: 8),
+                Icon(Icons.arrow_forward_rounded, size: 20),
+              ],
+            ),
+          ).animate().fadeIn(duration: 400.ms, delay: 800.ms),
         ],
       ),
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  // Page 2: Features
-  // ═══════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
+  // Page 2: Features Overview (2×2 grid)
+  // ═══════════════════════════════════════════════════════════════
 
   Widget _buildFeaturesPage() {
-    final features = [
-      _FeatureItem(
-        icon: Icons.auto_stories_rounded,
-        title: 'Holy Quran',
-        description: 'Read the complete Quran with translations,\nword-by-word analysis & tafseer.',
-        color: AppColors.primary,
-      ),
-      _FeatureItem(
-        icon: Icons.school_rounded,
-        title: 'Hifdh Tracker',
-        description: 'Spaced repetition memorization\nwith progress tracking & tests.',
-        color: AppColors.hifdhGreen,
-      ),
-      _FeatureItem(
-        icon: Icons.menu_book_rounded,
-        title: 'Hadith Library',
-        description: 'Authentic collections: Bukhari, Muslim,\nAbu Dawud, Tirmidhi & more.',
-        color: AppColors.secondary,
-      ),
-      _FeatureItem(
-        icon: Icons.mosque_rounded,
-        title: 'Islamic Tools',
-        description: 'Prayer times, Qibla compass,\nHijri calendar.',
-        color: AppColors.revisionBlue,
-      ),
-    ];
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
       child: Column(
@@ -241,15 +429,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         children: [
           Text(
             'Everything You Need',
-            style: TextStyle(
+            style: const TextStyle(
               fontFamily: 'Inter',
               fontSize: 24,
               fontWeight: FontWeight.w700,
               color: AppColors.darkTextPrimary,
             ),
-          )
-              .animate()
-              .fadeIn(duration: 400.ms),
+          ).animate().fadeIn(duration: 400.ms),
           const SizedBox(height: 6),
           Text(
             'Comprehensive Islamic tools in one app.',
@@ -258,49 +444,104 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               fontSize: 14,
               color: AppColors.darkTextSecondary,
             ),
-          )
-              .animate()
-              .fadeIn(duration: 400.ms, delay: 100.ms),
+          ).animate().fadeIn(duration: 400.ms, delay: 100.ms),
           const SizedBox(height: 24),
-          ...features.asMap().entries.map((entry) {
-            final index = entry.key;
-            final feature = entry.value;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: _FeatureCard(
-                feature: feature,
-                delay: Duration(milliseconds: 200 + index * 100),
-              ),
-            );
-          }),
+
+          // 2×2 Feature Grid
+          Expanded(
+            child: GridView.count(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.85,
+              physics: const NeverScrollableScrollPhysics(),
+              children: List.generate(_features.length, (index) {
+                final f = _features[index];
+                return _FeatureGridCard(
+                  feature: f,
+                  delay: Duration(milliseconds: 200 + index * 100),
+                );
+              }),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  // Page 3: Quick Setup
-  // ═══════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
+  // Page 3: Permissions (real permission_handler calls)
+  // ═══════════════════════════════════════════════════════════════
 
-  Widget _buildSetupPage() {
-    final theme = Theme.of(context);
-
+  Widget _buildPermissionsPage() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Quick Setup',
-            style: TextStyle(
+            'Permissions',
+            style: const TextStyle(
               fontFamily: 'Inter',
               fontSize: 24,
               fontWeight: FontWeight.w700,
               color: AppColors.darkTextPrimary,
             ),
-          )
-              .animate()
-              .fadeIn(duration: 400.ms),
+          ).animate().fadeIn(duration: 400.ms),
+          const SizedBox(height: 6),
+          Text(
+            'These help us deliver the best experience.\nYou can change them later in Settings.',
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 14,
+              color: AppColors.darkTextSecondary,
+              height: 1.5,
+            ),
+          ).animate().fadeIn(duration: 400.ms, delay: 100.ms),
+          const SizedBox(height: 20),
+
+          // Permission cards in a scrollable list
+          Expanded(
+            child: ListView.separated(
+              itemCount: _permissions.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final perm = _permissions[index];
+                final status = _permStatuses[index] ?? _PermStatus.notAsked;
+                return _PermissionCard(
+                  entry: perm,
+                  status: status,
+                  isRequesting: _isRequestingPermission,
+                  onRequest: () => _requestPermission(index),
+                  delay: Duration(milliseconds: 200 + index * 100),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // Page 4: Preferences
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildPreferencesPage() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Preferences',
+            style: const TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: AppColors.darkTextPrimary,
+            ),
+          ).animate().fadeIn(duration: 400.ms),
           const SizedBox(height: 6),
           Text(
             'Customize your experience.',
@@ -309,266 +550,217 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               fontSize: 14,
               color: AppColors.darkTextSecondary,
             ),
-          )
-              .animate()
-              .fadeIn(duration: 400.ms, delay: 100.ms),
-          const SizedBox(height: 32),
-
-          // ── Language Selection ─────────────────────────────────
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.darkSurface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: AppColors.darkBorder,
-                width: 0.5,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.translate_rounded,
-                        size: 18,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Translation Language',
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _languageChip('en', 'English'),
-                    _languageChip('ur', 'اردو'),
-                    _languageChip('hi', 'हिन्दी'),
-                    _languageChip('bn', 'বাংলা'),
-                    _languageChip('tr', 'Türkçe'),
-                    _languageChip('id', 'Indonesia'),
-                    _languageChip('fr', 'Français'),
-                  ],
-                ),
-              ],
-            ),
-          )
-              .animate()
-              .fadeIn(duration: 400.ms, delay: 200.ms)
-              .slideX(begin: 0.05, end: 0),
-
-          const SizedBox(height: 16),
+          ).animate().fadeIn(duration: 400.ms, delay: 100.ms),
+          const SizedBox(height: 28),
 
           // ── Theme Selection ───────────────────────────────────
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.darkSurface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: AppColors.darkBorder,
-                width: 0.5,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.dark_mode_rounded,
-                        size: 18,
-                        color: AppColors.secondary,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Theme Preference',
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    _themeOption(
-                      ThemeMode.dark,
-                      Icons.dark_mode_rounded,
-                      'Dark',
-                    ),
-                    const SizedBox(width: 12),
-                    _themeOption(
-                      ThemeMode.light,
-                      Icons.light_mode_rounded,
-                      'Light',
-                    ),
-                    const SizedBox(width: 12),
-                    _themeOption(
-                      ThemeMode.system,
-                      Icons.brightness_auto_rounded,
-                      'Auto',
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          )
-              .animate()
-              .fadeIn(duration: 400.ms, delay: 300.ms)
-              .slideX(begin: 0.05, end: 0),
-        ],
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════
-  // Page 4: Permissions
-  // ═══════════════════════════════════════════════════════════════════
-
-  Widget _buildPermissionsPage() {
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
           Text(
-            'Permissions',
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: AppColors.darkTextPrimary,
-            ),
-          )
-              .animate()
-              .fadeIn(duration: 400.ms),
-          const SizedBox(height: 6),
-          Text(
-            'Grant permissions for the best experience.',
+            'Theme',
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 14,
-              color: AppColors.darkTextSecondary,
+              fontWeight: FontWeight.w600,
+              color: AppColors.darkTextPrimary,
             ),
-          )
-              .animate()
-              .fadeIn(duration: 400.ms, delay: 100.ms),
-          const SizedBox(height: 24),
-
-          // Notifications permission
-          _PermissionCard(
-            icon: Icons.notifications_rounded,
-            title: 'Notifications',
-            description: 'Receive daily Quran verses, hadith reminders, and Surah Al-Kahf Friday alerts.',
-            color: AppColors.primary,
-            status: _notifPermissionStatus,
-            onGrant: () {
-              setState(() => _notifPermissionStatus = 'Granted');
-            },
-            onDeny: () {
-              setState(() => _notifPermissionStatus = 'Denied');
-            },
-          )
-              .animate()
-              .fadeIn(duration: 400.ms, delay: 200.ms)
-              .slideX(begin: 0.05, end: 0),
-
+          ),
           const SizedBox(height: 12),
+          Row(
+            children: [
+              _buildThemeCard(AppThemeMode.light, Icons.light_mode_rounded, 'Light',
+                  const Color(0xFFF8F6F1), const Color(0xFF1A1A2E)),
+              const SizedBox(width: 10),
+              _buildThemeCard(AppThemeMode.dark, Icons.dark_mode_rounded, 'Dark',
+                  AppColors.darkSurface, AppColors.darkTextPrimary),
+              const SizedBox(width: 10),
+              _buildThemeCard(AppThemeMode.amoled, Icons.brightness_3_rounded, 'AMOLED',
+                  const Color(0xFF000000), AppColors.darkTextPrimary),
+            ],
+          ),
 
-          // Storage permission
-          _PermissionCard(
-            icon: Icons.folder_rounded,
-            title: 'Storage',
-            description: 'Allow storage access to backup your bookmarks, notes, and memorization progress.',
-            color: AppColors.secondary,
-            status: _storagePermissionStatus,
-            onGrant: () {
-              setState(() => _storagePermissionStatus = 'Granted');
-            },
-            onDeny: () {
-              setState(() => _storagePermissionStatus = 'Denied');
-            },
-          )
-              .animate()
-              .fadeIn(duration: 400.ms, delay: 300.ms)
-              .slideX(begin: 0.05, end: 0),
+          const SizedBox(height: 28),
 
-          const SizedBox(height: 12),
-
-          // Overlay permission
-          _PermissionCard(
-            icon: Icons.layers_rounded,
-            title: 'Overlay / Pop-up',
-            description: 'Show prayer time reminders and hadith pop-ups on top of other apps.',
-            color: AppColors.revisionBlue,
-            status: _overlayPermissionStatus,
-            onGrant: () {
-              setState(() => _overlayPermissionStatus = 'Granted');
-            },
-            onDeny: () {
-              setState(() => _overlayPermissionStatus = 'Denied');
-            },
-          )
-              .animate()
-              .fadeIn(duration: 400.ms, delay: 400.ms)
-              .slideX(begin: 0.05, end: 0),
-
-          const Spacer(),
+          // ── Default Language (placeholder) ───────────────────
           Text(
-            'You can change these permissions later in Settings.',
+            'Default Language',
             style: TextStyle(
               fontFamily: 'Inter',
-              fontSize: 12,
-              color: AppColors.darkTextTertiary,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.darkTextPrimary,
             ),
-            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: AppColors.darkSurface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.darkBorder, width: 0.5),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.translate_rounded,
+                    size: 20, color: AppColors.primary),
+                const SizedBox(width: 12),
+                const Text(
+                  'English',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.darkTextPrimary,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  'More languages coming soon',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 12,
+                    color: AppColors.darkTextTertiary,
+                  ),
+                ),
+              ],
+            ),
+          ).animate().fadeIn(duration: 400.ms, delay: 300.ms),
+
+          const SizedBox(height: 28),
+
+          // ── Daily Reading Goal ────────────────────────────────
+          Text(
+            'Daily Reading Goal',
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.darkTextPrimary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${_dailyReadingGoal.round()} pages per day',
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 13,
+              color: AppColors.darkTextSecondary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SliderTheme(
+            data: SliderThemeData(
+              activeTrackColor: AppColors.primary,
+              thumbColor: AppColors.primary,
+              inactiveTrackColor: AppColors.darkBorder,
+              overlayColor: AppColors.primary.withOpacity(0.2),
+              trackHeight: 4,
+            ),
+            child: Slider(
+              value: _dailyReadingGoal,
+              min: 1,
+              max: 20,
+              divisions: 19,
+              onChanged: (val) => setState(() => _dailyReadingGoal = val),
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('1',
+                  style: TextStyle(
+                      fontSize: 11, color: AppColors.darkTextTertiary)),
+              Text('10',
+                  style: TextStyle(
+                      fontSize: 11, color: AppColors.darkTextTertiary)),
+              Text('20',
+                  style: TextStyle(
+                      fontSize: 11, color: AppColors.darkTextTertiary)),
+            ],
           ),
         ],
       ),
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  // Bottom Navigation
-  // ═══════════════════════════════════════════════════════════════════
+  Widget _buildThemeCard(AppThemeMode mode, IconData icon, String label,
+      Color previewBg, Color previewText) {
+    final selected = _selectedTheme == mode;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _selectedTheme = mode),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            color: selected
+                ? AppColors.primary.withOpacity(0.12)
+                : AppColors.darkSurface,
+            border: Border.all(
+              color: selected ? AppColors.primary : AppColors.darkBorder,
+              width: selected ? 1.5 : 0.5,
+            ),
+          ),
+          child: Column(
+            children: [
+              // Theme preview mini card
+              Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: previewBg,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Container(
+                    width: 40,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: previewText.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Icon(icon, size: 20, color: selected ? AppColors.primary : AppColors.darkTextSecondary),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  color: selected ? AppColors.primary : AppColors.darkTextSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).animate().fadeIn(duration: 300.ms, delay: 200.ms);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // Bottom Navigation (dots + button)
+  // ═══════════════════════════════════════════════════════════════
 
   Widget _buildBottomNav() {
+    // Hide bottom nav on Welcome page (it has its own button)
+    if (_currentPage == 0) return const SizedBox.shrink();
+
+    final isLastPage = _currentPage == _totalPages - 1;
+    final buttonText = isLastPage ? 'Complete Setup' : 'Continue';
+    final buttonIcon =
+        isLastPage ? Icons.check_rounded : Icons.arrow_forward_rounded;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(32, 8, 32, 32),
       child: Row(
         children: [
-          // ── Page Dots ──────────────────────────────────────────
+          // ── Page Dots ────────────────────────────────────────
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(4, (index) {
+              children: List.generate(_totalPages, (index) {
                 final isActive = index == _currentPage;
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
@@ -584,11 +776,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
           ),
 
-          // ── Button ────────────────────────────────────────────
+          // ── Action Button ────────────────────────────────────
           FilledButton(
-            onPressed: _nextOrStart,
+            onPressed: _onButtonPressed,
             style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -597,20 +790,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _currentPage == 3 ? 'Get Started' : 'Next',
+                  buttonText,
                   style: const TextStyle(
                     fontFamily: 'Inter',
                     fontWeight: FontWeight.w600,
-                    fontSize: 15,
+                    fontSize: 14,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Icon(
-                  _currentPage == 3
-                      ? Icons.check_rounded
-                      : Icons.arrow_forward_rounded,
-                  size: 20,
-                ),
+                const SizedBox(width: 6),
+                Icon(buttonIcon, size: 18),
               ],
             ),
           ).animate().fadeIn(duration: 300.ms),
@@ -618,87 +806,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ),
     );
   }
-
-  void _nextOrStart() {
-    if (_currentPage < 3) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-      );
-    } else {
-      _completeOnboarding();
-    }
-  }
-
-  Widget _languageChip(String code, String label) {
-    final selected = _selectedLanguage == code;
-    return ChoiceChip(
-      label: Text(label, style: const TextStyle(fontSize: 13)),
-      selected: selected,
-      onSelected: (_) => setState(() => _selectedLanguage = code),
-      selectedColor: AppColors.primary.withOpacity(0.15),
-    );
-  }
-
-  Widget _themeOption(ThemeMode mode, IconData icon, String label) {
-    final selected = _selectedTheme == mode;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _selectedTheme = mode),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: selected
-                ? AppColors.primary.withOpacity(0.15)
-                : AppColors.darkSurfaceVariant.withOpacity(0.3),
-            border: Border.all(
-              color: selected ? AppColors.primary : AppColors.darkBorder,
-              width: selected ? 1.5 : 0.5,
-            ),
-          ),
-          child: Column(
-            children: [
-              Icon(icon, size: 24, color: selected ? AppColors.primary : AppColors.darkTextSecondary),
-              const SizedBox(height: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                  color: selected ? AppColors.primary : AppColors.darkTextSecondary,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// Helper Classes
+// Feature Grid Card (2×2)
 // ═══════════════════════════════════════════════════════════════════════
 
-class _FeatureItem {
-  final IconData icon;
-  final String title;
-  final String description;
-  final Color color;
-  const _FeatureItem({
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.color,
-  });
-}
-
-class _FeatureCard extends StatelessWidget {
-  final _FeatureItem feature;
+class _FeatureGridCard extends StatelessWidget {
+  final _FeatureEntry feature;
   final Duration delay;
-  const _FeatureCard({required this.feature, required this.delay});
+
+  const _FeatureGridCard({required this.feature, required this.delay});
 
   @override
   Widget build(BuildContext context) {
@@ -706,53 +824,54 @@ class _FeatureCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.darkSurface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: AppColors.darkBorder,
-          width: 0.5,
-        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.darkBorder, width: 0.5),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
               color: feature.color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(feature.icon, size: 22, color: feature.color),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  feature.title,
-                  style: const TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  feature.description,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 12,
-                    color: AppColors.darkTextSecondary,
-                    height: 1.5,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 12),
+          Text(
+            feature.title,
+            style: const TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: AppColors.darkTextPrimary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            feature.line1,
+            style: const TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 12,
+              color: AppColors.darkTextSecondary,
+              height: 1.4,
+            ),
+          ),
+          Text(
+            feature.line2,
+            style: const TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 12,
+              color: AppColors.darkTextSecondary,
+              height: 1.4,
             ),
           ),
         ],
       ),
-    ).animate().fadeIn(duration: 300.ms, delay: delay).slideX(
-          begin: 0.1,
+    ).animate().fadeIn(duration: 300.ms, delay: delay).slideY(
+          begin: 0.15,
           end: 0,
           duration: 400.ms,
           delay: delay,
@@ -761,55 +880,50 @@ class _FeatureCard extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// Permission Card Widget
+// Permission Card Widget (with real permission_handler integration)
 // ═══════════════════════════════════════════════════════════════════════
 
 class _PermissionCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String description;
-  final Color color;
-  final String status;
-  final VoidCallback onGrant;
-  final VoidCallback onDeny;
+  final _PermissionEntry entry;
+  final _PermStatus status;
+  final bool isRequesting;
+  final VoidCallback onRequest;
+  final Duration delay;
 
   const _PermissionCard({
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.color,
+    required this.entry,
     required this.status,
-    required this.onGrant,
-    required this.onDeny,
+    required this.isRequesting,
+    required this.onRequest,
+    required this.delay,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final isGranted = status == _PermStatus.granted;
+    final isDenied = status == _PermStatus.denied;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.darkSurface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.darkBorder,
-          width: 0.5,
-        ),
+        border: Border.all(color: AppColors.darkBorder, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header row: icon + title + status indicator
           Row(
             children: [
               Container(
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: entry.color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, size: 20, color: color),
+                child: Icon(entry.icon, size: 20, color: entry.color),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -817,17 +931,18 @@ class _PermissionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      entry.title,
                       style: const TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
+                        color: AppColors.darkTextPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      description,
-                      style: TextStyle(
+                      entry.description,
+                      style: const TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 12,
                         color: AppColors.darkTextSecondary,
@@ -837,73 +952,112 @@ class _PermissionCard extends StatelessWidget {
                   ],
                 ),
               ),
+
+              // Status indicator
+              _StatusIndicator(status: status),
             ],
           ),
-          if (status == 'Pending') ...[
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: onDeny,
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      side: BorderSide(color: AppColors.darkBorder),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text(
-                      'Deny',
-                      style: TextStyle(fontFamily: 'Inter', fontSize: 13),
-                    ),
+
+          // Action button (only show when not yet granted/denied)
+          if (status == _PermStatus.notAsked) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: isRequesting ? null : onRequest,
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  backgroundColor: entry.color,
+                  disabledBackgroundColor: entry.color.withOpacity(0.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: onGrant,
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      backgroundColor: color,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                child: isRequesting
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        'Allow',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    child: const Text(
-                      'Grant',
-                      style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ] else ...[
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Icon(
-                  status == 'Granted'
-                      ? Icons.check_circle_rounded
-                      : Icons.cancel_rounded,
-                  size: 18,
-                  color: status == 'Granted' ? AppColors.success : AppColors.error,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  status,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: status == 'Granted' ? AppColors.success : AppColors.error,
-                  ),
-                ),
-              ],
+          ] else if (isDenied) ...[
+            const SizedBox(height: 8),
+            Text(
+              'You can enable this later in system Settings.',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 11,
+                color: AppColors.darkTextTertiary,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ],
         ],
       ),
-    );
+    ).animate().fadeIn(duration: 300.ms, delay: delay).slideX(
+          begin: 0.08,
+          end: 0,
+          duration: 400.ms,
+          delay: delay,
+        );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Permission Status Indicator
+// ═══════════════════════════════════════════════════════════════════════
+
+class _StatusIndicator extends StatelessWidget {
+  final _PermStatus status;
+
+  const _StatusIndicator({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    return switch (status) {
+      _PermStatus.granted => Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: AppColors.success.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.check_rounded,
+              size: 16, color: AppColors.success),
+        ),
+      _PermStatus.denied => Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: AppColors.error.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.close_rounded,
+              size: 16, color: AppColors.error),
+        ),
+      _PermStatus.notAsked => Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: AppColors.darkTextTertiary.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(Icons.remove_rounded,
+              size: 16, color: AppColors.darkTextTertiary.withOpacity(0.5)),
+        ),
+    };
   }
 }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/quran_providers.dart';
+import '../providers/search_history_provider.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../data/models/quran/ayah_data.dart';
@@ -18,7 +19,6 @@ class QuranSearchScreen extends ConsumerStatefulWidget {
 class _QuranSearchScreenState extends ConsumerState<QuranSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  final List<String> _recentSearches = [];
   bool _hasSearched = false;
 
   @override
@@ -37,15 +37,6 @@ class _QuranSearchScreenState extends ConsumerState<QuranSearchScreen> {
   void _performSearch(String query) {
     if (query.trim().length < 2) return;
 
-    if (!_recentSearches.contains(query)) {
-      setState(() {
-        _recentSearches.insert(0, query);
-        if (_recentSearches.length > 10) {
-          _recentSearches.removeLast();
-        }
-      });
-    }
-
     setState(() {
       _hasSearched = true;
     });
@@ -54,9 +45,7 @@ class _QuranSearchScreenState extends ConsumerState<QuranSearchScreen> {
   }
 
   void _clearHistory() {
-    setState(() {
-      _recentSearches.clear();
-    });
+    ref.read(searchHistoryProvider.notifier).clearAll();
   }
 
   @override
@@ -212,10 +201,13 @@ class _QuranSearchScreenState extends ConsumerState<QuranSearchScreen> {
   }
 
   Widget _buildInitialContent(bool isDark) {
+    final historyState = ref.watch(searchHistoryProvider);
+    final recentSearches = historyState.entries;
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        if (_recentSearches.isNotEmpty) ...[
+        if (recentSearches.isNotEmpty) ...[
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -246,18 +238,16 @@ class _QuranSearchScreenState extends ConsumerState<QuranSearchScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          ..._recentSearches.map(
-            (query) => _RecentSearchTile(
-              query: query,
+          ...recentSearches.map(
+            (entry) => _RecentSearchTile(
+              query: entry.query,
               isDark: isDark,
               onTap: () {
-                _searchController.text = query;
-                _performSearch(query);
+                _searchController.text = entry.query;
+                _performSearch(entry.query);
               },
               onRemove: () {
-                setState(() {
-                  _recentSearches.remove(query);
-                });
+                ref.read(searchHistoryProvider.notifier).deleteEntry(entry.id);
               },
             ),
           ),

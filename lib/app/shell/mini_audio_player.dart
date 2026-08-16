@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../theme/app_colors.dart';
 import 'mini_audio_player_provider.dart';
@@ -123,18 +124,8 @@ class MiniAudioPlayer extends ConsumerWidget {
           Expanded(
             child: GestureDetector(
               onTap: () {
-                // Navigate to full audio player (expand).
-                // In a production app this would navigate to a dedicated
-                // audio player screen.
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Full audio player: ${state.surahName} - ${state.ayahProgressLabel}',
-                    ),
-                    duration: const Duration(seconds: 2),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                // Navigate to full audio player.
+                context.push('/audio/player');
               },
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),

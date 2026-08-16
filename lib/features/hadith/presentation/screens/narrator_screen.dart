@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
@@ -36,6 +37,32 @@ class NarratorInfo {
     required this.students,
     required this.keyCollections,
   });
+
+  /// Generates a URL-safe slug from the English name.
+  String get slug => nameEnglish
+      .toLowerCase()
+      .replaceAll(RegExp(r"[^a-z0-9]+"), '-');
+}
+
+/// Find a narrator by slug identifier.
+NarratorInfo? findNarratorBySlug(String slug) {
+  try {
+    return narrators.firstWhere((n) => n.slug == slug);
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Find a narrator by English name (partial match).
+NarratorInfo? findNarratorByName(String name) {
+  final lower = name.toLowerCase();
+  for (final n in narrators) {
+    if (n.nameEnglish.toLowerCase() == lower) return n;
+  }
+  for (final n in narrators) {
+    if (n.nameEnglish.toLowerCase().contains(lower)) return n;
+  }
+  return null;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -434,7 +461,7 @@ class _NarratorScreenState extends State<NarratorScreen> {
                   narrator: narrator,
                   index: index,
                   isDark: isDark,
-                  onTap: () => _showNarratorDetail(context, narrator),
+                  onTap: () => context.push('/hadith/narrators/${narrator.slug}'),
                 );
               },
             ),
@@ -443,304 +470,6 @@ class _NarratorScreenState extends State<NarratorScreen> {
       ),
     );
   }
-
-  void _showNarratorDetail(BuildContext context, NarratorInfo narrator) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.85,
-          minChildSize: 0.5,
-          maxChildSize: 0.95,
-          builder: (ctx, scrollController) {
-            return Container(
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child: ListView(
-                controller: scrollController,
-                padding: const EdgeInsets.all(20),
-                children: [
-                  // Handle bar
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AppColors.darkBorder,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Header
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 36,
-                        backgroundColor: AppColors.primary.withOpacity(0.1),
-                        child: Text(
-                          narrator.nameArabic.substring(0, 3),
-                          style: AppTheme.arabicQuranText.copyWith(
-                            fontSize: 18,
-                            color: AppColors.primary,
-                          ),
-                          textDirection: TextDirection.rtl,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              narrator.nameEnglish,
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            Text(
-                              narrator.nameArabic,
-                              style: AppTheme.arabicQuranText.copyWith(
-                                fontSize: 20,
-                                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                              ),
-                              textDirection: TextDirection.rtl,
-                            ),
-                            const SizedBox(height: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: AppColors.secondary.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                narrator.title,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.secondary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Stats
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: AppColors.primary.withOpacity(0.15),
-                        width: 0.5,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Column(
-                          children: [
-                            Text(
-                              '${narrator.hadithCount}',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                            Text(
-                              'Hadiths',
-                              style: theme.textTheme.labelSmall,
-                            ),
-                          ],
-                        ),
-                        Container(width: 1, height: 40, color: AppColors.darkBorder),
-                        Column(
-                          children: [
-                            Text(
-                              '${narrator.teachers.length}+',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.secondary,
-                              ),
-                            ),
-                            Text(
-                              'Teachers',
-                              style: theme.textTheme.labelSmall,
-                            ),
-                          ],
-                        ),
-                        Container(width: 1, height: 40, color: AppColors.darkBorder),
-                        Column(
-                          children: [
-                            Text(
-                              '${narrator.students.length}+',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.revisionBlue,
-                              ),
-                            ),
-                            Text(
-                              'Students',
-                              style: theme.textTheme.labelSmall,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Bio details
-                  _DetailRow(
-                    icon: Icons.cake_rounded,
-                    label: 'Born',
-                    value: narrator.birthYear,
-                  ),
-                  _DetailRow(
-                    icon: Icons.event_rounded,
-                    label: 'Died',
-                    value: narrator.deathYear,
-                  ),
-                  _DetailRow(
-                    icon: Icons.location_on_rounded,
-                    label: 'Birthplace',
-                    value: narrator.birthPlace,
-                  ),
-                  _DetailRow(
-                    icon: Icons.group_rounded,
-                    label: 'Tribe',
-                    value: narrator.tribe,
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Description
-                  Text(
-                    'Biography',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    narrator.description,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      height: 1.8,
-                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Teachers
-                  Text(
-                    'Teachers (From Whom He Narrated)',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.secondary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: narrator.teachers
-                        .map((t) => Chip(
-                              label: Text(t, style: const TextStyle(fontSize: 12)),
-                              padding: EdgeInsets.zero,
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ))
-                        .toList(),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Students
-                  Text(
-                    'Students (Who Narrated From Him)',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.revisionBlue,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: narrator.students
-                        .map((t) => Chip(
-                              label: Text(t, style: const TextStyle(fontSize: 12)),
-                              padding: EdgeInsets.zero,
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ))
-                        .toList(),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Collections
-                  Text(
-                    'Found In Collections',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.hifdhGreen,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: narrator.keyCollections
-                        .map((t) => Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: AppColors.hifdhGreen.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: AppColors.hifdhGreen.withOpacity(0.3),
-                                ),
-                              ),
-                              child: Text(
-                                t,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.hifdhGreen,
-                                ),
-                              ),
-                            ))
-                        .toList(),
-                  ),
-
-                  const SizedBox(height: 40),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-}
 
 // ═══════════════════════════════════════════════════════════════════
 // Helper Widgets
@@ -893,3 +622,349 @@ class _DetailRow extends StatelessWidget {
     );
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// Narrator Detail Screen (Deep-Link)
+// ═══════════════════════════════════════════════════════════════════
+
+class NarratorDetailScreen extends StatelessWidget {
+  final String narratorId;
+
+  const NarratorDetailScreen({super.key, required this.narratorId});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    // Try to find by slug first, then by name
+    final narrator = findNarratorBySlug(narratorId) ??
+        findNarratorByName(narratorId);
+
+    if (narrator == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Narrator Not Found')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.person_off_rounded, size: 56, color: AppColors.error),
+              const SizedBox(height: 16),
+              Text('Narrator "$narratorId" not found.',
+                  style: theme.textTheme.titleMedium),
+              const SizedBox(height: 8),
+              Text(
+                'Check the narrator identifier and try again.',
+                style: theme.textTheme.bodySmall,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(narrator.nameEnglish),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          // Header
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 36,
+                backgroundColor: AppColors.primary.withOpacity(0.1),
+                child: Text(
+                  narrator.nameArabic.substring(0, 3),
+                  style: AppTheme.arabicQuranText.copyWith(
+                    fontSize: 18,
+                    color: AppColors.primary,
+                  ),
+                  textDirection: TextDirection.rtl,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      narrator.nameEnglish,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    Text(
+                      narrator.nameArabic,
+                      style: AppTheme.arabicQuranText.copyWith(
+                        fontSize: 20,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                      ),
+                      textDirection: TextDirection.rtl,
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        narrator.title,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ).animate().fadeIn(duration: 400.ms),
+
+          const SizedBox(height: 20),
+
+          // Stats
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: AppColors.primary.withOpacity(0.15),
+                width: 0.5,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Column(
+                  children: [
+                    Text(
+                      '${narrator.hadithCount}',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    Text(
+                      'Hadiths',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(width: 1, height: 40, color: AppColors.darkBorder),
+                Column(
+                  children: [
+                    Text(
+                      '${narrator.teachers.length}',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.secondary,
+                      ),
+                    ),
+                    Text(
+                      'Teachers',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(width: 1, height: 40, color: AppColors.darkBorder),
+                Column(
+                  children: [
+                    Text(
+                      '${narrator.students.length}',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.hifdhGreen,
+                      ),
+                    ),
+                    Text(
+                      'Students',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
+
+          const SizedBox(height: 20),
+
+          // Bio
+          _DetailSection(
+            title: 'Biography',
+            icon: Icons.article_rounded,
+            child: Text(
+              narrator.description,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                height: 1.7,
+              ),
+            ),
+          ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
+
+          const SizedBox(height: 16),
+
+          // Birth & Death
+          _DetailSection(
+            title: 'Lifespan',
+            icon: Icons.cake_rounded,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _InfoRow(icon: Icons.calendar_today_rounded, label: 'Birth', value: narrator.birthYear),
+                const SizedBox(height: 8),
+                _InfoRow(icon: Icons.event_rounded, label: 'Death', value: narrator.deathYear),
+                const SizedBox(height: 8),
+                _InfoRow(icon: Icons.place_rounded, label: 'Birthplace', value: narrator.birthPlace),
+                const SizedBox(height: 8),
+                _InfoRow(icon: Icons.groups_rounded, label: 'Tribe', value: narrator.tribe),
+              ],
+            ),
+          ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
+
+          const SizedBox(height: 16),
+
+          // Teachers
+          _DetailSection(
+            title: 'Notable Teachers',
+            icon: Icons.school_rounded,
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: narrator.teachers.map((t) => Chip(
+                label: Text(t, style: const TextStyle(fontSize: 12)),
+                avatar: Icon(Icons.person_rounded, size: 16, color: AppColors.primary),
+                backgroundColor: AppColors.primary.withOpacity(0.06),
+                side: BorderSide(color: AppColors.primary.withOpacity(0.15), width: 0.5),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              )).toList(),
+            ),
+          ).animate().fadeIn(delay: 400.ms, duration: 400.ms),
+
+          const SizedBox(height: 16),
+
+          // Students
+          _DetailSection(
+            title: 'Notable Students',
+            icon: Icons.people_rounded,
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: narrator.students.map((s) => Chip(
+                label: Text(s, style: const TextStyle(fontSize: 12)),
+                avatar: Icon(Icons.person_rounded, size: 16, color: AppColors.hifdhGreen),
+                backgroundColor: AppColors.hifdhGreen.withOpacity(0.06),
+                side: BorderSide(color: AppColors.hifdhGreen.withOpacity(0.15), width: 0.5),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              )).toList(),
+            ),
+          ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
+
+          const SizedBox(height: 16),
+
+          // Key Collections
+          _DetailSection(
+            title: 'Key Collections',
+            icon: Icons.menu_book_rounded,
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: narrator.keyCollections.map((c) => Chip(
+                label: Text(c, style: const TextStyle(fontSize: 12)),
+                avatar: Icon(Icons.book_rounded, size: 16, color: AppColors.secondary),
+                backgroundColor: AppColors.secondary.withOpacity(0.06),
+                side: BorderSide(color: AppColors.secondary.withOpacity(0.15), width: 0.5),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              )).toList(),
+            ),
+          ).animate().fadeIn(delay: 600.ms, duration: 400.ms),
+
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Detail Section Helper
+// ═══════════════════════════════════════════════════════════════════
+
+class _DetailSection extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Widget child;
+
+  const _DetailSection({
+    required this.title,
+    required this.icon,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: AppColors.primary),
+            const SizedBox(width: 8),
+            Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+          ],
+        ),
+        const SizedBox(height: 10),
+        child,
+      ],
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _InfoRow({required this.icon, required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: AppColors.primary),
+        const SizedBox(width: 8),
+        Text(
+          '$label:',
+          style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+

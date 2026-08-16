@@ -56,6 +56,9 @@ dependencies:
   # Markdown (for tafseer rendering)
   flutter_markdown: ^0.6.19
 
+  # Permissions
+  permission_handler: ^11.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hive/hive.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../providers/notification_provider.dart';
+import '../widgets/popup_settings_widget.dart';
 
 // ═══════════════════════════════════════════════════════════════════
 // Notification Settings Screen
@@ -189,6 +192,11 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
               .animate()
               .fadeIn(duration: 400.ms, delay: 300.ms),
 
+          const SizedBox(height: 8),
+
+          // ── In-App Popup Settings ─────────────────────
+          const PopupSettingsWidget(),
+
           const SizedBox(height: 24),
 
           // ── Schedule All Button ─────────────────────────────
@@ -215,6 +223,34 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
           )
               .animate()
               .fadeIn(duration: 400.ms, delay: 400.ms),
+
+          const SizedBox(height: 12),
+
+          // ── Re-grant Permissions Button ────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: OutlinedButton.icon(
+              onPressed: () async {
+                final box = Hive.box('settings');
+                await box.put('onboarding_completed', false);
+                if (context.mounted) {
+                  context.go('/onboarding');
+                }
+              },
+              icon: const Icon(Icons.shield_rounded, size: 18),
+              label: const Text('Re-grant Permissions'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                side: BorderSide(color: AppColors.primary.withOpacity(0.5)),
+                foregroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          )
+              .animate()
+              .fadeIn(duration: 400.ms, delay: 500.ms),
 
           const SizedBox(height: 40),
         ],

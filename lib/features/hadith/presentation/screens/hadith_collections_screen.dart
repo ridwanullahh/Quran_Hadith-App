@@ -6,6 +6,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../data/models/hadith/hadith_models.dart';
 import '../providers/hadith_providers.dart';
+import '../widgets/collection_favorite_button.dart';
 
 class HadithCollectionsScreen extends ConsumerWidget {
   const HadithCollectionsScreen({super.key});
@@ -15,6 +16,7 @@ class HadithCollectionsScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final collectionsAsync = ref.watch(hadithCollectionsProvider);
+    final favoriteIds = ref.watch(collectionFavoritesProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -22,7 +24,7 @@ class HadithCollectionsScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.search_rounded),
-            onPressed: () => _showSearchDialog(context, ref),
+            onPressed: () => context.push('/hadith/search'),
             tooltip: 'Search Hadith',
           ),
         ],
@@ -41,58 +43,55 @@ class HadithCollectionsScreen extends ConsumerWidget {
             ],
           ),
         ),
-        data: (collections) => RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(hadithCollectionsProvider);
-          },
-          child: ListView.builder(
-            padding: const EdgeInsets.only(top: 12, bottom: 24),
-            itemCount: collections.length,
-            itemBuilder: (context, index) {
-              final collection = collections[index];
-              return _CollectionCard(
-                collection: collection,
-                index: index,
-                isDark: isDark,
-              );
+        data: (collections) {
+          final favCollections = favoriteIds.isNotEmpty
+              ? collections.where((c) => favoriteIds.contains(c.id)).toList()
+              : <HadithCollection>[];
+          final regularCollections = favoriteIds.isNotEmpty
+              ? collections.where((c) => !favoriteIds.contains(c.id)).toList()
+              : collections;
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(hadithCollectionsProvider);
             },
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showSearchDialog(BuildContext context, WidgetRef ref) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Search Hadith'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'Search in Arabic or English...',
-            prefixIcon: Icon(Icons.search_rounded, size: 20),
-          ),
-          onSubmitted: (query) {
-            Navigator.pop(ctx);
-            ref.read(hadithSearchProvider.notifier).search(query);
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              ref.read(hadithSearchProvider.notifier).search(controller.text);
-            },
-            child: const Text('Search'),
-          ),
-        ],
+            child: ListView.builder(
+              padding: const EdgeInsets.only(top: 12, bottom: 24),
+              itemCount: favCollections.length + regularCollections.length + (favCollections.isNotEmpty ? 1 : 0),
+              itemBuilder: (context, index) {
+                // Section header for favorites
+                if (favCollections.isNotEmpty && index == 0) {
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                    child: Row(
+                      children: [
+                        Icon(Icons.star_rounded, size: 16, color: AppColors.secondary),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Favorites',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: AppColors.secondary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                // Adjust index
+                final adjustedIndex = favCollections.isNotEmpty ? index - 1 : index;
+                final collection = adjustedIndex < favCollections.length
+                    ? favCollections[adjustedIndex]
+                    : regularCollections[adjustedIndex - favCollections.length];
+                if (collection == null) return const SizedBox.shrink();
+                return _CollectionCard(
+                  collection: collection,
+                  index: adjustedIndex,
+                  isDark: isDark,
+                );
+              },
+            ),
+          );
+        },
       ),
     );
   }
@@ -248,6 +247,7 @@ class _CollectionCard extends StatelessWidget {
                   ],
                 ),
 
+                CollectionFavoriteButton(collectionId: _id),
                 const SizedBox(width: 4),
                 Icon(
                   Icons.chevron_right_rounded,

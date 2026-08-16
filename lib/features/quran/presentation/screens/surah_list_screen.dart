@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:arabic_numbers/arabic_numbers.dart';
 
 import '../providers/quran_providers.dart';
+import '../widgets/surah_actions_sheet.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -373,6 +374,15 @@ class _SurahCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           onTap: () {
             context.push('/quran/${surah.number}');
+          },
+          onLongPress: () {
+            SurahActionsSheet.show(
+              context: context,
+              surahNumber: surah.number,
+              surahNameEnglish: surah.nameEnglish,
+              surahNameArabic: surah.nameArabic,
+              totalAyahs: surah.totalAyahs,
+            );
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

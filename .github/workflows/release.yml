@@ -30,10 +30,10 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Flutter
+      - name: Set up Flutter 3.24.3
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.24.3'
           channel: stable
           cache: true
 
@@ -73,16 +73,36 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Build APK
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+          VERSION_NAME: ${{ steps.version.outputs.version }}
         run: |
           flutter build apk --release \
             --build-number=${{ github.run_number }} \
             --build-name=${{ steps.version.outputs.version }}
-        timeout-minutes: 20
+        timeout-minutes: 30
+
+      - name: List APK outputs
+        run: ls -la build/app/outputs/flutter-apk/
 
       - name: Upload APK to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           name: "Minhaajulhudaa v${{ steps.version.outputs.version }}"
+          body: |
+            ## Minhaajulhudaa v${{ steps.version.outputs.version }}
+
+            ### What's New
+            - 10 new Qur'an features (Juz navigation, tafseer, surah info, progress tracker, bookmark folders, etc.)
+            - 10 new Hadith features (search, notes, glossary, isnad visualizer, study planner, etc.)
+            - Rich full-screen audio player with sleep timer, speed control, gesture controls
+            - Audio download manager and queue management
+            - Periodic in-app Qur'an & Hadith popup overlay
+            - Onboarding with real permission handling (revisitable from settings)
+            - In-app auto-update system
+            - Hadith study tools: comparison, statistics, chain narrators, collections overview
+          draft: false
+          prerelease: false
           files: |
             build/app/outputs/flutter-apk/*.apk
           token: ${{ secrets.PAT_TOKEN }}
