@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
-
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../providers/hifdh_providers.dart';
@@ -485,15 +483,11 @@ class _TestingPhase extends StatelessWidget {
               const SizedBox(height: 8),
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
-                child: LinearPercentIndicator(
-                  lineHeight: 6,
-                  percent: testState.progress.clamp(0.0, 1.0),
+                child: LinearProgressIndicator(
+                  value: testState.progress.clamp(0.0, 1.0),
                   backgroundColor: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                  progressColor: AppColors.primary,
-                  padding: EdgeInsets.zero,
-                  animation: true,
-                  animateFromLastPercent: true,
-                  animationDuration: 300.ms,
+                  color: AppColors.primary,
+                  minHeight: 6,
                 ),
               ),
             ],

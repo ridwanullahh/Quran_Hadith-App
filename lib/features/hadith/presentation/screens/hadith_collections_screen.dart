@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shimmer/shimmer.dart';
-
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../data/models/hadith/hadith_models.dart';
@@ -275,25 +273,16 @@ class _ShimmerLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final baseColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final highlightColor = isDark
-        ? AppColors.darkSurfaceVariant
-        : AppColors.lightSurfaceVariant;
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemCount: 6,
       itemBuilder: (context, index) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Shimmer.fromColors(
-          baseColor: baseColor,
-          highlightColor: highlightColor,
-          child: Container(
-            height: 90,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
+        child: LinearProgressIndicator(
+          backgroundColor: baseColor,
+          borderRadius: BorderRadius.circular(16),
+          minHeight: 90,
         ),
       ),
     );

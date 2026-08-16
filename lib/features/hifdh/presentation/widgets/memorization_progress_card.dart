@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
-
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../data/models/quran/surah_info.dart';
@@ -139,17 +137,13 @@ class MemorizationProgressCard extends StatelessWidget {
                         Expanded(
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(4),
-                            child: LinearPercentIndicator(
-                              lineHeight: 6,
-                              percent: progressPercent.clamp(0.0, 1.0),
+                            child: LinearProgressIndicator(
+                              value: progressPercent.clamp(0.0, 1.0),
                               backgroundColor: isDark
                                   ? AppColors.darkBorder
                                   : AppColors.lightBorder,
-                              progressColor: _progressColor,
-                              padding: EdgeInsets.zero,
-                              animation: true,
-                              animateFromLastPercent: true,
-                              animationDuration: 600.ms,
+                              color: _progressColor,
+                              minHeight: 6,
                             ),
                           ),
                         ),
