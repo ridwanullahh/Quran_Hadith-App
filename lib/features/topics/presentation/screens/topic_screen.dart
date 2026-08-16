@@ -117,7 +117,7 @@ class _TopicCard extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: topic.color.withValues(alpha: 0.12),
+                    color: topic.color.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(topic.icon, color: topic.color, size: 24),
@@ -184,7 +184,7 @@ class _TopicDetail extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [topic.color, topic.color.withValues(alpha: 0.7)],
+              colors: [topic.color, topic.color.withOpacity(0.7)],
             ),
           ),
           child: Column(
@@ -197,7 +197,7 @@ class _TopicDetail extends StatelessWidget {
                     onPressed: onBack,
                   ),
                   const Spacer(),
-                  Icon(topic.icon, color: Colors.white.withValues(alpha: 0.8), size: 32),
+                  Icon(topic.icon, color: Colors.white.withOpacity(0.8), size: 32),
                   const SizedBox(width: 8),
                 ],
               ),
@@ -215,7 +215,7 @@ class _TopicDetail extends StatelessWidget {
                 topic.arabicName,
                 style: TextStyle(
                   fontFamily: AppTheme.arabicHeaderFontFamily,
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: Colors.white.withOpacity(0.9),
                   fontSize: 20,
                 ),
               ),
@@ -223,7 +223,7 @@ class _TopicDetail extends StatelessWidget {
               Text(
                 topic.description,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.85),
+                  color: Colors.white.withOpacity(0.85),
                   fontSize: 13,
                 ),
               ),
@@ -241,7 +241,7 @@ class _TopicDetail extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: topic.color.withValues(alpha: 0.1),
+                  color: topic.color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -323,7 +323,7 @@ class _VerseCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: topicColor.withValues(alpha: 0.12),
+                        color: topicColor.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(

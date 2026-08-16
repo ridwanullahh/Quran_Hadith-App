@@ -105,6 +105,8 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
         return AudioProcessingState.ready;
       case AudioProcessingState.completed:
         return AudioProcessingState.completed;
+      default:
+        return AudioProcessingState.idle;
     }
   }
 

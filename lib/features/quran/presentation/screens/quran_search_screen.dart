@@ -320,7 +320,7 @@ class _QuranSearchScreenState extends ConsumerState<QuranSearchScreen> {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
+              color: AppColors.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
@@ -583,7 +583,7 @@ class _SearchResultCard extends StatelessWidget {
               boxShadow: [
                 BoxShadow(
                   color: Colors.black
-                      .withValues(alpha: isDark ? 0.15 : 0.04),
+                      .withOpacity(isDark ? 0.15 : 0.04),
                   blurRadius: 6,
                   offset: const Offset(0, 1),
                 ),
@@ -598,7 +598,7 @@ class _SearchResultCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
+                        color: AppColors.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(

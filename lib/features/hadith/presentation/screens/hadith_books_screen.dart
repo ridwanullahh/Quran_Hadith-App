@@ -113,7 +113,7 @@ class _BookCard extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.08),
+                    color: AppColors.primary.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Center(
@@ -148,7 +148,7 @@ class _BookCard extends StatelessWidget {
                           book.bookNameArabic!,
                           style: AppTheme.arabicQuranText.copyWith(
                             fontSize: 14,
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                            color: theme.colorScheme.onSurface.withOpacity(0.5),
                           ),
                           textDirection: TextDirection.rtl,
                           maxLines: 1,
@@ -175,7 +175,7 @@ class _BookCard extends StatelessWidget {
                     Text(
                       'hadiths',
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                        color: theme.colorScheme.onSurface.withOpacity(0.4),
                       ),
                     ),
                   ],
@@ -185,7 +185,7 @@ class _BookCard extends StatelessWidget {
                 Icon(
                   Icons.chevron_right_rounded,
                   size: 20,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                  color: theme.colorScheme.onSurface.withOpacity(0.3),
                 ),
               ],
             ),

@@ -161,7 +161,7 @@ class _CollectionCard extends StatelessWidget {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: _accentColor.withValues(alpha: 0.1),
+                    color: _accentColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Center(
@@ -198,7 +198,7 @@ class _CollectionCard extends StatelessWidget {
                           _nameArabic!,
                           style: AppTheme.arabicQuranText.copyWith(
                             fontSize: 16,
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                            color: theme.colorScheme.onSurface.withOpacity(0.5),
                           ),
                           textDirection: TextDirection.rtl,
                           maxLines: 1,
@@ -209,7 +209,7 @@ class _CollectionCard extends StatelessWidget {
                         Text(
                           _author!,
                           style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                            color: theme.colorScheme.onSurface.withOpacity(0.5),
                             fontStyle: FontStyle.italic,
                           ),
                           maxLines: 1,
@@ -235,14 +235,14 @@ class _CollectionCard extends StatelessWidget {
                     Text(
                       'hadiths',
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                        color: theme.colorScheme.onSurface.withOpacity(0.4),
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '$_totalBooks books',
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                        color: theme.colorScheme.onSurface.withOpacity(0.4),
                       ),
                     ),
                   ],
@@ -251,7 +251,7 @@ class _CollectionCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                  color: theme.colorScheme.onSurface.withOpacity(0.3),
                 ),
               ],
             ),

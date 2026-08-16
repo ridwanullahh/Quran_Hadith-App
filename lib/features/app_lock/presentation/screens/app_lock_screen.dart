@@ -100,7 +100,7 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen> {
             gradient: AppColors.primaryGradient,
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.25),
+                color: AppColors.primary.withOpacity(0.25),
                 blurRadius: 20,
               ),
             ],
@@ -211,13 +211,13 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen> {
               border: filled
                   ? null
                   : Border.all(
-                      color: AppColors.darkTextTertiary.withValues(alpha: 0.5),
+                      color: AppColors.darkTextTertiary.withOpacity(0.5),
                       width: 1.5,
                     ),
               boxShadow: filled
                   ? [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
+                        color: AppColors.primary.withOpacity(0.3),
                         blurRadius: 8,
                       ),
                     ]
@@ -241,7 +241,7 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen> {
       ),
     ).animate(target: shake ? 1 : 0).shake(
         duration: 500.ms,
-        h: 8,
+        horizontal: 8,
         curve: Curves.elasticOut,
       );
   }
@@ -323,7 +323,7 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen> {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: AppColors.warning.withValues(alpha: 0.1),
+              color: AppColors.warning.withOpacity(0.1),
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(

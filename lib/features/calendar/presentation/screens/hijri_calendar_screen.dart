@@ -66,7 +66,7 @@ class _CurrentDateHeader extends StatelessWidget {
         gradient: LinearGradient(
           colors: isDark
               ? [AppColors.darkSurfaceVariant, AppColors.darkSurface]
-              : [AppColors.primary.withValues(alpha: 0.08), AppColors.primary.withValues(alpha: 0.02)],
+              : [AppColors.primary.withOpacity(0.08), AppColors.primary.withOpacity(0.02)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -81,7 +81,7 @@ class _CurrentDateHeader extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: AppColors.secondary.withValues(alpha: 0.15),
+                  color: AppColors.secondary.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -346,15 +346,15 @@ class _DayCell extends StatelessWidget {
               color: day.isToday
                   ? AppColors.primary
                   : day.eventColor != null && day.isCurrentMonth
-                      ? day.eventColor!.withValues(alpha: 0.15)
+                      ? day.eventColor!.withOpacity(0.15)
                       : null,
               border: day.isToday
-                  ? Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 2)
+                  ? Border.all(color: AppColors.primary.withOpacity(0.3), width: 2)
                   : null,
               boxShadow: day.isToday
                   ? [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
+                        color: AppColors.primary.withOpacity(0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -429,7 +429,7 @@ class _DayCell extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: (day.eventColor ?? AppColors.primary).withValues(alpha: 0.1),
+                  color: (day.eventColor ?? AppColors.primary).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
@@ -559,10 +559,10 @@ class _EventCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: (day.eventColor ?? AppColors.primary).withValues(alpha: 0.06),
+        color: (day.eventColor ?? AppColors.primary).withOpacity(0.06),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: (day.eventColor ?? AppColors.primary).withValues(alpha: 0.2),
+          color: (day.eventColor ?? AppColors.primary).withOpacity(0.2),
           width: 0.5,
         ),
       ),
@@ -572,7 +572,7 @@ class _EventCard extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: (day.eventColor ?? AppColors.primary).withValues(alpha: 0.12),
+              color: (day.eventColor ?? AppColors.primary).withOpacity(0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             alignment: Alignment.center,

@@ -263,7 +263,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   onPressed: () => _showClearDataDialog(context),
                   style: FilledButton.styleFrom(
                     foregroundColor: AppColors.error,
-                    backgroundColor: AppColors.error.withValues(alpha: 0.1),
+                    backgroundColor: AppColors.error.withOpacity(0.1),
                   ),
                   child: const Text('Clear'),
                 ),
@@ -449,7 +449,7 @@ class _SettingsTile extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
+              color: iconColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, size: 18, color: iconColor),
@@ -469,7 +469,7 @@ class _SettingsTile extends StatelessWidget {
                   Text(
                     subtitle,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                      color: theme.colorScheme.onSurface.withOpacity(0.5),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

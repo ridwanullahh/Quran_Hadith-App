@@ -513,7 +513,7 @@ class _DhikrPickerSheet extends ConsumerWidget {
                               : BorderSide.none,
                         ),
                         tileColor: selected
-                            ? AppColors.primary.withValues(alpha: 0.08)
+                            ? AppColors.primary.withOpacity(0.08)
                             : null,
                         title: Text(
                           opt.arabicName,
@@ -606,7 +606,7 @@ class _PresetsSheet extends ConsumerWidget {
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: AppColors.secondary.withValues(alpha: 0.1),
+                            color: AppColors.secondary.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: const Icon(
@@ -667,7 +667,7 @@ class _CelebrationOverlay extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
-      color: Colors.black.withValues(alpha: 0.7),
+      color: Colors.black.withOpacity(0.7),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -795,7 +795,7 @@ class _SessionHistorySheet extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   leading: CircleAvatar(
-                    backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                    backgroundColor: AppColors.primary.withOpacity(0.1),
                     child: Text(
                       toArabicNumerals(entry.value),
                       style: const TextStyle(

@@ -188,7 +188,7 @@ class _SplashScreenState extends State<_SplashScreen>
                         fontWeight: FontWeight.w600,
                         letterSpacing: 3.0,
                         color: AppColors.darkTextSecondary
-                            .withValues(alpha: 0.7),
+                            .withOpacity(0.7),
                       ),
                     ),
                   ],

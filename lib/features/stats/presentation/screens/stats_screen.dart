@@ -199,7 +199,7 @@ class StatsScreen extends ConsumerWidget {
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                       colors: [
-                        AppColors.primary.withValues(alpha: 0.6),
+                        AppColors.primary.withOpacity(0.6),
                         AppColors.primary,
                       ],
                     ),
@@ -262,7 +262,7 @@ class StatsScreen extends ConsumerWidget {
               drawVerticalLine: false,
               horizontalInterval: maxY / 4,
               getDrawingHorizontalLine: (value) => FlLine(
-                color: AppColors.darkBorder.withValues(alpha: 0.3),
+                color: AppColors.darkBorder.withOpacity(0.3),
                 strokeWidth: 0.5,
                 dashArray: [4, 4],
               ),
@@ -303,8 +303,8 @@ class StatsScreen extends ConsumerWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      AppColors.primary.withValues(alpha: 0.25),
-                      AppColors.primary.withValues(alpha: 0.02),
+                      AppColors.primary.withOpacity(0.25),
+                      AppColors.primary.withOpacity(0.02),
                     ],
                   ),
                 ),
@@ -360,7 +360,7 @@ class StatsScreen extends ConsumerWidget {
               drawVerticalLine: false,
               horizontalInterval: maxY / 4,
               getDrawingHorizontalLine: (value) => FlLine(
-                color: AppColors.darkBorder.withValues(alpha: 0.3),
+                color: AppColors.darkBorder.withOpacity(0.3),
                 strokeWidth: 0.5,
                 dashArray: [4, 4],
               ),
@@ -485,10 +485,10 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.06),
+        color: color.withOpacity(0.06),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: color.withValues(alpha: 0.12),
+          color: color.withOpacity(0.12),
           width: 0.5,
         ),
       ),
@@ -508,7 +508,7 @@ class _StatCard extends StatelessWidget {
           Text(
             unit,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+              color: theme.colorScheme.onSurface.withOpacity(0.5),
             ),
           ),
           const SizedBox(height: 4),
@@ -558,7 +558,7 @@ class _MilestoneItem extends StatelessWidget {
           Text(
             label,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              color: theme.colorScheme.onSurface.withOpacity(0.6),
             ),
             textAlign: TextAlign.center,
           ),

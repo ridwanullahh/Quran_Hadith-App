@@ -241,7 +241,7 @@ class _VerseShareScreenState extends State<VerseShareScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: Colors.black.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -274,10 +274,10 @@ class _VerseShareScreenState extends State<VerseShareScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.08),
+              color: Colors.white.withOpacity(0.08),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.15),
+                color: Colors.white.withOpacity(0.15),
                 width: 0.5,
               ),
             ),
@@ -306,7 +306,7 @@ class _VerseShareScreenState extends State<VerseShareScreen> {
                 style: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 14,
-                  color: textColor.withValues(alpha: 0.85),
+                  color: textColor.withOpacity(0.85),
                   height: 1.6,
                   fontStyle: FontStyle.italic,
                 ),
@@ -323,7 +323,7 @@ class _VerseShareScreenState extends State<VerseShareScreen> {
             width: 60,
             height: 1,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.25),
+              color: Colors.white.withOpacity(0.25),
               borderRadius: BorderRadius.circular(1),
             ),
           ),

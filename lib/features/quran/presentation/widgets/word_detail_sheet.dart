@@ -58,7 +58,7 @@ class WordDetailSheet extends ConsumerWidget {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
+                color: Colors.black.withOpacity(0.3),
                 blurRadius: 20,
                 offset: const Offset(0, -4),
               ),
@@ -235,7 +235,7 @@ class _WordCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isExpanded
-                ? AppColors.primary.withValues(alpha: 0.4)
+                ? AppColors.primary.withOpacity(0.4)
                 : (isDark
                     ? AppColors.darkBorder
                     : AppColors.lightBorder),
@@ -297,7 +297,7 @@ class _WordCard extends StatelessWidget {
           width: 28,
           height: 28,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
+            color: AppColors.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Center(
@@ -349,7 +349,7 @@ class _WordCard extends StatelessWidget {
         Icon(
           Icons.record_voice_over_rounded,
           size: 14,
-          color: AppColors.primary.withValues(alpha: 0.7),
+          color: AppColors.primary.withOpacity(0.7),
         ),
         const SizedBox(width: 6),
         Text(
@@ -375,7 +375,7 @@ class _WordCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark
-            ? AppColors.darkSurfaceVariant.withValues(alpha: 0.5)
+            ? AppColors.darkSurfaceVariant.withOpacity(0.5)
             : AppColors.lightSurfaceVariant,
         borderRadius: BorderRadius.circular(10),
       ),
@@ -415,10 +415,10 @@ class _WordCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.secondary.withValues(alpha: isDark ? 0.08 : 0.06),
+        color: AppColors.secondary.withOpacity(isDark ? 0.08 : 0.06),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: AppColors.secondary.withValues(alpha: 0.2),
+          color: AppColors.secondary.withOpacity(0.2),
         ),
       ),
       child: Column(
@@ -478,7 +478,7 @@ class _WordCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.secondary.withValues(alpha: 0.1),
+                    color: AppColors.secondary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Directionality(
@@ -506,7 +506,7 @@ class _WordCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
+            color: AppColors.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
@@ -530,7 +530,7 @@ class _WordCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark
-            ? AppColors.darkSurfaceVariant.withValues(alpha: 0.5)
+            ? AppColors.darkSurfaceVariant.withOpacity(0.5)
             : AppColors.lightSurfaceVariant,
         borderRadius: BorderRadius.circular(10),
       ),
@@ -572,10 +572,10 @@ class _WordCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.info.withValues(alpha: 0.06),
+        color: AppColors.info.withOpacity(0.06),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: AppColors.info.withValues(alpha: 0.15),
+          color: AppColors.info.withOpacity(0.15),
         ),
       ),
       child: Column(

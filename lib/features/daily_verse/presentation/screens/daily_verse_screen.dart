@@ -76,9 +76,9 @@ class DailyVerseScreen extends ConsumerWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    AppColors.primary.withValues(alpha: 0.06),
-                    AppColors.secondary.withValues(alpha: 0.04),
-                    AppColors.primary.withValues(alpha: 0.02),
+                    AppColors.primary.withOpacity(0.06),
+                    AppColors.secondary.withOpacity(0.04),
+                    AppColors.primary.withOpacity(0.02),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(24),
@@ -170,7 +170,7 @@ class DailyVerseScreen extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.08),
+                        color: AppColors.primary.withOpacity(0.08),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(

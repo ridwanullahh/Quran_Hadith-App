@@ -116,7 +116,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               gradient: AppColors.primaryGradient,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
+                  color: AppColors.primary.withOpacity(0.3),
                   blurRadius: 30,
                   spreadRadius: 2,
                 ),
@@ -168,7 +168,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               fontSize: 14,
               fontWeight: FontWeight.w600,
               letterSpacing: 3.0,
-              color: AppColors.darkTextSecondary.withValues(alpha: 0.7),
+              color: AppColors.darkTextSecondary.withOpacity(0.7),
             ),
           )
               .animate()
@@ -326,7 +326,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
+                        color: AppColors.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
@@ -387,7 +387,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: AppColors.secondary.withValues(alpha: 0.1),
+                        color: AppColors.secondary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
@@ -519,7 +519,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       label: Text(label, style: const TextStyle(fontSize: 13)),
       selected: selected,
       onSelected: (_) => setState(() => _selectedLanguage = code),
-      selectedColor: AppColors.primary.withValues(alpha: 0.15),
+      selectedColor: AppColors.primary.withOpacity(0.15),
     );
   }
 
@@ -534,8 +534,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             color: selected
-                ? AppColors.primary.withValues(alpha: 0.15)
-                : AppColors.darkSurfaceVariant.withValues(alpha: 0.3),
+                ? AppColors.primary.withOpacity(0.15)
+                : AppColors.darkSurfaceVariant.withOpacity(0.3),
             border: Border.all(
               color: selected ? AppColors.primary : AppColors.darkBorder,
               width: selected ? 1.5 : 0.5,
@@ -601,7 +601,7 @@ class _FeatureCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: feature.color.withValues(alpha: 0.1),
+              color: feature.color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(feature.icon, size: 22, color: feature.color),

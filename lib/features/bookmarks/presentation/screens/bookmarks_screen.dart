@@ -175,7 +175,7 @@ class _BookmarkItem extends StatelessWidget {
         padding: const EdgeInsets.only(left: 24),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         decoration: BoxDecoration(
-          color: AppColors.error.withValues(alpha: 0.1),
+          color: AppColors.error.withOpacity(0.1),
           borderRadius: BorderRadius.circular(14),
         ),
         child: const Icon(Icons.delete_rounded, color: AppColors.error),
@@ -227,7 +227,7 @@ class _BookmarkItem extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: AppColors.bookmarkGold.withValues(alpha: 0.1),
+                      color: AppColors.bookmarkGold.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
@@ -255,7 +255,7 @@ class _BookmarkItem extends StatelessWidget {
                             bookmark.ayahText,
                             style: AppTheme.arabicQuranText.copyWith(
                               fontSize: 14,
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                              color: theme.colorScheme.onSurface.withOpacity(0.5),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -273,7 +273,7 @@ class _BookmarkItem extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
+                          color: AppColors.primary.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -289,7 +289,7 @@ class _BookmarkItem extends StatelessWidget {
                       Text(
                         _formatDate(bookmark.createdAt),
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.35),
+                          color: theme.colorScheme.onSurface.withOpacity(0.35),
                           fontSize: 10,
                         ),
                       ),
@@ -336,7 +336,7 @@ class _EmptyState extends StatelessWidget {
             Icon(
               Icons.bookmark_outline_rounded,
               size: 56,
-              color: theme.colorScheme.primary.withValues(alpha: 0.3),
+              color: theme.colorScheme.primary.withOpacity(0.3),
             ),
             const SizedBox(height: 16),
             Text(
@@ -350,7 +350,7 @@ class _EmptyState extends StatelessWidget {
             Text(
               subMessage,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                color: theme.colorScheme.onSurface.withOpacity(0.5),
               ),
               textAlign: TextAlign.center,
               height: 1.5,

@@ -140,7 +140,7 @@ class BackupScreen extends ConsumerWidget {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
+                      color: AppColors.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
@@ -200,7 +200,7 @@ class BackupScreen extends ConsumerWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: AppColors.darkTextTertiary.withValues(alpha: 0.1),
+                color: AppColors.darkTextTertiary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
@@ -322,10 +322,10 @@ class BackupScreen extends ConsumerWidget {
               final item = items[index];
               return Container(
                 decoration: BoxDecoration(
-                  color: item.color.withValues(alpha: 0.08),
+                  color: item.color.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: item.color.withValues(alpha: 0.15),
+                    color: item.color.withOpacity(0.15),
                     width: 0.5,
                   ),
                 ),
@@ -344,7 +344,7 @@ class BackupScreen extends ConsumerWidget {
                       item.label,
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontSize: 10,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -451,7 +451,7 @@ class _InfoRow extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
+              color: iconColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, size: 16, color: iconColor),

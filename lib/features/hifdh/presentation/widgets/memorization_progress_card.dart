@@ -68,8 +68,8 @@ class MemorizationProgressCard extends StatelessWidget {
                 height: 48,
                 decoration: BoxDecoration(
                   color: surahInfo.isMeccan
-                      ? AppColors.meccanBadge.withValues(alpha: 0.12)
-                      : AppColors.medinanBadge.withValues(alpha: 0.12),
+                      ? AppColors.meccanBadge.withOpacity(0.12)
+                      : AppColors.medinanBadge.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Center(
@@ -104,8 +104,8 @@ class MemorizationProgressCard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: surahInfo.isMeccan
-                                ? AppColors.meccanBadge.withValues(alpha: 0.1)
-                                : AppColors.medinanBadge.withValues(alpha: 0.1),
+                                ? AppColors.meccanBadge.withOpacity(0.1)
+                                : AppColors.medinanBadge.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
@@ -125,7 +125,7 @@ class MemorizationProgressCard extends StatelessWidget {
                     Text(
                       surahInfo.nameArabic,
                       style: AppTheme.arabicQuranText.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                        color: theme.colorScheme.onSurface.withOpacity(0.7),
                         fontSize: 16,
                       ),
                     ),
@@ -151,7 +151,7 @@ class MemorizationProgressCard extends StatelessWidget {
                         Text(
                           '$memorizedCount/${surahInfo.totalAyahs}',
                           style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                            color: theme.colorScheme.onSurface.withOpacity(0.6),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -170,7 +170,7 @@ class MemorizationProgressCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: _progressColor.withValues(alpha: 0.12),
+                      color: _progressColor.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(

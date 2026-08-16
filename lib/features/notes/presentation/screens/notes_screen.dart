@@ -370,7 +370,7 @@ class _NoteCard extends StatelessWidget {
         padding: const EdgeInsets.only(left: 24),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         decoration: BoxDecoration(
-          color: AppColors.error.withValues(alpha: 0.1),
+          color: AppColors.error.withOpacity(0.1),
           borderRadius: BorderRadius.circular(14),
         ),
         child: const Icon(Icons.delete_rounded, color: AppColors.error),
@@ -404,7 +404,7 @@ class _NoteCard extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
             side: BorderSide(
-              color: _noteColor.withValues(alpha: 0.3),
+              color: _noteColor.withOpacity(0.3),
               width: 1,
             ),
           ),
@@ -448,7 +448,7 @@ class _NoteCard extends StatelessWidget {
                       Text(
                         _formatDate(note.updatedAt),
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.35),
+                          color: theme.colorScheme.onSurface.withOpacity(0.35),
                           fontSize: 10,
                         ),
                       ),
@@ -461,7 +461,7 @@ class _NoteCard extends StatelessWidget {
                     Text(
                       note.content,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                        color: theme.colorScheme.onSurface.withOpacity(0.65),
                         height: 1.5,
                       ),
                       maxLines: 3,
@@ -476,13 +476,13 @@ class _NoteCard extends StatelessWidget {
                       Icon(
                         Icons.menu_book_rounded,
                         size: 12,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                        color: theme.colorScheme.onSurface.withOpacity(0.3),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         'Surah ${note.surahNumber} : Ayah ${note.ayahNumber}',
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                          color: theme.colorScheme.onSurface.withOpacity(0.4),
                         ),
                       ),
                     ],
@@ -534,7 +534,7 @@ class _FilterChip extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
             color: isSelected
-                ? AppColors.primary.withValues(alpha: 0.12)
+                ? AppColors.primary.withOpacity(0.12)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
@@ -553,7 +553,7 @@ class _FilterChip extends StatelessWidget {
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               color: isSelected
                   ? AppColors.primary
-                  : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
             ),
           ),
         ),
@@ -584,7 +584,7 @@ class _EmptyState extends StatelessWidget {
             Icon(
               Icons.note_add_rounded,
               size: 56,
-              color: theme.colorScheme.primary.withValues(alpha: 0.3),
+              color: theme.colorScheme.primary.withOpacity(0.3),
             ),
             const SizedBox(height: 16),
             Text(
@@ -598,7 +598,7 @@ class _EmptyState extends StatelessWidget {
             Text(
               subMessage,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                color: theme.colorScheme.onSurface.withOpacity(0.5),
               ),
               textAlign: TextAlign.center,
               height: 1.5,

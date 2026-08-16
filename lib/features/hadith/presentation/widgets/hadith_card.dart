@@ -57,7 +57,7 @@ class HadithCard extends StatelessWidget {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
+                      color: AppColors.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Center(
@@ -77,7 +77,7 @@ class HadithCard extends StatelessWidget {
                         hadith.narrator!,
                         style: theme.textTheme.labelMedium?.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                          color: theme.colorScheme.onSurface.withOpacity(0.6),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -125,7 +125,7 @@ class HadithCard extends StatelessWidget {
                           : hadith.textEnglish!),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     height: 1.6,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                    color: theme.colorScheme.onSurface.withOpacity(0.8),
                   ),
                   textAlign: TextAlign.left,
                 ),
@@ -138,10 +138,10 @@ class HadithCard extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: AppColors.secondary.withValues(alpha: 0.06),
+                    color: AppColors.secondary.withOpacity(0.06),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: AppColors.secondary.withValues(alpha: 0.15),
+                      color: AppColors.secondary.withOpacity(0.15),
                       width: 0.5,
                     ),
                   ),
@@ -159,7 +159,7 @@ class HadithCard extends StatelessWidget {
                       Text(
                         hadith.narratorChainEnglish!,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                          color: theme.colorScheme.onSurface.withOpacity(0.6),
                           fontStyle: FontStyle.italic,
                           height: 1.5,
                         ),
@@ -178,14 +178,14 @@ class HadithCard extends StatelessWidget {
                       Icon(
                         Icons.menu_book_rounded,
                         size: 14,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                        color: theme.colorScheme.onSurface.withOpacity(0.4),
                       ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           hadith.chapterTitle!,
                           style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                            color: theme.colorScheme.onSurface.withOpacity(0.4),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -196,7 +196,7 @@ class HadithCard extends StatelessWidget {
                       Text(
                         hadith.reference!,
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: AppColors.primary.withValues(alpha: 0.6),
+                          color: AppColors.primary.withOpacity(0.6),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -243,7 +243,7 @@ class _GradeBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: _color.withValues(alpha: 0.12),
+        color: _color.withOpacity(0.12),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(

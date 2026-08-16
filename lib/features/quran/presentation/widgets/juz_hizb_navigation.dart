@@ -317,7 +317,7 @@ class _InfoChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: color.withOpacity(0.12),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -366,7 +366,7 @@ class _JuzTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
               color: isActive
-                  ? AppColors.primary.withValues(alpha: 0.1)
+                  ? AppColors.primary.withOpacity(0.1)
                   : (isDark
                       ? AppColors.darkSurfaceVariant
                       : AppColors.lightSurfaceVariant),
@@ -497,11 +497,11 @@ class _HizbTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
               color: isActive
-                  ? AppColors.secondary.withValues(alpha: 0.1)
+                  ? AppColors.secondary.withOpacity(0.1)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(10),
               border: isActive
-                  ? Border.all(color: AppColors.secondary.withValues(alpha: 0.3))
+                  ? Border.all(color: AppColors.secondary.withOpacity(0.3))
                   : null,
             ),
             child: Row(

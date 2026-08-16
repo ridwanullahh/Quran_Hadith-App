@@ -324,7 +324,7 @@ class DuaNotifier extends StateNotifier<DuaState> {
   }
 
   void clearFilters() {
-    state = const DuaState(favoriteIds: state.favoriteIds);
+    state = DuaState(favoriteIds: state.favoriteIds);
   }
 }
 

@@ -149,7 +149,7 @@ class _SetupPhaseState extends State<_SetupPhase> {
                       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.primary.withValues(alpha: 0.12)
+                            ? AppColors.primary.withOpacity(0.12)
                             : (isDark
                                 ? AppColors.darkSurface
                                 : AppColors.lightSurface),
@@ -170,7 +170,7 @@ class _SetupPhaseState extends State<_SetupPhase> {
                             size: 24,
                             color: isSelected
                                 ? AppColors.primary
-                                : theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                : theme.colorScheme.onSurface.withOpacity(0.5),
                           ),
                           const SizedBox(height: 8),
                           Text(
@@ -180,7 +180,7 @@ class _SetupPhaseState extends State<_SetupPhase> {
                               fontWeight: FontWeight.w600,
                               color: isSelected
                                   ? AppColors.primary
-                                  : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                  : theme.colorScheme.onSurface.withOpacity(0.6),
                             ),
                           ),
                         ],
@@ -244,14 +244,14 @@ class _SetupPhaseState extends State<_SetupPhase> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     selected: isSelected,
-                    selectedTileColor: AppColors.primary.withValues(alpha: 0.08),
+                    selectedTileColor: AppColors.primary.withOpacity(0.08),
                     selectedColor: AppColors.primary,
                     leading: Container(
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.primary.withValues(alpha: 0.15)
+                            ? AppColors.primary.withOpacity(0.15)
                             : (isDark
                                 ? AppColors.darkSurfaceVariant
                                 : AppColors.lightSurfaceVariant),
@@ -264,7 +264,7 @@ class _SetupPhaseState extends State<_SetupPhase> {
                             fontWeight: FontWeight.w700,
                             color: isSelected
                                 ? AppColors.primary
-                                : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                : theme.colorScheme.onSurface.withOpacity(0.6),
                           ),
                         ),
                       ),
@@ -278,14 +278,14 @@ class _SetupPhaseState extends State<_SetupPhase> {
                     subtitle: Text(
                       surah.nameArabic,
                       style: AppTheme.arabicQuranText.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                        color: theme.colorScheme.onSurface.withOpacity(0.5),
                         fontSize: 14,
                       ),
                     ),
                     trailing: Text(
                       '${surah.totalAyahs} ayahs',
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                        color: theme.colorScheme.onSurface.withOpacity(0.4),
                       ),
                     ),
                     onTap: () {
@@ -326,7 +326,7 @@ class _SetupPhaseState extends State<_SetupPhase> {
                 child: Text(
                   '—',
                   style: theme.textTheme.titleMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                    color: theme.colorScheme.onSurface.withOpacity(0.3),
                   ),
                 ),
               ),
@@ -388,7 +388,7 @@ class _RangeField extends StatelessWidget {
           label,
           style: theme.textTheme.labelSmall?.copyWith(
             fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            color: theme.colorScheme.onSurface.withOpacity(0.6),
           ),
         ),
         const SizedBox(height: 6),
@@ -655,7 +655,7 @@ class _HideRevealContent extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 color: isDark
-                    ? AppColors.darkBorder.withValues(alpha: 0.5)
+                    ? AppColors.darkBorder.withOpacity(0.5)
                     : AppColors.lightBorder,
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -663,7 +663,7 @@ class _HideRevealContent extends StatelessWidget {
                 child: Text(
                   '???',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                    color: theme.colorScheme.onSurface.withOpacity(0.3),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -746,7 +746,7 @@ class _ListenContent extends StatelessWidget {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
+              color: AppColors.primary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -763,7 +763,7 @@ class _ListenContent extends StatelessWidget {
           Text(
             'Listen to the ayah and try to recite it',
             style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              color: theme.colorScheme.onSurface.withOpacity(0.6),
             ),
             textAlign: TextAlign.center,
           ),
@@ -771,7 +771,7 @@ class _ListenContent extends StatelessWidget {
           Text(
             'Tap "Reveal" when ready to check',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+              color: theme.colorScheme.onSurface.withOpacity(0.4),
             ),
           ),
         ],
@@ -845,8 +845,8 @@ class _ResultsPhase extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      gradeColor.withValues(alpha: 0.15),
-                      gradeColor.withValues(alpha: 0.05),
+                      gradeColor.withOpacity(0.15),
+                      gradeColor.withOpacity(0.05),
                     ],
                   ),
                   border: Border.all(color: gradeColor, width: 3),
@@ -866,7 +866,7 @@ class _ResultsPhase extends StatelessWidget {
                         result.gradeLetter,
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: gradeColor.withValues(alpha: 0.7),
+                          color: gradeColor.withOpacity(0.7),
                         ),
                       ),
                     ],
@@ -949,8 +949,8 @@ class _ResultsPhase extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: ar.isCorrect
-                      ? AppColors.hifdhGreen.withValues(alpha: 0.3)
-                      : AppColors.error.withValues(alpha: 0.3),
+                      ? AppColors.hifdhGreen.withOpacity(0.3)
+                      : AppColors.error.withOpacity(0.3),
                   width: 0.5,
                 ),
               ),
@@ -976,8 +976,8 @@ class _ResultsPhase extends StatelessWidget {
                       style: AppTheme.arabicQuranText.copyWith(
                         fontSize: 18,
                         height: 1.6,
-                        color: theme.colorScheme.onSurface.withValues(
-                            alpha: ar.isCorrect ? 1.0 : 0.6),
+                        color: theme.colorScheme.onSurface.withOpacity(
+                            ar.isCorrect ? 1.0 : 0.6),
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -988,7 +988,7 @@ class _ResultsPhase extends StatelessWidget {
                     '${ar.ayahNumber}',
                     style: theme.textTheme.labelSmall?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                      color: theme.colorScheme.onSurface.withOpacity(0.4),
                     ),
                   ),
                 ],

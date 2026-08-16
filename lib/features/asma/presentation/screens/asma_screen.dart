@@ -341,8 +341,8 @@ class _NameCard extends ConsumerWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    AppColors.primary.withValues(alpha: 0.08),
-                    AppColors.secondary.withValues(alpha: 0.06),
+                    AppColors.primary.withOpacity(0.08),
+                    AppColors.secondary.withOpacity(0.06),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(20),

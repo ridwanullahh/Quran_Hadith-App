@@ -236,7 +236,7 @@ class _SurahListScreenState extends ConsumerState<SurahListScreen> {
                       .read(juzFilterProvider.notifier)
                       .state = selected ? juzNum : null;
                 },
-                selectedColor: AppColors.primary.withValues(alpha: 0.15),
+                selectedColor: AppColors.primary.withOpacity(0.15),
                 checkmarkColor: AppColors.primary,
                 side: BorderSide(
                   color: isSelected
@@ -386,7 +386,7 @@ class _SurahCard extends StatelessWidget {
               boxShadow: [
                 BoxShadow(
                   color: Colors.black
-                      .withValues(alpha: isDark ? 0.2 : 0.05),
+                      .withOpacity(isDark ? 0.2 : 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -757,7 +757,7 @@ class _SearchResultCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
+                        color: AppColors.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(

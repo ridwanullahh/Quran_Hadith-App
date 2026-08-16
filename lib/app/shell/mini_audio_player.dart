@@ -42,7 +42,7 @@ class MiniAudioPlayer extends ConsumerWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
+            color: Colors.black.withOpacity(0.15),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),
@@ -74,7 +74,7 @@ class MiniAudioPlayer extends ConsumerWidget {
                         child: Container(
                           height: 3,
                           color: (isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary)
-                              .withValues(alpha: 0.3),
+                              .withOpacity(0.3),
                         ),
                       ),
                     // Progress
@@ -106,7 +106,7 @@ class MiniAudioPlayer extends ConsumerWidget {
                             boxShadow: [
                               BoxShadow(
                                 color: AppColors.audioProgressBar
-                                    .withValues(alpha: 0.4),
+                                    .withOpacity(0.4),
                                 blurRadius: 4,
                                 offset: const Offset(0, 1),
                               ),

@@ -64,7 +64,7 @@ class CrossRefScreen extends ConsumerWidget {
                   side: BorderSide(
                     color: state.selectedTopic == null ? AppColors.primary : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
                   ),
-                  selectedColor: AppColors.primary.withValues(alpha: 0.12),
+                  selectedColor: AppColors.primary.withOpacity(0.12),
                   labelStyle: TextStyle(
                     color: state.selectedTopic == null ? AppColors.primary : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                     fontWeight: state.selectedTopic == null ? FontWeight.w600 : FontWeight.normal,
@@ -83,7 +83,7 @@ class CrossRefScreen extends ConsumerWidget {
                       side: BorderSide(
                         color: selected ? AppColors.primary : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
                       ),
-                      selectedColor: AppColors.primary.withValues(alpha: 0.12),
+                      selectedColor: AppColors.primary.withOpacity(0.12),
                       labelStyle: TextStyle(
                         color: selected ? AppColors.primary : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                         fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
@@ -189,7 +189,7 @@ class _CrossRefCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
+                      color: AppColors.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -205,7 +205,7 @@ class _CrossRefCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppColors.secondary.withValues(alpha: 0.1),
+                      color: AppColors.secondary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -227,7 +227,7 @@ class _CrossRefCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.04),
+                  color: AppColors.primary.withOpacity(0.04),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Column(

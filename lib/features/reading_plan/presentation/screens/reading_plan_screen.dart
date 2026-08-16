@@ -78,7 +78,7 @@ class _PlanSelector extends ConsumerWidget {
      padding: const EdgeInsets.only(bottom: 20),
      child: Column(
       children: [
-       Icon(Icons.auto_stories_rounded, size: 56, color: AppColors.primary.withValues(alpha: 0.7)),
+       Icon(Icons.auto_stories_rounded, size: 56, color: AppColors.primary.withOpacity(0.7)),
        const SizedBox(height: 12),
        Text(
         'Choose a Reading Plan',
@@ -258,7 +258,7 @@ class _PlanDashboard extends ConsumerWidget {
         const SizedBox(height: 6),
         Text(
          todayAssignment.range,
-         style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 14, fontFamily: AppTheme.latinFontFamily),
+         style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 14, fontFamily: AppTheme.latinFontFamily),
         ),
         const SizedBox(height: 14),
         SizedBox(
@@ -459,14 +459,14 @@ class _ReminderSection extends StatelessWidget {
         selected: state.reminder == PlanReminder.morning,
         onSelected: (_) => notifier.setReminder(PlanReminder.morning),
         avatar: Icon(Icons.wb_sunny_rounded, size: 16, color: state.reminder == PlanReminder.morning ? AppColors.warning : AppColors.darkTextTertiary),
-        selectedColor: AppColors.warning.withValues(alpha: 0.12),
+        selectedColor: AppColors.warning.withOpacity(0.12),
        ),
        ChoiceChip(
         label: const Text('Evening', style: TextStyle(fontSize: 12)),
         selected: state.reminder == PlanReminder.evening,
         onSelected: (_) => notifier.setReminder(PlanReminder.evening),
         avatar: Icon(Icons.nightlight_round_rounded, size: 16, color: state.reminder == PlanReminder.evening ? AppColors.info : AppColors.darkTextTertiary),
-        selectedColor: AppColors.info.withValues(alpha: 0.12),
+        selectedColor: AppColors.info.withOpacity(0.12),
        ),
        ChoiceChip(
         label: const Text('Off', style: TextStyle(fontSize: 12)),
@@ -527,7 +527,7 @@ class _CalendarGrid extends StatelessWidget {
              color: completed
               ? AppColors.success
               : isCurrent
-               ? AppColors.primary.withValues(alpha: 0.2)
+               ? AppColors.primary.withOpacity(0.2)
                : (isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant),
              borderRadius: BorderRadius.circular(8),
              border: isCurrent && !completed
@@ -593,7 +593,7 @@ class _DayListItem extends StatelessWidget {
        borderRadius: BorderRadius.circular(12),
        border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder, width: 0.5),
        color: completed
-        ? AppColors.success.withValues(alpha: 0.06)
+        ? AppColors.success.withOpacity(0.06)
         : (isDark ? AppColors.darkSurface : AppColors.lightSurface),
       ),
       child: Row(
@@ -605,7 +605,7 @@ class _DayListItem extends StatelessWidget {
          decoration: BoxDecoration(
           color: completed
            ? AppColors.success
-           : AppColors.primary.withValues(alpha: 0.1),
+           : AppColors.primary.withOpacity(0.1),
           borderRadius: BorderRadius.circular(10),
          ),
          child: Center(

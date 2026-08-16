@@ -569,7 +569,7 @@ class AppTheme {
         activeTrackColor: colorScheme.primary,
         inactiveTrackColor: isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant,
         thumbColor: colorScheme.primary,
-        overlayColor: colorScheme.primary.withValues(alpha: 0.12),
+        overlayColor: colorScheme.primary.withOpacity(0.12),
         trackHeight: 4,
         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
@@ -609,7 +609,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
         ),
         tileColor: Colors.transparent,
-        selectedTileColor: colorScheme.primaryContainer.withValues(alpha: 0.5),
+        selectedTileColor: colorScheme.primaryContainer.withOpacity(0.5),
         horizontalTitleGap: 12,
         minVerticalPadding: 8,
         minLeadingWidth: 24,
@@ -641,7 +641,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
+              color: Colors.black.withOpacity(0.2),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -672,7 +672,7 @@ class AppTheme {
       // ── Scrollbar ───────────────────────────────────────────────
       scrollbarTheme: ScrollbarThemeData(
         thumbColor: WidgetStateProperty.all(
-          isDark ? AppColors.darkTextTertiary.withValues(alpha: 0.4) : AppColors.lightTextTertiary.withValues(alpha: 0.4),
+          isDark ? AppColors.darkTextTertiary.withOpacity(0.4) : AppColors.lightTextTertiary.withOpacity(0.4),
         ),
         trackColor: WidgetStateProperty.all(Colors.transparent),
         thickness: WidgetStateProperty.all(6),
@@ -681,9 +681,9 @@ class AppTheme {
       ),
 
       // ── Splash & Highlight ──────────────────────────────────────
-      splashColor: colorScheme.primary.withValues(alpha: 0.08),
-      highlightColor: colorScheme.primary.withValues(alpha: 0.04),
-      hoverColor: colorScheme.primary.withValues(alpha: 0.06),
+      splashColor: colorScheme.primary.withOpacity(0.08),
+      highlightColor: colorScheme.primary.withOpacity(0.04),
+      hoverColor: colorScheme.primary.withOpacity(0.06),
     );
   }
 

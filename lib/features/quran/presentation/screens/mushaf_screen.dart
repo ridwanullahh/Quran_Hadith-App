@@ -186,7 +186,7 @@ class _MushafScreenState extends ConsumerState<MushafScreen> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
+                            color: Colors.black.withOpacity(0.2),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -425,7 +425,7 @@ class _SurahHeader extends StatelessWidget {
                   color: (isDark
                           ? AppColors.darkTextTertiary
                           : AppColors.lightTextTertiary)
-                      .withValues(alpha: 0.3),
+                      .withOpacity(0.3),
                 ),
               ),
               Padding(
@@ -462,7 +462,7 @@ class _SurahHeader extends StatelessWidget {
                   color: (isDark
                           ? AppColors.darkTextTertiary
                           : AppColors.lightTextTertiary)
-                      .withValues(alpha: 0.3),
+                      .withOpacity(0.3),
                 ),
               ),
             ],
@@ -568,7 +568,7 @@ class _PageNumberIndicator extends StatelessWidget {
           color: (isDark
                   ? AppColors.darkTextTertiary
                   : AppColors.lightTextTertiary)
-              .withValues(alpha: 0.4),
+              .withOpacity(0.4),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -590,7 +590,7 @@ class _PageNumberIndicator extends StatelessWidget {
           color: (isDark
                   ? AppColors.darkTextTertiary
                   : AppColors.lightTextTertiary)
-              .withValues(alpha: 0.4),
+              .withOpacity(0.4),
         ),
       ],
     );
@@ -631,9 +631,9 @@ class _TopControlsBar extends StatelessWidget {
             end: Alignment.bottomCenter,
             colors: [
               (isDark ? const Color(0xFF0A1628) : const Color(0xFFF5F0E1))
-                  .withValues(alpha: 0.95),
+                  .withOpacity(0.95),
               (isDark ? const Color(0xFF0A1628) : const Color(0xFFF5F0E1))
-                  .withValues(alpha: 0.0),
+                  .withOpacity(0.0),
             ],
             stops: const [0.0, 1.0],
           ),
@@ -658,10 +658,10 @@ class _TopControlsBar extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: AppColors.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.3),
+                    color: AppColors.primary.withOpacity(0.3),
                   ),
                 ),
                 child: Row(
@@ -729,9 +729,9 @@ class _BottomBar extends StatelessWidget {
             end: Alignment.topCenter,
             colors: [
               (isDark ? const Color(0xFF0A1628) : const Color(0xFFF5F0E1))
-                  .withValues(alpha: 0.95),
+                  .withOpacity(0.95),
               (isDark ? const Color(0xFF0A1628) : const Color(0xFFF5F0E1))
-                  .withValues(alpha: 0.0),
+                  .withOpacity(0.0),
             ],
             stops: const [0.0, 1.0],
           ),
@@ -852,11 +852,11 @@ class _ActionButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: isActive
-              ? AppColors.primary.withValues(alpha: 0.12)
+              ? AppColors.primary.withOpacity(0.12)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           border: isActive
-              ? Border.all(color: AppColors.primary.withValues(alpha: 0.3))
+              ? Border.all(color: AppColors.primary.withOpacity(0.3))
               : null,
         ),
         child: Row(
@@ -915,7 +915,7 @@ class _JuzSideMarker extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.08),
+              color: AppColors.primary.withOpacity(0.08),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(4),
                 bottomLeft: Radius.circular(4),
@@ -927,7 +927,7 @@ class _JuzSideMarker extends StatelessWidget {
                 fontFamily: AppTheme.arabicFontFamily,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: AppColors.primary.withValues(alpha: 0.6),
+                color: AppColors.primary.withOpacity(0.6),
               ),
             ),
           ),

@@ -61,10 +61,10 @@ class SajdahIndicator extends StatelessWidget {
           vertical: iconSize * 0.2,
         ),
         decoration: BoxDecoration(
-          color: AppColors.secondary.withValues(alpha: 0.15),
+          color: AppColors.secondary.withOpacity(0.15),
           borderRadius: BorderRadius.circular(iconSize * 0.3),
           border: Border.all(
-            color: AppColors.secondary.withValues(alpha: 0.4),
+            color: AppColors.secondary.withOpacity(0.4),
             width: 1,
           ),
         ),

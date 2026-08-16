@@ -41,25 +41,25 @@ class AyahWidget extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: isPlaying
-            ? AppColors.primary.withValues(alpha: isDark ? 0.12 : 0.08)
+            ? AppColors.primary.withOpacity(isDark ? 0.12 : 0.08)
             : (isDark ? AppColors.darkSurface : AppColors.lightSurface),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isPlaying
-              ? AppColors.primary.withValues(alpha: 0.4)
+              ? AppColors.primary.withOpacity(0.4)
               : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
           width: isPlaying ? 1.5 : 1,
         ),
         boxShadow: [
           if (isPlaying)
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.15),
+              color: AppColors.primary.withOpacity(0.15),
               blurRadius: 12,
               offset: const Offset(0, 2),
             )
           else
             BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.04),
+              color: Colors.black.withOpacity(isDark ? 0.15 : 0.04),
               blurRadius: 6,
               offset: const Offset(0, 1),
             ),
@@ -171,10 +171,10 @@ class AyahWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.secondary.withValues(alpha: 0.1),
+        color: AppColors.secondary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: AppColors.secondary.withValues(alpha: 0.3),
+          color: AppColors.secondary.withOpacity(0.3),
         ),
       ),
       child: Row(
@@ -244,7 +244,7 @@ class AyahWidget extends StatelessWidget {
             : AppColors.lightSurfaceVariant,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: AppColors.secondary.withValues(alpha: 0.2),
+          color: AppColors.secondary.withOpacity(0.2),
         ),
       ),
       child: Column(

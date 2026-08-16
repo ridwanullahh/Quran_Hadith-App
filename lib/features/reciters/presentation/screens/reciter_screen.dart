@@ -76,7 +76,7 @@ class _ReciterScreenState extends ConsumerState<ReciterScreen> {
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-       color: AppColors.primary.withValues(alpha: 0.08),
+       color: AppColors.primary.withOpacity(0.08),
        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -187,7 +187,7 @@ class _ReciterCard extends StatelessWidget {
      borderRadius: BorderRadius.circular(16),
      border: Border.all(
       color: isDefault
-       ? AppColors.primary.withValues(alpha: 0.5)
+       ? AppColors.primary.withOpacity(0.5)
        : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
       width: isDefault ? 1.5 : 0.5,
      ),
@@ -203,8 +203,8 @@ class _ReciterCard extends StatelessWidget {
          height: 48,
          decoration: BoxDecoration(
           color: isDefault
-           ? AppColors.primary.withValues(alpha: 0.12)
-           : AppColors.secondary.withValues(alpha: 0.1),
+           ? AppColors.primary.withOpacity(0.12)
+           : AppColors.secondary.withOpacity(0.1),
           borderRadius: BorderRadius.circular(14),
          ),
          child: Icon(
@@ -259,8 +259,8 @@ class _ReciterCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
                color: reciter.style == 'Mujawwad'
-                ? AppColors.secondary.withValues(alpha: 0.1)
-                : AppColors.info.withValues(alpha: 0.1),
+                ? AppColors.secondary.withOpacity(0.1)
+                : AppColors.info.withOpacity(0.1),
                borderRadius: BorderRadius.circular(6),
               ),
               child: Text(

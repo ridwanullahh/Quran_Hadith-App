@@ -127,7 +127,7 @@ class _DateHeader extends ConsumerWidget {
         gradient: LinearGradient(
           colors: isDark
               ? [AppColors.darkSurfaceVariant, AppColors.darkSurface]
-              : [AppColors.primary.withValues(alpha: 0.08), AppColors.primary.withValues(alpha: 0.02)],
+              : [AppColors.primary.withOpacity(0.08), AppColors.primary.withOpacity(0.02)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -174,7 +174,7 @@ class _DateHeader extends ConsumerWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
+              color: AppColors.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
@@ -249,7 +249,7 @@ class _LocationSelector extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: AppTheme.latinFontFamily,
                       fontSize: 11,
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                     ),
                   ),
                 ],
@@ -258,7 +258,7 @@ class _LocationSelector extends StatelessWidget {
             Icon(
               Icons.unfold_more_rounded,
               size: 18,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
             ),
           ],
         ),
@@ -367,7 +367,7 @@ class _NextPrayerCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.3),
+            color: AppColors.primary.withOpacity(0.3),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -381,7 +381,7 @@ class _NextPrayerCard extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -391,7 +391,7 @@ class _NextPrayerCard extends ConsumerWidget {
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1.5,
-                    color: Colors.white.withValues(alpha: 0.9),
+                    color: Colors.white.withOpacity(0.9),
                   ),
                 ),
               ),
@@ -413,7 +413,7 @@ class _NextPrayerCard extends ConsumerWidget {
             style: TextStyle(
               fontFamily: AppTheme.latinFontFamily,
               fontSize: 14,
-              color: Colors.white.withValues(alpha: 0.8),
+              color: Colors.white.withOpacity(0.8),
             ),
           ),
           const SizedBox(height: 16),
@@ -429,7 +429,7 @@ class _NextPrayerCard extends ConsumerWidget {
                     fontFamily: AppTheme.latinFontFamily,
                     fontSize: 28,
                     fontWeight: FontWeight.w300,
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: Colors.white.withOpacity(0.6),
                   ),
                 ),
               ),
@@ -442,7 +442,7 @@ class _NextPrayerCard extends ConsumerWidget {
                     fontFamily: AppTheme.latinFontFamily,
                     fontSize: 28,
                     fontWeight: FontWeight.w300,
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: Colors.white.withOpacity(0.6),
                   ),
                 ),
               ),
@@ -469,10 +469,10 @@ class _CountdownBox extends StatelessWidget {
           height: 52,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.15),
+            color: Colors.white.withOpacity(0.15),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: Colors.white.withOpacity(0.2),
               width: 1,
             ),
           ),
@@ -494,7 +494,7 @@ class _CountdownBox extends StatelessWidget {
             fontSize: 9,
             fontWeight: FontWeight.w600,
             letterSpacing: 1.0,
-            color: Colors.white.withValues(alpha: 0.6),
+            color: Colors.white.withOpacity(0.6),
           ),
         ),
       ],
@@ -580,11 +580,11 @@ class _PrayerTimeCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: isNext
-            ? AppColors.primary.withValues(alpha: isDark ? 0.15 : 0.08)
+            ? AppColors.primary.withOpacity(isDark ? 0.15 : 0.08)
             : (isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurface),
         borderRadius: BorderRadius.circular(14),
         border: isNext
-            ? Border.all(color: AppColors.primary.withValues(alpha: 0.4), width: 1.5)
+            ? Border.all(color: AppColors.primary.withOpacity(0.4), width: 1.5)
             : Border.all(
                 color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                 width: 0.5,
@@ -862,7 +862,7 @@ class _OffsetSlider extends StatelessWidget {
               fontFamily: AppTheme.latinFontFamily,
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
         ),

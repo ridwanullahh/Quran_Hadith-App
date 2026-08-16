@@ -65,7 +65,7 @@ class HifdhDashboardScreen extends ConsumerWidget {
                 child: Text(
                   'Stay consistent — even a few ayahs a day matters.',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ),
               ),
@@ -150,20 +150,20 @@ class HifdhDashboardScreen extends ConsumerWidget {
                             Icon(
                               Icons.menu_book_rounded,
                               size: 48,
-                              color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                              color: theme.colorScheme.primary.withOpacity(0.3),
                             ),
                             const SizedBox(height: 12),
                             Text(
                               'No surahs tracked yet',
                               style: theme.textTheme.bodyLarge?.copyWith(
-                                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                color: theme.colorScheme.onSurface.withOpacity(0.5),
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'Start memorizing to see progress here.',
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                                color: theme.colorScheme.onSurface.withOpacity(0.4),
                               ),
                             ),
                           ],
@@ -298,14 +298,14 @@ class _StatCard extends StatelessWidget {
             Text(
               label,
               style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                color: theme.colorScheme.onSurface.withOpacity(0.6),
                 fontWeight: FontWeight.w600,
               ),
             ),
             Text(
               subtitle,
               style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                color: theme.colorScheme.onSurface.withOpacity(0.4),
                 fontSize: 10,
               ),
             ),
@@ -471,7 +471,7 @@ class _WeeklyBarChart extends StatelessWidget {
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
                   colors: [
-                    AppColors.primary.withValues(alpha: 0.6),
+                    AppColors.primary.withOpacity(0.6),
                     AppColors.primaryLight,
                   ],
                 ),
@@ -590,7 +590,7 @@ class _ActionChip extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.12),
+                    color: color.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, size: 20, color: color),
@@ -601,7 +601,7 @@ class _ActionChip extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: theme.textTheme.labelSmall?.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                    color: theme.colorScheme.onSurface.withOpacity(0.8),
                   ),
                 ),
               ],
@@ -668,7 +668,7 @@ class _DueRevisionCard extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.warning.withValues(alpha: 0.12),
+              color: AppColors.warning.withOpacity(0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
@@ -688,7 +688,7 @@ class _DueRevisionCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: dueColor.withValues(alpha: 0.12),
+                  color: dueColor.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -704,7 +704,7 @@ class _DueRevisionCard extends StatelessWidget {
               Text(
                 'Rep: ${item.repetitions}',
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  color: theme.colorScheme.onSurface.withOpacity(0.5),
                 ),
               ),
             ],
@@ -766,7 +766,7 @@ class _WeakAreaCard extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.error.withValues(alpha: 0.12),
+              color: AppColors.error.withOpacity(0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
@@ -794,7 +794,7 @@ class _WeakAreaCard extends StatelessWidget {
               Text(
                 'Reviewed ${mistake.reviewCount}x',
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  color: theme.colorScheme.onSurface.withOpacity(0.5),
                 ),
               ),
             ],
@@ -846,7 +846,7 @@ class _SectionHeader extends StatelessWidget {
           Text(
             subtitle,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+              color: theme.colorScheme.onSurface.withOpacity(0.5),
             ),
           ),
         ],

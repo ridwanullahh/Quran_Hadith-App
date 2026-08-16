@@ -292,7 +292,7 @@ class _SurahReadingScreenState extends ConsumerState<SurahReadingScreen> {
         onPressed: onTap,
         style: IconButton.styleFrom(
           backgroundColor:
-              isActive ? AppColors.primary.withValues(alpha: 0.1) : Colors.transparent,
+              isActive ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -400,11 +400,11 @@ class _SurahReadingScreenState extends ConsumerState<SurahReadingScreen> {
           decoration: BoxDecoration(
             border: Border(
               top: BorderSide(
-                color: AppColors.secondary.withValues(alpha: 0.4),
+                color: AppColors.secondary.withOpacity(0.4),
                 width: 1.5,
               ),
               bottom: BorderSide(
-                color: AppColors.secondary.withValues(alpha: 0.4),
+                color: AppColors.secondary.withOpacity(0.4),
                 width: 1.5,
               ),
             ),
@@ -556,10 +556,10 @@ class _InfoChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: color.withValues(alpha: 0.25),
+          color: color.withOpacity(0.25),
         ),
       ),
       child: Row(

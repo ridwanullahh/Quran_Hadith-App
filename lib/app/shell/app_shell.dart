@@ -126,7 +126,7 @@ class _AppShellState extends ConsumerState<AppShell>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: Colors.black.withOpacity(0.08),
                   blurRadius: 12,
                   offset: const Offset(0, -4),
                 ),
@@ -238,7 +238,7 @@ class _AppShellState extends ConsumerState<AppShell>
                           child: Container(
                           height: 36,
                           decoration: BoxDecoration(
-                            color: selectedColor.withValues(alpha: 0.12),
+                            color: selectedColor.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
