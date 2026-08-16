@@ -70,7 +70,7 @@ jobs:
         timeout-minutes: 5
 
       - name: Verify Dart analysis (no errors)
-        run: flutter analyze --no-pub --current-tag=error || true
+        run: flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings
         timeout-minutes: 5
         continue-on-error: true
 
@@ -135,6 +135,7 @@ jobs:
           VERSION_NAME: ${{ steps.version.outputs.version }}
         run: |
           flutter build apk --release \
+            --no-tree-shake-icons \
             --build-number=${{ github.run_number }} \
             --build-name=${{ steps.version.outputs.version }}
         timeout-minutes: 30
