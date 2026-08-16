@@ -14,6 +14,42 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
+// ─────────────────────────────────────────────────────────────────────
+// Stub Flutter extension for library subprojects.
+//
+// Some plugins (e.g. geolocator_android 4.6.x AND 5.0.x, and others
+// written before Flutter 3.24) reference `flutter.compileSdkVersion`
+// and `flutter.minSdkVersion` inside their `android { }` block:
+//
+//   android {
+//       compileSdk flutter.compileSdkVersion
+//       defaultConfig { minSdkVersion flutter.minSdkVersion }
+//   }
+//
+// In Flutter 3.24 + AGP 8.5, the `flutter` extension is only applied
+// to the :app module by dev.flutter.flutter-gradle-plugin. Library
+// subprojects don't have it, causing:
+//   "Could not get unknown property 'flutter' for extension 'android'
+//    of type com.android.build.gradle.LibraryExtension."
+//
+// Fix: inject a stub `flutter` extension into every library subproject
+// as soon as the com.android.library plugin is applied (which happens
+// before the rest of the plugin's build.gradle body runs).
+// ─────────────────────────────────────────────────────────────────────
+class FlutterStubExtension {
+    int compileSdkVersion = 35
+    int minSdkVersion = 21
+    int targetSdkVersion = 35
+}
+
+subprojects { project ->
+    project.plugins.withId("com.android.library") {
+        if (project.android.extensions.findByName("flutter") == null) {
+            project.android.extensions.create("flutter", FlutterStubExtension)
+        }
+    }
+}
+
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
