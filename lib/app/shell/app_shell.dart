@@ -79,7 +79,10 @@ class _AppShellState extends ConsumerState<AppShell>
     if (location.startsWith('/settings') ||
         location.startsWith('/bookmarks') ||
         location.startsWith('/notes') ||
-        location.startsWith('/more')) {
+        location.startsWith('/more') ||
+        location.startsWith('/prayer') ||
+        location.startsWith('/qibla') ||
+        location.startsWith('/calendar')) {
       return 3;
     }
     return 0; // Default to Quran tab for all other routes.

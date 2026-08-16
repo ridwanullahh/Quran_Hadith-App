@@ -9,6 +9,7 @@ import 'app/theme/app_colors.dart';
 import 'core/services/audio/audio_player_service.dart';
 import 'core/services/database/database.dart';
 import 'data/repositories/audio_repository.dart';
+import 'features/settings/presentation/providers/theme_provider.dart';
 
 /// Holds the result of all startup initialization so that
 /// downstream widgets can access initialized singletons.
@@ -41,16 +42,19 @@ final _initProvider = FutureProvider<_AppInitResult>((ref) async {
   return _AppInitResult(
     settingsBox: settingsBox,
     audioHandler: audioHandler,
+    onboardingCompleted: settingsBox.get('onboarding_completed', defaultValue: false) as bool,
   );
 });
 
 class _AppInitResult {
   final Box settingsBox;
   final QuranAudioHandler audioHandler;
+  final bool onboardingCompleted;
 
   const _AppInitResult({
     required this.settingsBox,
     required this.audioHandler,
+    required this.onboardingCompleted,
   });
 }
 
@@ -99,11 +103,7 @@ class _InitGateway extends ConsumerWidget {
               final savedMode =
                   result.settingsBox.get('theme_mode', defaultValue: 'dark') as String;
               final notifier = ThemeModeNotifier();
-              final initialMode = switch (savedMode) {
-                'light' => ThemeMode.light,
-                'system' => ThemeMode.system,
-                _ => ThemeMode.dark,
-              };
+              final initialMode = ThemeModeNotifier.fromString(savedMode);
               notifier.setThemeMode(initialMode);
               return notifier;
             }),
@@ -167,7 +167,7 @@ class _SplashScreenState extends State<_SplashScreen>
                       shaderCallback: (bounds) => AppColors.goldGradient
                           .createShader(bounds),
                       child: const Text(
-                        'مِنْهَاجُ الْهُدَى',
+                        '\u0645ِنْهَاجُ الْهُدَى',
                         style: TextStyle(
                           fontFamily: 'ScheherazadeNew',
                           fontSize: 32,

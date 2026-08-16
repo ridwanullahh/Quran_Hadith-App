@@ -4,29 +4,12 @@ import 'package:go_router/go_router.dart';
 
 import 'router.dart';
 import 'theme/app_theme.dart';
-
-/// Notifier that controls light/dark theme mode.
-class ThemeModeNotifier extends StateNotifier<ThemeMode> {
-  ThemeModeNotifier() : super(ThemeMode.dark);
-
-  void setThemeMode(ThemeMode mode) {
-    state = mode;
-  }
-
-  void toggleTheme() {
-    state = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-  }
-}
-
-/// Provider for the app's theme mode.
-final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>(
-  ThemeModeNotifier.new,
-);
+import '../features/settings/presentation/providers/theme_provider.dart';
 
 /// The root application widget.
 ///
 /// Configures [MaterialApp.router] with:
-/// - Light and dark themes from [AppTheme]
+/// - Light, Dark, and Amoled themes from [AppTheme]
 /// - [GoRouter] via [routerProvider]
 /// - RTL as the default text direction
 /// - Riverpod [ProviderScope]
@@ -35,8 +18,24 @@ class MinhaajulHudaaApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeModeProvider);
+    final appThemeMode = ref.watch(themeModeProvider);
     final router = ref.watch(routerProvider);
+
+    // Map AppThemeMode → Flutter's ThemeMode + select the correct ThemeData
+    final ThemeMode flutterThemeMode;
+    final ThemeData activeTheme;
+
+    switch (appThemeMode) {
+      case AppThemeMode.light:
+        flutterThemeMode = ThemeMode.light;
+        activeTheme = AppTheme.lightTheme;
+      case AppThemeMode.dark:
+        flutterThemeMode = ThemeMode.dark;
+        activeTheme = AppTheme.darkTheme;
+      case AppThemeMode.amoled:
+        flutterThemeMode = ThemeMode.dark;
+        activeTheme = AppTheme.amoledTheme;
+    }
 
     return MaterialApp.router(
       title: 'MinhaajulHudaa',
@@ -44,8 +43,8 @@ class MinhaajulHudaaApp extends ConsumerWidget {
 
       // ── Theme ──────────────────────────────────────────────────
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: themeMode,
+      darkTheme: activeTheme,
+      themeMode: flutterThemeMode,
 
       // ── Router ─────────────────────────────────────────────────
       routerConfig: router,

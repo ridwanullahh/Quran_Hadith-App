@@ -9,6 +9,9 @@ import '../../../../app/app.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/services/database/database.dart';
 import '../../../hifdh/presentation/providers/hifdh_providers.dart';
+import '../providers/theme_provider.dart';
+import '../../../app_lock/presentation/providers/app_lock_provider.dart';
+import '../../../app_lock/presentation/screens/app_lock_screen.dart';
 
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -23,7 +26,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String _translationLanguage = 'en';
   String _defaultReciter = 'mishary';
   String _audioQuality = 'high';
-  ThemeMode _themeMode = ThemeMode.dark;
+  AppThemeMode _themeMode = AppThemeMode.dark;
 
   @override
   void initState() {
@@ -39,11 +42,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       _defaultReciter = box.get('default_reciter', defaultValue: 'mishary') as String;
       _audioQuality = box.get('audio_quality', defaultValue: 'high') as String;
       final savedMode = box.get('theme_mode', defaultValue: 'dark') as String;
-      _themeMode = switch (savedMode) {
-        'light' => ThemeMode.light,
-        'system' => ThemeMode.system,
-        _ => ThemeMode.dark,
-      };
+      _themeMode = ThemeModeNotifier.fromString(savedMode);
     });
   }
 
@@ -74,22 +73,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 iconColor: AppColors.primary,
                 title: 'Theme',
                 subtitle: _themeModeLabel(_themeMode),
-                trailing: SegmentedButton<ThemeMode>(
+                trailing: SegmentedButton<AppThemeMode>(
                   segments: const [
                     ButtonSegment(
-                      value: ThemeMode.light,
+                      value: AppThemeMode.light,
                       label: Text('Light', style: TextStyle(fontSize: 12)),
                       icon: Icon(Icons.light_mode_rounded, size: 16),
                     ),
                     ButtonSegment(
-                      value: ThemeMode.dark,
+                      value: AppThemeMode.dark,
                       label: Text('Dark', style: TextStyle(fontSize: 12)),
                       icon: Icon(Icons.dark_mode_rounded, size: 16),
                     ),
                     ButtonSegment(
-                      value: ThemeMode.system,
-                      label: Text('Auto', style: TextStyle(fontSize: 12)),
-                      icon: Icon(Icons_brightness_auto_rounded, size: 16), // intentional
+                      value: AppThemeMode.amoled,
+                      label: Text('AMOLED', style: TextStyle(fontSize: 12)),
+                      icon: Icon(Icons.brightness_3_rounded, size: 16),
                     ),
                   ],
                   selected: {_themeMode},
@@ -97,12 +96,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     final mode = modes.first;
                     setState(() => _themeMode = mode);
                     ref.read(themeModeProvider.notifier).setThemeMode(mode);
-                    final modeString = switch (mode) {
-                      ThemeMode.light => 'light',
-                      ThemeMode.dark => 'dark',
-                      ThemeMode.system => 'system',
-                    };
-                    _saveSetting('theme_mode', modeString);
+                    _saveSetting('theme_mode', ThemeModeNotifier.toStringValue(mode));
                   },
                 ),
               ),
@@ -230,6 +224,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ],
           ),
 
+          // ── Security ──────────────────────────────────────
+          const SizedBox(height: 8),
+          _SectionTitle(title: 'Security', icon: Icons.lock_rounded),
+          _SettingsCard(
+            children: [
+              _SettingsTile(
+                icon: Icons.pin_rounded,
+                iconColor: AppColors.primary,
+                title: 'App Lock',
+                subtitle: 'PIN-based lock when app is in background',
+                trailing: Switch(
+                  value: ref.watch(appLockProvider).isEnabled,
+                  onChanged: (enabled) async {
+                    if (enabled && !ref.read(appLockProvider).isSetup) {
+                      await showPinSetupDialog(context);
+                    } else {
+                      await ref.read(appLockProvider.notifier).setEnabled(enabled);
+                    }
+                  },
+                  activeColor: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+
           // ── Data ───────────────────────────────────────────
           const SizedBox(height: 8),
           _SectionTitle(title: 'Data & Storage', icon: Icons.storage_rounded),
@@ -321,19 +340,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  IconData _themeModeIcon(ThemeMode mode) {
+  IconData _themeModeIcon(AppThemeMode mode) {
     return switch (mode) {
-      ThemeMode.light => Icons.light_mode_rounded,
-      ThemeMode.dark => Icons.dark_mode_rounded,
-      ThemeMode.system => Icons_brightness_auto_rounded,
+      AppThemeMode.light => Icons.light_mode_rounded,
+      AppThemeMode.dark => Icons.dark_mode_rounded,
+      AppThemeMode.amoled => Icons.brightness_3_rounded,
     };
   }
 
-  String _themeModeLabel(ThemeMode mode) {
+  String _themeModeLabel(AppThemeMode mode) {
     return switch (mode) {
-      ThemeMode.light => 'Light theme',
-      ThemeMode.dark => 'Dark theme',
-      ThemeMode.system => 'Follow system',
+      AppThemeMode.light => 'Light theme',
+      AppThemeMode.dark => 'Dark theme',
+      AppThemeMode.amoled => 'AMOLED (true black)',
     };
   }
 

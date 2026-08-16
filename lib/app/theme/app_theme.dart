@@ -86,6 +86,71 @@ class AppTheme {
     return _buildTheme(colorScheme, isDark: true);
   }
 
+  // ── Amoled (True Black) Theme ──────────────────────────────────
+
+  /// A variant of dark that uses true black (#000000) backgrounds
+  /// with reduced blue light for OLED-optimized night reading.
+  static ThemeData get amoledTheme {
+    final colorScheme = ColorScheme.dark(
+      primary: const Color(0xFF0FAF8A),  // slightly warmer teal for less blue
+      onPrimary: const Color(0xFF00382D),
+      primaryContainer: const Color(0xFF005240),
+      onPrimaryContainer: const Color(0xFFB8E8DE),
+      secondary: const Color(0xFFE8C454), // warmer gold
+      onSecondary: const Color(0xFF3F2E00),
+      secondaryContainer: const Color(0xFF5C4300),
+      onSecondaryContainer: const Color(0xFFFCEFC8),
+      tertiary: const Color(0xFFB1CBCB),
+      onTertiary: const Color(0xFF1C3535),
+      tertiaryContainer: const Color(0xFF334B4B),
+      onTertiaryContainer: const Color(0xFFCCE8E8),
+      error: const Color(0xFFF2B8B5),
+      onError: const Color(0xFF601410),
+      errorContainer: const Color(0xFF8C1D18),
+      onErrorContainer: const Color(0xFFF9DEDC),
+      surface: const Color(0xFF000000),
+      onSurface: const Color(0xFFE8E6E1),
+      surfaceContainerHighest: const Color(0xFF111111),
+      outline: const Color(0xFF222222),
+      outlineVariant: const Color(0xFF1A1A1A),
+      shadow: Colors.black,
+      scrim: const Color(0xFF000000),
+      inverseSurface: const Color(0xFFE8E6E1),
+      inversePrimary: const Color(0xFF0D6E5B),
+    );
+
+    return _buildTheme(colorScheme, isDark: true).copyWith(
+      scaffoldBackgroundColor: const Color(0xFF000000),
+      drawerTheme: const DrawerThemeData(backgroundColor: Color(0xFF000000)),
+      bottomSheetTheme: const BottomSheetThemeData(backgroundColor: Color(0xFF000000)),
+      dialogTheme: const DialogTheme(backgroundColor: Color(0xFF0A0A0A)),
+      cardTheme: CardTheme(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFF1A1A1A), width: 0.5),
+        ),
+        color: const Color(0xFF0A0A0A),
+        surfaceTintColor: Colors.transparent,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        clipBehavior: Clip.antiAlias,
+      ),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: const Color(0xFF000000),
+        selectedItemColor: colorScheme.primary,
+        unselectedItemColor: const Color(0xFF6B7280),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
+
   // ── Theme Builder ──────────────────────────────────────────────
 
   static ThemeData _buildTheme(ColorScheme colorScheme, {required bool isDark}) {

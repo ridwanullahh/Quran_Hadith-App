@@ -175,6 +175,18 @@ class _SurahListScreenState extends ConsumerState<SurahListScreen> {
             const Spacer(),
             IconButton(
               icon: Icon(
+                Icons.auto_stories_rounded,
+                color: isDark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.lightTextSecondary,
+              ),
+              tooltip: 'Mushaf Mode',
+              onPressed: () {
+                context.push('/quran/mushaf');
+              },
+            ),
+            IconButton(
+              icon: Icon(
                 Icons.search_rounded,
                 color: isDark
                     ? AppColors.darkTextSecondary
