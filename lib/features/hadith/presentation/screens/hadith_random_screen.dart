@@ -328,7 +328,7 @@ class _HadithRandomScreenState extends State<HadithRandomScreen>
                         ],
                       ),
                     ),
-                  ).animate().scale(begin: 0.95, end: 1.0, duration: 1500.ms).then(),
+                  ).animate().scale(begin: const Offset(0.95, 0.95), end: const Offset(1.0, 1.0), duration: 1500.ms),
 
                   const SizedBox(height: 32),
 
@@ -668,20 +668,4 @@ class _ActionButton extends StatelessWidget {
   }
 }
 
-// Helper widget for AnimatedBuilder (Flutter 3.x compatible)
-class AnimatedBuilder extends AnimatedWidget {
-  final Widget Function(BuildContext context, Widget? child) builder;
-  final Widget? child;
 
-  const AnimatedBuilder({
-    super.key,
-    required super.listenable,
-    required this.builder,
-    this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return builder(context, child);
-  }
-}
