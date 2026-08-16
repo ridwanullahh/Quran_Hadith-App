@@ -108,7 +108,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
 
     // If shuffled, show a shuffled view (visual only since we can't
     // re-order the actual queue without modifying AudioPlayerService).
-    final displayItems = _shuffled ? List<int>.from(items)..shuffle() : items;
+    final displayItems = _shuffled ? (List<int>.from(items)..shuffle()) : items;
 
     // Estimate total duration: ~15 seconds per ayah average.
     final estimatedSeconds = totalAyahs * 15;

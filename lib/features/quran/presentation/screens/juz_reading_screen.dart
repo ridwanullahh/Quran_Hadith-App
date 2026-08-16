@@ -191,7 +191,7 @@ class _JuzReadingScreenState extends ConsumerState<JuzReadingScreen> {
                     final ayah = ayahs[index];
                     return _JuzAyahCard(ayah: ayah).animate().fadeIn(
                       duration: 200.ms,
-                      delay: (index % 20) * 20.ms,
+                      delay: ((index % 20) * 20).ms,
                     );
                   },
                 ),
@@ -267,7 +267,7 @@ class JuzListScreen extends ConsumerWidget {
                 totalAyahs: totalAyahs,
                 surahNumber: surahNum,
                 onTap: () => context.push('/quran/juz/$juzNum'),
-              ).animate().fadeIn(duration: 250.ms, delay: (index % 10) * 30.ms);
+              ).animate().fadeIn(duration: 250.ms, delay: ((index % 10) * 30).ms);
             },
           );
         },

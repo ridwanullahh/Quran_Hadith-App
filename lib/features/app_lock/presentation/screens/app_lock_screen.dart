@@ -241,7 +241,7 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen> {
       ),
     ).animate(target: shake ? 1 : 0).shake(
         duration: 500.ms,
-        hOffset: 8,
+        offset: const Offset(8, 0),
         curve: Curves.elasticOut,
       );
   }

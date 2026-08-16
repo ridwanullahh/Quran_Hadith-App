@@ -470,6 +470,7 @@ class _NarratorScreenState extends State<NarratorScreen> {
       ),
     );
   }
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // Helper Widgets

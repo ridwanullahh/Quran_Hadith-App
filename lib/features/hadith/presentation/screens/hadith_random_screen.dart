@@ -293,7 +293,7 @@ class _HadithRandomScreenState extends State<HadithRandomScreen>
                 children: [
                   // Generate button
                   AnimatedBuilder(
-                    animation: _pulseController,
+                    listenable: _pulseController,
                     builder: (context, child) {
                       final scale = 1.0 + (_isAnimating ? 0.05 * _pulseController.value : 0.0);
                       return Transform.scale(

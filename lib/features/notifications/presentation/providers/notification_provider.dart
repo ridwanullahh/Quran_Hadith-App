@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 // ═══════════════════════════════════════════════════════════════════
 // Notification Data
@@ -184,9 +185,9 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
 
   Future<void> scheduleMorningNotification() async {
     final plugin = FlutterLocalNotificationsPlugin();
-    final now = DateTime.now();
-    final scheduled = DateTime(
-      now.year, now.month, now.day,
+    final now = tz.TZDateTime.now(tz.local);
+    final scheduled = tz.TZDateTime(
+      tz.local, now.year, now.month, now.day,
       state.morningTime.hour, state.morningTime.minute,
     );
     final scheduledTime = scheduled.isAfter(now) ? scheduled : scheduled.add(const Duration(days: 1));
@@ -217,9 +218,9 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
 
   Future<void> scheduleEveningNotification() async {
     final plugin = FlutterLocalNotificationsPlugin();
-    final now = DateTime.now();
-    final scheduled = DateTime(
-      now.year, now.month, now.day,
+    final now = tz.TZDateTime.now(tz.local);
+    final scheduled = tz.TZDateTime(
+      tz.local, now.year, now.month, now.day,
       state.eveningTime.hour, state.eveningTime.minute,
     );
     final scheduledTime = scheduled.isAfter(now) ? scheduled : scheduled.add(const Duration(days: 1));
@@ -248,8 +249,8 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
 
   Future<void> scheduleFridayNotification() async {
     final plugin = FlutterLocalNotificationsPlugin();
-    final now = DateTime.now();
-    var nextFriday = DateTime(now.year, now.month, now.day);
+    final now = tz.TZDateTime.now(tz.local);
+    var nextFriday = tz.TZDateTime(tz.local, now.year, now.month, now.day);
     while (nextFriday.weekday != DateTime.friday || nextFriday.isBefore(now)) {
       nextFriday = nextFriday.add(const Duration(days: 1));
     }

@@ -414,7 +414,7 @@ class _HadithStatisticsScreenState extends State<HadithStatisticsScreen>
         if (breakdown.isEmpty)
           _buildEmptyState(theme, isDark, 'No collection data yet')
         else
-          ...breakdown.entries.asMap().entries.map((entry) {
+          ...breakdown.entries.toList().asMap().entries.map((entry) {
             final colName = _formatCollectionName(entry.value.key);
             final count = entry.value.value;
             final pct = count / total;

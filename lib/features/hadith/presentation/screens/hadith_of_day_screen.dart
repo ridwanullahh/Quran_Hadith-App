@@ -1,5 +1,7 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_animate/flutter_animate.dart' hide TextDirection;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
@@ -666,7 +668,7 @@ class HadithOfDayScreen extends ConsumerWidget {
                         height: 2.0,
                         color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                       ),
-                      textDirection: TextDirection.rtl,
+                      textDirection: ui.TextDirection.rtl,
                       textAlign: TextAlign.right,
                     ),
                   ),
@@ -729,7 +731,7 @@ class HadithOfDayScreen extends ConsumerWidget {
             )
                 .animate()
                 .fadeIn(duration: 600.ms, delay: 200.ms)
-                .scale(begin: const Offset(0.96, 0.96), end: const Offset(1.0, 1.0),
+                .scale(begin: 0.96, end: 1.0,
                     duration: 500.ms, delay: 200.ms),
 
             const SizedBox(height: 20),

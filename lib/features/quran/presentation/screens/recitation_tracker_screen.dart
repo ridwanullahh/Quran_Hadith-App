@@ -200,7 +200,7 @@ class RecitationTrackerScreen extends ConsumerWidget {
                       return _SurahProgressTile(
                         progress: sp,
                         isDark: isDark,
-                      ).animate().fadeIn(duration: 200.ms, delay: (index % 20) * 20.ms);
+                      ).animate().fadeIn(duration: 200.ms, delay: ((index % 20) * 20).ms);
                     },
                     childCount: data.surahProgresses.length,
                   ),

@@ -107,7 +107,7 @@ class SurahInfoScreen extends ConsumerWidget {
               const SizedBox(height: 16),
 
               // ── Quick Actions ─────────────────────────────────────
-              _buildQuickActions(surah, isDark),
+              _buildQuickActions(context, surah, isDark),
               const SizedBox(height: 16),
 
               // ── Details Card ──────────────────────────────────────
@@ -195,7 +195,7 @@ class SurahInfoScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildQuickActions(SurahInfo surah, bool isDark) {
+  Widget _buildQuickActions(BuildContext context, SurahInfo surah, bool isDark) {
     return Row(
       children: [
         Expanded(

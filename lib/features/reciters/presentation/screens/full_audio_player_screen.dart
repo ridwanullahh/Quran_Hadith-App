@@ -769,28 +769,7 @@ class _FullAudioPlayerScreenState
   }
 
   Widget _buildSpeedButton(AudioPlayerService service, double speed) {
-    return IconButton(
-      icon: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-        decoration: BoxDecoration(
-          color: speed != 1.0
-              ? AppColors.secondary.withOpacity(0.15)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Text(
-          '${speed}x',
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: speed != 1.0
-                ? AppColors.secondary
-                : AppColors.darkTextSecondary,
-          ),
-        ),
-      ),
-      onPressed: () => _cycleSpeed(service),
+    return GestureDetector(
       onLongPress: () {
         showModalBottomSheet(
           context: context,
@@ -809,6 +788,29 @@ class _FullAudioPlayerScreenState
           ),
         );
       },
+      child: IconButton(
+        icon: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: speed != 1.0
+                ? AppColors.secondary.withOpacity(0.15)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            '${speed}x',
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: speed != 1.0
+                  ? AppColors.secondary
+                  : AppColors.darkTextSecondary,
+            ),
+          ),
+        ),
+        onPressed: () => _cycleSpeed(service),
+      ),
     );
   }
 

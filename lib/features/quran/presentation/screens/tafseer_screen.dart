@@ -192,7 +192,7 @@ class _TafseerScreenState extends ConsumerState<TafseerScreen>
           tafseerText: tafseerObj.text,
           source: source,
           isDark: isDark,
-        ).animate().fadeIn(duration: 250.ms, delay: (index % 15) * 30.ms);
+        ).animate().fadeIn(duration: 250.ms, delay: ((index % 15) * 30).ms);
       },
     );
   }
