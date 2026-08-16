@@ -345,7 +345,6 @@ final filteredDuasProvider = Provider<List<Dua>>((ref) {
     duas = duas.where((d) {
       return d.arabicText.contains(q) ||
           d.englishTranslation.toLowerCase().contains(q) ||
-          d.englishName.toLowerCase().contains(q) ||
           d.categoryName.toLowerCase().contains(q);
     }).toList();
   }

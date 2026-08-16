@@ -499,11 +499,11 @@ final dailyVerseProvider = Provider<((DailyVerseData, DateTime), DailyVerseData)
 });
 
 final todayVerseProvider = Provider<DailyVerseData>((ref) {
- return ref.watch(dailyVerseProvider).$1;
+ return ref.watch(dailyVerseProvider).$2;
 });
 
 final todayDateProvider = Provider<DateTime>((ref) {
- return ref.watch(dailyVerseProvider).$1.$1;
+ return ref.watch(dailyVerseProvider).$1.$2;
 });
 
 final verseDayIndexProvider = Provider<int>((ref) {

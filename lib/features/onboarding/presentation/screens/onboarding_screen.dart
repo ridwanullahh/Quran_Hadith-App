@@ -221,7 +221,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       _FeatureItem(
         icon: Icons.mosque_rounded,
         title: 'Islamic Tools',
-        description: 'Prayer times, Qibla compass,\nHijri calendar & Tasbih counter.',
+        description: 'Prayer times, Qibla compass,\nHijri calendar.',
         color: AppColors.revisionBlue,
       ),
     ];

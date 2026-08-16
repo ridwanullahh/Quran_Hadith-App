@@ -22,7 +22,6 @@ import '../../features/notes/presentation/screens/notes_screen.dart';
 import '../../features/prayer/presentation/screens/prayer_screen.dart';
 import '../../features/qibla/presentation/screens/qibla_screen.dart';
 import '../../features/calendar/presentation/screens/hijri_calendar_screen.dart';
-import '../../features/tasbih/presentation/screens/tasbih_screen.dart';
 import '../../features/dua/presentation/screens/dua_screen.dart';
 import '../../features/asma/presentation/screens/asma_screen.dart';
 import '../../features/daily_verse/presentation/screens/daily_verse_screen.dart';
@@ -59,7 +58,6 @@ abstract class AppRoutes {
   static const String crossRefs = '/cross-refs';
   static const String reciters = '/reciters';
   static const String readingPlan = '/reading-plan';
-  static const String tasbih = '/tasbih';
   static const String dua = '/dua';
   static const String asma = '/asma';
   static const String dailyVerse = '/daily';
@@ -274,14 +272,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ),
 
-          // Tasbih Counter
-          GoRoute(
-            path: '/tasbih',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: TasbihScreen(),
-            ),
-          ),
-
           // Du'a Collection
           GoRoute(
             path: '/dua',
@@ -471,25 +461,6 @@ class _MoreScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                ListTile(
-                  leading: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(Icons.touch_app_rounded, size: 18, color: AppColors.primary),
-                  ),
-                  title: const Text('Tasbih Counter'),
-                  subtitle: const Text('Dhikr counter with haptic feedback'),
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: () => context.push('/tasbih'),
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
-                ),
                 ListTile(
                   leading: Container(
                     width: 36,

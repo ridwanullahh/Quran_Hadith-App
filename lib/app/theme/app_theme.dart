@@ -211,7 +211,7 @@ class AppTheme {
       ),
 
       // ── Filled Card (elevated look) ─────────────────────────────
-      filledCardTheme: CardThemeData(
+      filledCardTheme: CardTheme(
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -220,7 +220,7 @@ class AppTheme {
       ),
 
       // ── Elevated Card ───────────────────────────────────────────
-      elevatedCardTheme: CardThemeData(
+      elevatedCardTheme: CardTheme(
         elevation: 4,
         shadowColor: isDark ? Colors.black54 : AppColors.shadow,
         shape: RoundedRectangleBorder(
@@ -836,7 +836,6 @@ class AppTheme {
     fontWeight: FontWeight.w400,
     height: 2.0,
     letterSpacing: 0.5,
-    textDirection: TextDirection.rtl,
   );
 
   static const TextStyle arabicQuranTextLarge = TextStyle(
@@ -845,7 +844,6 @@ class AppTheme {
     fontWeight: FontWeight.w400,
     height: 2.0,
     letterSpacing: 0.5,
-    textDirection: TextDirection.rtl,
   );
 
   static const TextStyle arabicQuranTextXL = TextStyle(
@@ -854,7 +852,6 @@ class AppTheme {
     fontWeight: FontWeight.w700,
     height: 2.0,
     letterSpacing: 0.5,
-    textDirection: TextDirection.rtl,
   );
 
   static const TextStyle arabicHeader = TextStyle(
@@ -863,7 +860,6 @@ class AppTheme {
     fontWeight: FontWeight.w700,
     height: 1.6,
     letterSpacing: 0.3,
-    textDirection: TextDirection.rtl,
   );
 
   static const TextStyle arabicHeaderSmall = TextStyle(
@@ -872,7 +868,6 @@ class AppTheme {
     fontWeight: FontWeight.w700,
     height: 1.5,
     letterSpacing: 0.3,
-    textDirection: TextDirection.rtl,
   );
 
   static const TextStyle arabicBody = TextStyle(
@@ -880,7 +875,6 @@ class AppTheme {
     fontSize: 18,
     fontWeight: FontWeight.w400,
     height: 1.8,
-    textDirection: TextDirection.rtl,
   );
 
   static const TextStyle arabicBodySmall = TextStyle(
@@ -888,7 +882,6 @@ class AppTheme {
     fontSize: 15,
     fontWeight: FontWeight.w400,
     height: 1.7,
-    textDirection: TextDirection.rtl,
   );
 
   static const TextStyle bismillahStyle = TextStyle(
@@ -897,7 +890,6 @@ class AppTheme {
     fontWeight: FontWeight.w700,
     height: 1.6,
     color: AppColors.secondary,
-    textDirection: TextDirection.rtl,
   );
 
   static const TextStyle ayahNumberStyle = TextStyle(
@@ -916,7 +908,6 @@ class AppTheme {
       fontSize: 24,
       fontWeight: FontWeight.w700,
       color: AppColors.primary,
-      textDirection: TextDirection.rtl,
       height: 1.3,
     );
   }

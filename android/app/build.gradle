@@ -20,7 +20,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace 'com.minhaajulhudaa.quran'
-    compileSdk 34
+    compileSdk 35
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -34,7 +34,7 @@ android {
     defaultConfig {
         applicationId "com.minhaajulhudaa.quran"
         minSdk 21
-        targetSdk 34
+        targetSdk 35
         versionCode System.getenv("VERSION_CODE")?.toInteger() ?: 1
         versionName System.getenv("VERSION_NAME") ?: "0.1.0"
     }

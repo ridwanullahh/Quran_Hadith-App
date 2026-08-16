@@ -18,8 +18,8 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
   int _currentSurahNumber = 0;
 
   // ── State subjects for UI binding ───────────────────────────────
-  final _repeatModeSubject = BehaviorSubject<RepeatMode>.seeded(
-    RepeatMode.none,
+  final _repeatModeSubject = BehaviorSubject<AudioServiceRepeatMode>.seeded(
+    AudioServiceRepeatMode.none,
   );
   final _surahProgressSubject = BehaviorSubject<Map<String, int>>.seeded(
     const {'currentAyah': 0, 'totalAyahs': 0},
@@ -28,7 +28,6 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
   QuranAudioHandler(this._audioRepository) {
     _listenToPlayerState();
     _listenToCurrentPosition();
-    _listenToPlaybackEvent();
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -48,10 +47,6 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
         'bufferedPosition': bufferedPosition,
       },
     ).pipe(position);
-  }
-
-  void _listenToPlaybackEvent() {
-    _player.playbackEventStream.map(_transformEvent).pipe(playbackEvent);
   }
 
   PlaybackState _transformState(PlayerState playerState) {
@@ -77,36 +72,22 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
     );
   }
 
-  PlaybackEvent _transformEvent(PlaybackEvent event) {
-    return PlaybackEvent(
-      updateTime: event.updateTime,
-      processingState: _mapProcessingState(
-        _player.processingState,
-      ),
-      duration: _player.duration,
-      bufferedPosition: _player.bufferedPosition,
-      updatePosition: _player.position,
-      icyMetadata: null,
-      label: null,
-    );
-  }
-
-  AudioProcessingState _mapProcessingState(
-    AudioProcessingState state,
+  ProcessingState _mapProcessingState(
+    ProcessingState state,
   ) {
     switch (state) {
-      case AudioProcessingState.idle:
-        return AudioProcessingState.idle;
-      case AudioProcessingState.loading:
-        return AudioProcessingState.loading;
-      case AudioProcessingState.buffering:
-        return AudioProcessingState.buffering;
-      case AudioProcessingState.ready:
-        return AudioProcessingState.ready;
-      case AudioProcessingState.completed:
-        return AudioProcessingState.completed;
+      case ProcessingState.idle:
+        return ProcessingState.idle;
+      case ProcessingState.loading:
+        return ProcessingState.loading;
+      case ProcessingState.buffering:
+        return ProcessingState.buffering;
+      case ProcessingState.ready:
+        return ProcessingState.ready;
+      case ProcessingState.completed:
+        return ProcessingState.completed;
       default:
-        return AudioProcessingState.idle;
+        return ProcessingState.idle;
     }
   }
 
@@ -148,7 +129,7 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
     }
 
     _currentIndex = 0;
-    queue.add(ListQueue.of(_queue));
+    queue.add(_queue);
     mediaItem.add(_queue.isNotEmpty ? _queue[0] : null);
 
     _surahProgressSubject.add({
@@ -191,7 +172,7 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
     }
 
     _currentIndex = 0;
-    queue.add(ListQueue.of(_queue));
+    queue.add(_queue);
     mediaItem.add(_queue.isNotEmpty ? _queue[0] : null);
 
     _surahProgressSubject.add({
@@ -222,7 +203,7 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
       final isLocal = item.id.startsWith('/');
       late AudioSource source;
       if (isLocal) {
-        source = DeviceFileSource(item.id);
+        source = AudioSource.file(item.id);
       } else {
         source = AudioSource.uri(Uri.parse(item.id));
       }
@@ -274,7 +255,7 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
   @override
   Future<void> resume() async {
     if (_queue.isEmpty) return;
-    if (_player.processingState == AudioProcessingState.ready) {
+    if (_player.processingState == ProcessingState.ready) {
       await _player.play();
     } else {
       await play();
@@ -287,7 +268,7 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
     _queue = [];
     _currentIndex = 0;
     mediaItem.add(null);
-    queue.add(ListQueue.of([]));
+    queue.add([]);
   }
 
   @override
@@ -297,7 +278,7 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
       await play();
     } else {
       // End of queue - loop or stop based on repeat mode
-      if (_repeatModeSubject.value == RepeatMode.all) {
+      if (_repeatModeSubject.value == AudioServiceRepeatMode.all) {
         _currentIndex = 0;
         await play();
       } else {
@@ -338,17 +319,20 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> setSpeed(double speed) => _player.setSpeed(speed);
 
   @override
-  Future<void> setRepeatMode(RepeatMode repeatMode) {
+  Future<void> setRepeatMode(AudioServiceRepeatMode repeatMode) {
     _repeatModeSubject.add(repeatMode);
 
     switch (repeatMode) {
-      case RepeatMode.none:
+      case AudioServiceRepeatMode.none:
         _player.setLoopMode(LoopMode.none);
         break;
-      case RepeatMode.one:
+      case AudioServiceRepeatMode.one:
         _player.setLoopMode(LoopMode.one);
         break;
-      case RepeatMode.all:
+      case AudioServiceRepeatMode.all:
+        _player.setLoopMode(LoopMode.all);
+        break;
+      case AudioServiceRepeatMode.group:
         _player.setLoopMode(LoopMode.all);
         break;
     }
@@ -360,7 +344,7 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
   // Getters / Streams
   // ═══════════════════════════════════════════════════════════════
 
-  Stream<Duration> get durationStream => _player.durationStream;
+  Stream<Duration?> get durationStream => _player.durationStream;
 
   Stream<Duration> get positionStream => _player.positionStream;
 
@@ -369,7 +353,7 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
 
   Stream<PlayerState> get playerStateStream => _player.playerStateStream;
 
-  Stream<RepeatMode> get repeatModeStream => _repeatModeSubject.stream;
+  Stream<AudioServiceRepeatMode> get repeatModeStream => _repeatModeSubject.stream;
 
   Stream<Map<String, int>> get surahProgressStream =>
       _surahProgressSubject.stream;
@@ -379,7 +363,7 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
   Duration get bufferedPosition => _player.bufferedPosition;
   bool get isPlaying => _player.playing;
   double get speed => _player.speed;
-  RepeatMode get repeatMode => _repeatModeSubject.value;
+  AudioServiceRepeatMode get repeatMode => _repeatModeSubject.value;
   int get currentSurahNumber => _currentSurahNumber;
   int get currentAyahNumber =>
       _currentIndex + 1; // 1-indexed
@@ -397,6 +381,5 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
     await _player.dispose();
     await _repeatModeSubject.close();
     await _surahProgressSubject.close();
-    super.dispose();
   }
 }

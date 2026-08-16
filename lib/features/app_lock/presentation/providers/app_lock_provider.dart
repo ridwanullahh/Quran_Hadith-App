@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
-import 'package:hive/hive_flutter.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 /// Holds the app lock state including whether it's enabled, the PIN,
 /// security question, and whether the lock screen should be shown.
@@ -198,5 +198,5 @@ class AppLockNotifier extends StateNotifier<AppLockState> {
 /// Provider for app lock functionality.
 final appLockProvider =
     StateNotifierProvider.autoDispose<AppLockNotifier, AppLockState>(
-  AppLockNotifier.new,
+  (ref) => AppLockNotifier(),
 );

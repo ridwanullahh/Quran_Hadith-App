@@ -264,7 +264,7 @@ class HifdhTestState {
   final HifdhTestResult? finalResult;
   final DateTime testStartTime;
 
-  const HifdhTestState({
+  HifdhTestState({
     this.phase = HifdhTestPhase.setup,
     this.mode = HifdhTestMode.hideReveal,
     this.selectedSurah,
@@ -316,7 +316,7 @@ class HifdhTestNotifier extends StateNotifier<HifdhTestState> {
   final HifdhDao _dao;
   final QuranRepository _repo;
 
-  HifdhTestNotifier(this._dao, this._repo) : super(const HifdhTestState());
+  HifdhTestNotifier(this._dao, this._repo) : super(HifdhTestState());
 
   void setMode(HifdhTestMode mode) {
     state = state.copyWith(mode: mode);
@@ -468,7 +468,7 @@ class HifdhTestNotifier extends StateNotifier<HifdhTestState> {
   }
 
   void reset() {
-    state = const HifdhTestState();
+    state = HifdhTestState();
   }
 }
 

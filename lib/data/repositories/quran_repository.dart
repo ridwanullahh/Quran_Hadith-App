@@ -13,6 +13,7 @@ class QuranRepository {
   final Map<String, List<AyahTranslation>> _translationsCache = {};
   final Map<String, List<AyahTafseer>> _tafseerCache = {};
   final Map<int, AyahWordAnalysis> _wordAnalysisCache = {};
+  Map<String, dynamic>? _wbwDataCache;
 
   // ═══════════════════════════════════════════════════════════════
   // Surahs
@@ -244,12 +245,38 @@ class QuranRepository {
         );
       }
 
-      final paddedSurah = targetSurah.toString().padLeft(3, '0');
-      final paddedAyah = ayahInSurah.toString().padLeft(3, '0');
-      final jsonString = await rootBundle.loadString(
-        '${AppConstants.wordAnalysisBasePath}$paddedSurah/$paddedAyah.json',
+      // Lazy-load the compressed word-by-word file once
+      if (_wbwDataCache == null) {
+        final jsonString = await rootBundle.loadString(
+          'assets/data/quran_wbw.json',
+        );
+        _wbwDataCache = json.decode(jsonString) as Map<String, dynamic>;
+      }
+
+      final surahMap = _wbwDataCache![targetSurah.toString()]
+          as Map<String, dynamic>?
+          ?? {};
+      final wordTexts = (surahMap[ayahInSurah.toString()] as List<dynamic>?)
+          ?.cast<String>() ?? <String>[];
+
+      // Build WordData objects with just the Arabic field populated
+      final words = <WordData>[];
+      for (int i = 0; i < wordTexts.length; i++) {
+        words.add(WordData(
+          number: i + 1,
+          ayahNumber: ayahInSurah,
+          wordNumber: i + 1,
+          wordPosition: i + 1,
+          textArabic: wordTexts[i],
+          textTransliteration: '',
+        ));
+      }
+
+      final analysis = AyahWordAnalysis(
+        ayahNumber: ayahInSurah,
+        surahNumber: targetSurah,
+        words: words,
       );
-      final analysis = parseWordAnalysis(jsonString);
       _wordAnalysisCache[ayahNumber] = analysis;
       return analysis;
     } catch (e) {
@@ -361,6 +388,7 @@ class QuranRepository {
     _translationsCache.clear();
     _tafseerCache.clear();
     _wordAnalysisCache.clear();
+    _wbwDataCache = null;
   }
 
   /// Pre-load all surah info into cache

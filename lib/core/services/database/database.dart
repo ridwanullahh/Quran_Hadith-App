@@ -90,11 +90,23 @@ class AppDatabase {
     return _instance!;
   }
 
-  /// Singleton instance. Call [ensureInitialized()] first.
+  /// Singleton instance. Call [init()] or [ensureInitialized()] first.
+  /// Throws a [StateError] if accessed before initialization (works in
+  /// release mode too, unlike the previous assert-only check).
   static AppDatabase get instance {
-    assert(_instance != null, 'Call AppDatabase.ensureInitialized() first');
+    if (_instance == null) {
+      throw StateError(
+        'AppDatabase has not been initialized. '
+        'Call AppDatabase.init() before accessing AppDatabase.instance.',
+      );
+    }
     return _instance!;
   }
+
+  /// Convenience alias for [ensureInitialized].
+  /// Opens the database and creates tables on first call; subsequent
+  /// calls return the existing instance immediately.
+  static Future<AppDatabase> init() => ensureInitialized();
 
   /// For testing: pass a custom database
   AppDatabase.forTesting(this._db) {
@@ -111,7 +123,7 @@ class AppDatabase {
   static Future<void> _onCreate(Database db, int version) async {
     // ── Bookmarks ──────────────────────────────────────────────────
     await db.execute('''
-      CREATE TABLE bookmarks (
+      CREATE TABLE IF NOT EXISTS bookmarks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         surah_number INTEGER NOT NULL,
         ayah_number INTEGER NOT NULL,
@@ -127,7 +139,7 @@ class AppDatabase {
 
     // ── Notes ──────────────────────────────────────────────────────
     await db.execute('''
-      CREATE TABLE notes (
+      CREATE TABLE IF NOT EXISTS notes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         surah_number INTEGER NOT NULL,
         ayah_number INTEGER NOT NULL,
@@ -141,7 +153,7 @@ class AppDatabase {
 
     // ── Memorization Progress ──────────────────────────────────────
     await db.execute('''
-      CREATE TABLE memorization_progress (
+      CREATE TABLE IF NOT EXISTS memorization_progress (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         surah_number INTEGER NOT NULL,
         ayah_number INTEGER NOT NULL,
@@ -162,7 +174,7 @@ class AppDatabase {
 
     // ── Revision Schedule ──────────────────────────────────────────
     await db.execute('''
-      CREATE TABLE revision_schedule (
+      CREATE TABLE IF NOT EXISTS revision_schedule (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         surah_number INTEGER NOT NULL,
         ayah_start INTEGER NOT NULL,
@@ -179,7 +191,7 @@ class AppDatabase {
 
     // ── Mistake Log ────────────────────────────────────────────────
     await db.execute('''
-      CREATE TABLE mistake_log (
+      CREATE TABLE IF NOT EXISTS mistake_log (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         surah_number INTEGER NOT NULL,
         ayah_number INTEGER NOT NULL,
@@ -196,7 +208,7 @@ class AppDatabase {
 
     // ── Reading History ────────────────────────────────────────────
     await db.execute('''
-      CREATE TABLE reading_history (
+      CREATE TABLE IF NOT EXISTS reading_history (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         surah_number INTEGER NOT NULL,
         ayah_number INTEGER NOT NULL,
@@ -208,7 +220,7 @@ class AppDatabase {
 
     // ── Search History ─────────────────────────────────────────────
     await db.execute('''
-      CREATE TABLE search_history (
+      CREATE TABLE IF NOT EXISTS search_history (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         query TEXT NOT NULL,
         search_scope TEXT NOT NULL DEFAULT 'quran',
@@ -219,7 +231,7 @@ class AppDatabase {
 
     // ── Audio Downloads ────────────────────────────────────────────
     await db.execute('''
-      CREATE TABLE audio_downloads (
+      CREATE TABLE IF NOT EXISTS audio_downloads (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         surah_number INTEGER NOT NULL,
         ayah_number INTEGER NOT NULL DEFAULT 0,
@@ -237,36 +249,36 @@ class AppDatabase {
 
     // ── Indexes ────────────────────────────────────────────────────
     await db.execute(
-        'CREATE INDEX idx_bookmarks_surah_ayah ON bookmarks (surah_number, ayah_number)');
+        'CREATE INDEX IF NOT EXISTS idx_bookmarks_surah_ayah ON bookmarks (surah_number, ayah_number)');
     await db.execute(
-        'CREATE INDEX idx_bookmarks_category ON bookmarks (category)');
+        'CREATE INDEX IF NOT EXISTS idx_bookmarks_category ON bookmarks (category)');
     await db.execute(
-        'CREATE INDEX idx_bookmarks_created ON bookmarks (created_at)');
+        'CREATE INDEX IF NOT EXISTS idx_bookmarks_created ON bookmarks (created_at)');
     await db.execute(
-        'CREATE INDEX idx_notes_surah_ayah ON notes (surah_number, ayah_number)');
-    await db.execute('CREATE INDEX idx_notes_updated ON notes (updated_at)');
+        'CREATE INDEX IF NOT EXISTS idx_notes_surah_ayah ON notes (surah_number, ayah_number)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_notes_updated ON notes (updated_at)');
     await db.execute(
-        'CREATE INDEX idx_memorization_surah_ayah ON memorization_progress (surah_number, ayah_number)');
+        'CREATE INDEX IF NOT EXISTS idx_memorization_surah_ayah ON memorization_progress (surah_number, ayah_number)');
     await db.execute(
-        'CREATE INDEX idx_memorization_status ON memorization_progress (status)');
+        'CREATE INDEX IF NOT EXISTS idx_memorization_status ON memorization_progress (status)');
     await db.execute(
-        'CREATE INDEX idx_memorization_next_review ON memorization_progress (next_review_date)');
+        'CREATE INDEX IF NOT EXISTS idx_memorization_next_review ON memorization_progress (next_review_date)');
     await db.execute(
-        'CREATE INDEX idx_revision_scheduled ON revision_schedule (scheduled_date)');
+        'CREATE INDEX IF NOT EXISTS idx_revision_scheduled ON revision_schedule (scheduled_date)');
     await db.execute(
-        'CREATE INDEX idx_revision_status ON revision_schedule (status)');
+        'CREATE INDEX IF NOT EXISTS idx_revision_status ON revision_schedule (status)');
     await db.execute(
-        'CREATE INDEX idx_mistakes_surah ON mistake_log (surah_number)');
+        'CREATE INDEX IF NOT EXISTS idx_mistakes_surah ON mistake_log (surah_number)');
     await db.execute(
-        'CREATE INDEX idx_mistakes_resolved ON mistake_log (is_resolved)');
+        'CREATE INDEX IF NOT EXISTS idx_mistakes_resolved ON mistake_log (is_resolved)');
     await db.execute(
-        'CREATE INDEX idx_reading_history_read_at ON reading_history (read_at)');
+        'CREATE INDEX IF NOT EXISTS idx_reading_history_read_at ON reading_history (read_at)');
     await db.execute(
-        'CREATE INDEX idx_search_history_searched ON search_history (searched_at)');
+        'CREATE INDEX IF NOT EXISTS idx_search_history_searched ON search_history (searched_at)');
     await db.execute(
-        'CREATE INDEX idx_audio_surah_reciter ON audio_downloads (surah_number, reciter_id)');
+        'CREATE INDEX IF NOT EXISTS idx_audio_surah_reciter ON audio_downloads (surah_number, reciter_id)');
     await db.execute(
-        'CREATE INDEX idx_audio_status ON audio_downloads (download_status)');
+        'CREATE INDEX IF NOT EXISTS idx_audio_status ON audio_downloads (download_status)');
   }
 
   static Future<void> _onUpgrade(Database db, int from, int to) async {
