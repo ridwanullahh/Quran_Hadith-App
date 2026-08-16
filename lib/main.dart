@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -10,7 +12,10 @@ import 'core/services/audio/audio_player_service.dart';
 import 'core/services/database/database.dart';
 import 'core/services/popup/popup_service.dart';
 import 'data/repositories/audio_repository.dart';
+import 'features/engagement/presentation/providers/engagement_provider.dart';
+import 'features/notifications/presentation/providers/notification_provider.dart';
 import 'features/settings/presentation/providers/theme_provider.dart';
+import 'features/update/presentation/providers/update_provider.dart';
 
 /// Holds the result of all startup initialization so that
 /// downstream widgets can access initialized singletons.
@@ -36,6 +41,33 @@ final _initProvider = FutureProvider<_AppInitResult>((ref) async {
 
   // ── Popup Service (ensure defaults are in Hive) ──────────────
   PopupService.instance.isEnabled;
+
+  // ── Background startup hooks (fire-and-forget; do not block UI) ──
+  // These providers improve UX but are not required for first paint.
+  // Errors are caught and logged so a failing hook never breaks startup.
+  Future<void> _safeStartupHook(String name, Future<void> Function() task) async {
+    try {
+      await task();
+    } catch (e, st) {
+      debugPrint('[Startup Hook $name] failed: $e\n$st');
+    }
+  }
+
+  // Use a fresh container for background hooks so they don't block the UI
+  // build pipeline. They will be re-evaluated lazily when the user navigates
+  // to the corresponding screens.
+  final hookContainer = ProviderContainer();
+  unawaited(_safeStartupHook('autoUpdateCheck', () {
+    ref.read(updateProvider.notifier).autoCheckOnStart();
+    return Future.value();
+  }));
+  unawaited(_safeStartupHook('engagementRecordAppOpen', () {
+    hookContainer.read(engagementProvider.notifier).recordAppOpen();
+    return Future.value();
+  }));
+  unawaited(_safeStartupHook('scheduleAllNotifications', () async {
+    await hookContainer.read(notificationSettingsProvider.notifier).scheduleAll();
+  }));
 
   return _AppInitResult(
     settingsBox: settingsBox,

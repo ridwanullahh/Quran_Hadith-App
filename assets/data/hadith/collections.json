@@ -1,0 +1,74 @@
+[
+  {
+    "id": "bukhari",
+    "name": "Sahih al-Bukhari",
+    "name_arabic": "صحيح البخاري",
+    "short_name": "Bukhari",
+    "author": "Imam Muhammad ibn Ismail al-Bukhari",
+    "author_arabic": "الإمام محمد بن إسماعيل البخاري",
+    "total_hadiths": 7563,
+    "total_books": 97,
+    "introduction": "Sahih al-Bukhari is the most authentic book after the Qur'an, compiled by Imam al-Bukhari (810-870 CE). It contains 7,563 hadiths (including repetitions) across 97 books covering every aspect of life.",
+    "has_volumes": false
+  },
+  {
+    "id": "muslim",
+    "name": "Sahih Muslim",
+    "name_arabic": "صحيح مسلم",
+    "short_name": "Muslim",
+    "author": "Imam Muslim ibn al-Hajjaj al-Naysaburi",
+    "author_arabic": "الإمام مسلم بن الحجاج النيسابوري",
+    "total_hadiths": 7470,
+    "total_books": 56,
+    "introduction": "Sahih Muslim is the second most authentic hadith collection, compiled by Imam Muslim (817-875 CE). It contains 7,470 hadiths across 56 books, complementing Sahih al-Bukhari.",
+    "has_volumes": false
+  },
+  {
+    "id": "abudawud",
+    "name": "Sunan Abi Dawud",
+    "name_arabic": "سنن أبي داود",
+    "short_name": "Abu Dawud",
+    "author": "Imam Abu Dawud al-Sijistani",
+    "author_arabic": "الإمام أبو داود السجستاني",
+    "total_hadiths": 5274,
+    "total_books": 43,
+    "introduction": "Sunan Abi Dawud is one of the six major hadith collections, compiled by Imam Abu Dawud (817-889 CE). It focuses primarily on legal hadiths (ahkam) and contains 5,274 hadiths.",
+    "has_volumes": false
+  },
+  {
+    "id": "tirmidhi",
+    "name": "Jami' al-Tirmidhi",
+    "name_arabic": "جامع الترمذي",
+    "short_name": "Tirmidhi",
+    "author": "Imam Muhammad ibn Isa al-Tirmidhi",
+    "author_arabic": "الإمام محمد بن عيسى الترمذي",
+    "total_hadiths": 3956,
+    "total_books": 46,
+    "introduction": "Jami' al-Tirmidhi is one of the six major hadith collections, compiled by Imam al-Tirmidhi (824-892 CE). It is distinguished by its grading of hadiths and discussion of legal opinions.",
+    "has_volumes": false
+  },
+  {
+    "id": "nasai",
+    "name": "Sunan al-Nasa'i",
+    "name_arabic": "سنن النسائي",
+    "short_name": "Nasa'i",
+    "author": "Imam Ahmad ibn Shu'ayb al-Nasa'i",
+    "author_arabic": "الإمام أحمد بن شعيب النسائي",
+    "total_hadiths": 5758,
+    "total_books": 51,
+    "introduction": "Sunan al-Nasa'i is one of the six major hadith collections, compiled by Imam al-Nasa'i (829-915 CE). It is considered the most authentic of the four Sunan after the two Sahihs.",
+    "has_volumes": false
+  },
+  {
+    "id": "ibnmajah",
+    "name": "Sunan Ibn Majah",
+    "name_arabic": "سنن ابن ماجه",
+    "short_name": "Ibn Majah",
+    "author": "Imam Ibn Majah al-Qazwini",
+    "author_arabic": "الإمام ابن ماجه القزويني",
+    "total_hadiths": 4341,
+    "total_books": 37,
+    "introduction": "Sunan Ibn Majah is the sixth of the major hadith collections, compiled by Imam Ibn Majah (824-887 CE). It contains 4,341 hadiths across 37 books.",
+    "has_volumes": false
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "book_number": 1,
+    "book_name": "Book of Revelation",
+    "book_name_arabic": "كتاب بدء الوحي",
+    "hadith_start_number": 1,
+    "hadith_end_number": 7,
+    "total_hadiths": 7,
+    "description": "The first book of Sahih al-Bukhari, covering the beginning of revelation."
+  },
+  {
+    "book_number": 2,
+    "book_name": "Book of Faith",
+    "book_name_arabic": "كتاب الإيمان",
+    "hadith_start_number": 8,
+    "hadith_end_number": 58,
+    "total_hadiths": 51,
+    "description": "Hadiths on the pillars and branches of faith."
+  }
+]

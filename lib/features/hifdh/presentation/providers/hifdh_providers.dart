@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/services/database/database.dart';
@@ -263,6 +264,7 @@ class HifdhTestState {
   final bool isRevealed;
   final HifdhTestResult? finalResult;
   final DateTime testStartTime;
+  final String? lastError;
 
   HifdhTestState({
     this.phase = HifdhTestPhase.setup,
@@ -275,6 +277,7 @@ class HifdhTestState {
     this.results = const [],
     this.isRevealed = false,
     this.finalResult,
+    this.lastError,
     DateTime? testStartTime,
   }) : this.testStartTime = testStartTime ?? DateTime.now();
 
@@ -290,6 +293,8 @@ class HifdhTestState {
     bool? isRevealed,
     HifdhTestResult? finalResult,
     DateTime? testStartTime,
+    String? lastError,
+    bool clearError = false,
   }) {
     return HifdhTestState(
       phase: phase ?? this.phase,
@@ -303,6 +308,7 @@ class HifdhTestState {
       isRevealed: isRevealed ?? this.isRevealed,
       finalResult: finalResult,
       testStartTime: testStartTime ?? this.testStartTime,
+      lastError: clearError ? null : (lastError ?? this.lastError),
     );
   }
 
@@ -340,6 +346,14 @@ class HifdhTestNotifier extends StateNotifier<HifdhTestState> {
           .where((a) => a.ayahNumber >= state.ayahStart && a.ayahNumber <= state.ayahEnd)
           .toList();
 
+      if (filtered.isEmpty) {
+        state = state.copyWith(
+          lastError: 'No ayahs found in the selected range '
+              '(${state.ayahStart}-${state.ayahEnd}) for surah $surah.',
+        );
+        return;
+      }
+
       state = HifdhTestState(
         phase: HifdhTestPhase.testing,
         mode: state.mode,
@@ -349,8 +363,13 @@ class HifdhTestNotifier extends StateNotifier<HifdhTestState> {
         ayahs: filtered,
         testStartTime: DateTime.now(),
       );
-    } catch (_) {
-      // If ayahs fail to load, stay in setup
+    } catch (e, st) {
+      // Surface the error to the UI instead of silently no-op'ing so the
+      // user knows why the test did not start.
+      debugPrint('[HifdhTestNotifier.startTest] failed: $e\n$st');
+      state = state.copyWith(
+        lastError: 'Failed to load ayahs for surah $surah: $e',
+      );
     }
   }
 

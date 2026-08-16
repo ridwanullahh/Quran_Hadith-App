@@ -1,0 +1,11 @@
+[
+  {
+    "book_number": 1,
+    "book_name": "Book of Purification",
+    "book_name_arabic": "كتاب الطهارة",
+    "hadith_start_number": 1,
+    "hadith_end_number": 80,
+    "total_hadiths": 80,
+    "description": "Hadiths on purification and ablution."
+  }
+]

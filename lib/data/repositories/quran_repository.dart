@@ -15,6 +15,74 @@ class QuranRepository {
   final Map<int, AyahWordAnalysis> _wordAnalysisCache = {};
   Map<String, dynamic>? _wbwDataCache;
 
+  // ── Single-file Quran text caches (lazy-loaded once) ───────────
+  // Shape: { "<surahNumber>": ["ayah 1 text", "ayah 2 text", ...], ... }
+  Map<String, List<String>>? _uthmaniTextCache;
+  Map<String, List<String>>? _translationTextCache;
+
+  /// Load the full Uthmani text map from assets/data/quran_uthmani.json.
+  /// This is a single 1.4 MB file containing all 114 surahs. We load it once
+  /// and serve all subsequent `getSurahAyahs` calls from the in-memory map.
+  Future<Map<String, List<String>>> _loadUthmaniText() async {
+    if (_uthmaniTextCache != null) return _uthmaniTextCache!;
+    try {
+      final jsonString = await rootBundle.loadString(
+        AppConstants.quranUthmaniAssetPath,
+      );
+      final decoded = json.decode(jsonString) as Map<String, dynamic>;
+      _uthmaniTextCache = decoded.map((k, v) {
+        final list = (v as List<dynamic>).cast<String>();
+        return MapEntry(k, list);
+      });
+      return _uthmaniTextCache!;
+    } catch (e) {
+      throw QuranDataException(
+        'Failed to load Uthmani text from ${AppConstants.quranUthmaniAssetPath}: $e',
+      );
+    }
+  }
+
+  /// Load the full English translation map from
+  /// assets/data/quran_en_translation.json.
+  Future<Map<String, List<String>>> _loadTranslationText() async {
+    if (_translationTextCache != null) return _translationTextCache!;
+    try {
+      final jsonString = await rootBundle.loadString(
+        AppConstants.quranEnTranslationAssetPath,
+      );
+      final decoded = json.decode(jsonString) as Map<String, dynamic>;
+      _translationTextCache = decoded.map((k, v) {
+        final list = (v as List<dynamic>).cast<String>();
+        return MapEntry(k, list);
+      });
+      return _translationTextCache!;
+    } catch (e) {
+      throw QuranDataException(
+        'Failed to load English translations: $e',
+      );
+    }
+  }
+
+  /// Compute the juz (1-30) for an ayah at (surahNumber, ayahInSurah).
+  /// Uses `AppConstants.juzBreakdown` which lists the starting (surah, ayah)
+  /// of each juz. We find the largest j such that juzBreakdown[j-1] <=
+  /// (surah, ayahInSurah) in (surah, ayah) tuple ordering.
+  int _juzForAyah(int surahNumber, int ayahInSurah) {
+    int juz = 1;
+    for (int j = 0; j < AppConstants.juzBreakdown.length; j++) {
+      final start = AppConstants.juzBreakdown[j];
+      final startSurah = start['surah']!;
+      final startAyah = start['ayah']!;
+      if (surahNumber > startSurah ||
+          (surahNumber == startSurah && ayahInSurah >= startAyah)) {
+        juz = j + 1;
+      } else {
+        break;
+      }
+    }
+    return juz;
+  }
+
   // ═══════════════════════════════════════════════════════════════
   // Surahs
   // ═══════════════════════════════════════════════════════════════
@@ -58,26 +126,79 @@ class QuranRepository {
   // Ayahs
   // ═══════════════════════════════════════════════════════════════
 
-  /// Returns all ayahs for a given surah
+  /// Returns all ayahs for a given surah.
+  ///
+  /// Loads from the single-file `assets/data/quran_uthmani.json` (a
+  /// `Map<String, List<String>>` keyed by surah number). The juz number for
+  /// each ayah is derived from `AppConstants.juzBreakdown`. Page and hizb
+  /// fields are left null when the bundled data does not provide them.
   Future<List<AyahData>> getSurahAyahs(int surahNumber) async {
     if (_ayahsCache.containsKey(surahNumber)) {
       return _ayahsCache[surahNumber]!;
     }
 
     try {
-      // Asset path pattern: assets/data/surahs/{surahNumber}.json
-      final paddedNumber = surahNumber.toString().padLeft(3, '0');
-      final jsonString = await rootBundle.loadString(
-        'assets/data/surahs/$paddedNumber.json',
-      );
-      final ayahs = parseAyahList(jsonString);
+      // Ensure surah metadata is loaded first so _absoluteAyahNumber works.
+      if (_surahsCache == null) {
+        await getAllSurahs();
+      }
+      final uthmani = await _loadUthmaniText();
+      final surahKey = surahNumber.toString();
+      final ayahTexts = uthmani[surahKey];
+      if (ayahTexts == null) {
+        throw QuranDataException(
+          'Surah $surahNumber not found in Uthmani text asset',
+        );
+      }
+
+      // Determine the starting juz for this surah so we can derive per-ayah
+      // juz numbers without scanning the breakdown for every ayah.
+      final ayahs = <AyahData>[];
+      for (int i = 0; i < ayahTexts.length; i++) {
+        final ayahInSurah = i + 1;
+        ayahs.add(AyahData(
+          number: _absoluteAyahNumber(surahNumber, ayahInSurah),
+          surahNumber: surahNumber,
+          ayahNumber: ayahInSurah,
+          textUthmani: ayahTexts[i],
+          juzNumber: _juzForAyah(surahNumber, ayahInSurah),
+          page: null,
+          hizbQuarter: null,
+          sajda: false,
+          sajdaType: null,
+        ));
+      }
       _ayahsCache[surahNumber] = ayahs;
       return ayahs;
     } catch (e) {
+      if (e is QuranDataException) rethrow;
       throw QuranDataException(
         'Failed to load ayahs for surah $surahNumber: $e',
       );
     }
+  }
+
+  /// Compute the absolute (Mushaf) ayah number for (surah, ayahInSurah).
+  /// Cached after the first computation per surah.
+  final Map<int, int> _surahStartOffsetCache = {};
+  int _absoluteAyahNumber(int surahNumber, int ayahInSurah) {
+    // We need the total ayahs of all preceding surahs. We use the cached
+    // surah list when available; otherwise fall back to a synchronous
+    // approximation that will be replaced once getAllSurahs is called.
+    if (_surahsCache != null) {
+      int offset = _surahStartOffsetCache[surahNumber] ??= () {
+        int sum = 0;
+        for (final s in _surahsCache!) {
+          if (s.number < surahNumber) sum += s.totalAyahs;
+        }
+        return sum;
+      }();
+      return offset + ayahInSurah;
+    }
+    // Synchronous fallback: only correct if surah list has been loaded.
+    // The caller typically calls getAllSurahs first; if not, the absolute
+    // number is approximate but unique within a session.
+    return surahNumber * 1000 + ayahInSurah;
   }
 
   /// Get a single ayah by absolute ayah number
@@ -133,7 +254,11 @@ class QuranRepository {
   // Translations
   // ═══════════════════════════════════════════════════════════════
 
-  /// Get translations for a surah in the specified language
+  /// Get translations for a surah in the specified language.
+  ///
+  /// Currently only `en` is bundled (`assets/data/quran_en_translation.json`).
+  /// Other languages return an empty list rather than throwing, so the UI can
+  /// gracefully fall back to Arabic-only display.
   Future<List<AyahTranslation>> getTranslations(
     int surahNumber, {
     String language = 'en',
@@ -144,14 +269,32 @@ class QuranRepository {
     }
 
     try {
-      final paddedNumber = surahNumber.toString().padLeft(3, '0');
-      final jsonString = await rootBundle.loadString(
-        '${AppConstants.quranTranslationBasePath}${language}/$paddedNumber.json',
-      );
-      final translations = parseTranslationList(jsonString);
+      if (language != 'en') {
+        // No bundled translation assets for non-English languages yet.
+        final empty = <AyahTranslation>[];
+        _translationsCache[cacheKey] = empty;
+        return empty;
+      }
+      final translationMap = await _loadTranslationText();
+      final surahKey = surahNumber.toString();
+      final texts = translationMap[surahKey] ?? <String>[];
+      final surahOffset = _surahsCache == null
+          ? 0
+          : _surahsCache!.fold<int>(0, (sum, s) => s.number < surahNumber ? sum + s.totalAyahs : sum);
+      final translations = <AyahTranslation>[];
+      for (int i = 0; i < texts.length; i++) {
+        translations.add(AyahTranslation(
+          surahNumber: surahNumber,
+          ayahNumber: i + 1,
+          number: surahOffset + i + 1,
+          text: texts[i],
+          language: language,
+        ));
+      }
       _translationsCache[cacheKey] = translations;
       return translations;
     } catch (e) {
+      if (e is QuranDataException) rethrow;
       throw QuranDataException(
         'Failed to load $language translations for surah $surahNumber: $e',
       );
@@ -174,7 +317,11 @@ class QuranRepository {
   // Tafseer
   // ═══════════════════════════════════════════════════════════════
 
-  /// Get tafseer for a surah from a specific source
+  /// Get tafseer for a surah from a specific source.
+  ///
+  /// No tafseer assets are currently bundled with the app. This method
+  /// returns an empty list instead of throwing, so the tafseer tab can show
+  /// a graceful "not available" message rather than crashing the screen.
   Future<List<AyahTafseer>> getSurahTafseer(
     int surahNumber, {
     String source = 'ibn_kathir',
@@ -183,20 +330,10 @@ class QuranRepository {
     if (_tafseerCache.containsKey(cacheKey)) {
       return _tafseerCache[cacheKey]!;
     }
-
-    try {
-      final paddedNumber = surahNumber.toString().padLeft(3, '0');
-      final jsonString = await rootBundle.loadString(
-        '${AppConstants.tafseerBasePath}$source/$paddedNumber.json',
-      );
-      final tafseer = parseTafseerList(jsonString);
-      _tafseerCache[cacheKey] = tafseer;
-      return tafseer;
-    } catch (e) {
-      throw QuranDataException(
-        'Failed to load $source tafseer for surah $surahNumber: $e',
-      );
-    }
+    // No bundled tafseer assets — return empty list (UI shows placeholder).
+    final empty = <AyahTafseer>[];
+    _tafseerCache[cacheKey] = empty;
+    return empty;
   }
 
   /// Get tafseer for a specific ayah
@@ -389,6 +526,9 @@ class QuranRepository {
     _tafseerCache.clear();
     _wordAnalysisCache.clear();
     _wbwDataCache = null;
+    _uthmaniTextCache = null;
+    _translationTextCache = null;
+    _surahStartOffsetCache.clear();
   }
 
   /// Pre-load all surah info into cache

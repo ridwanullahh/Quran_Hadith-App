@@ -1,0 +1,37 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Crescent outer gold disc -->
+    <path
+        android:fillColor="#D4AF37"
+        android:pathData="M54,28 m-12,0 a12,12 0 1,0 24,0 a12,12 0 1,0 -24,0"/>
+    <!-- Crescent carved-out (background color) -->
+    <path
+        android:fillColor="#0A1628"
+        android:pathData="M58,22 m-10.2,0 a10.2,10.2 0 1,0 20.4,0 a10.2,10.2 0 1,0 -20.4,0"/>
+    <!-- Open book: left page -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,62 L53,55 L53,82 L24,76 Z"/>
+    <!-- Open book: right page -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M84,62 L55,55 L55,82 L84,76 Z"/>
+    <!-- Spine -->
+    <path
+        android:strokeColor="#D4AF37"
+        android:strokeWidth="1.2"
+        android:pathData="M54,55 L54,82"/>
+    <!-- Left page lines -->
+    <path
+        android:strokeColor="#0A1628"
+        android:strokeWidth="0.8"
+        android:pathData="M28,68 L50,64 M28,72 L50,68 M28,76 L50,72"/>
+    <!-- Right page lines -->
+    <path
+        android:strokeColor="#0A1628"
+        android:strokeWidth="0.8"
+        android:pathData="M58,64 L80,68 M58,68 L80,72 M58,72 L80,76"/>
+</vector>

@@ -303,6 +303,8 @@ class AppConstants {
   // ── Asset Paths ──────────────────────────────────────────────────
   static const String surahInfoAssetPath = 'assets/data/surah_info.json';
   static const String quranUthmaniAssetPath = 'assets/data/quran_uthmani.json';
+  static const String quranEnTranslationAssetPath =
+      'assets/data/quran_en_translation.json';
   static const String quranTranslationBasePath =
       'assets/data/translations/';
   static const String tafseerBasePath = 'assets/data/tafseer/';

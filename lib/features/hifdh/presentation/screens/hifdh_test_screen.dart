@@ -348,9 +348,19 @@ class _SetupPhaseState extends State<_SetupPhase> {
             width: double.infinity,
             height: 52,
             child: FilledButton.icon(
-              onPressed: () {
+              onPressed: () async {
                 notifier.setAyahRange(_startAyah, _endAyah);
-                notifier.startTest();
+                await notifier.startTest();
+                final err = widget.ref.read(hifdhTestProvider).lastError;
+                if (err != null && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(err),
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
+                }
               },
               icon: const Icon(Icons.play_arrow_rounded),
               label: Text(
