@@ -41,10 +41,6 @@ jobs:
         run: flutter pub get
         timeout-minutes: 5
 
-      - name: Generate code (build_runner)
-        run: dart run build_runner build --delete-conflicting-outputs
-        timeout-minutes: 30
-
       - name: Generate signing keystore
         run: |
           keytool -genkeypair -v \

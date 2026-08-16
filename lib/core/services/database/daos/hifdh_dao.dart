@@ -1,16 +1,13 @@
-import 'package:drift/drift.dart';
-import '../tables.dart' as tbl;
-import '../database.dart';
+import 'package:sqflite/sqflite.dart';
+
+import '../tables.dart';
 import '../../../../constants/app_constants.dart';
+import '../database.dart'
+    show notifyProgressChanged, notifyRevisionsChanged, notifyMistakesChanged;
 
-part 'hifdh_dao.g.dart';
-
-@DriftAccessor(
-  tables: [tbl.MemorizationProgress, tbl.RevisionSchedule, tbl.MistakeLog],
-)
-class HifdhDao extends DatabaseAccessor<AppDatabase>
-    with _$HifdhDaoMixin {
-  HifdhDao(super.db);
+class HifdhDao {
+  final Database _db;
+  HifdhDao(this._db);
 
   // ═══════════════════════════════════════════════════════════════
   // Memorization Progress
@@ -20,25 +17,25 @@ class HifdhDao extends DatabaseAccessor<AppDatabase>
     required int surahNumber,
     required int ayahNumber,
     required String status,
-  }) {
+  }) async {
     final now = DateTime.now();
-    return into(memorizationProgress).insertOnConflictUpdate(
-      MemorizationProgressCompanion.insert(
-        surahNumber: Value(surahNumber),
-        ayahNumber: Value(ayahNumber),
-        status: Value(status),
-        repetitions: const Value(0),
-        easeFactor: const Value(AppConstants.initialEaseFactor),
-        intervalDays: const Value(AppConstants.minimumIntervalDays),
-        consecutiveCorrect: const Value(0),
-        totalAttempts: const Value(0),
-        totalCorrect: const Value(0),
-        lastReviewed: Value(now),
-        nextReviewDate: Value(now.add(const Duration(days: 1))),
-        createdAt: Value(now),
-        updatedAt: Value(now),
-      ),
-    );
+    final id = await _db.insert('memorization_progress', {
+      'surah_number': surahNumber,
+      'ayah_number': ayahNumber,
+      'status': status,
+      'repetitions': 0,
+      'ease_factor': AppConstants.initialEaseFactor,
+      'interval_days': AppConstants.minimumIntervalDays,
+      'consecutive_correct': 0,
+      'total_attempts': 0,
+      'total_correct': 0,
+      'last_reviewed': now.toIso8601String(),
+      'next_review_date': now.add(const Duration(days: 1)).toIso8601String(),
+      'created_at': now.toIso8601String(),
+      'updated_at': now.toIso8601String(),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    notifyProgressChanged();
+    return id;
   }
 
   /// Record a review attempt using the SM-2 spaced repetition algorithm
@@ -47,14 +44,10 @@ class HifdhDao extends DatabaseAccessor<AppDatabase>
     required int ayahNumber,
     required int quality,
   }) async {
-    // Quality: 0-5 scale (0=complete failure, 5=perfect)
-    final existing = await (select(memorizationProgress)
-          ..where(
-            (t) =>
-                t.surahNumber.equals(surahNumber) &
-                t.ayahNumber.equals(ayahNumber),
-          ))
-        .getSingleOrNull();
+    final rows = await _db.query('memorization_progress',
+        where: 'surah_number = ? AND ayah_number = ?',
+        whereArgs: [surahNumber, ayahNumber],
+        limit: 1);
 
     final now = DateTime.now();
     int newInterval;
@@ -63,8 +56,12 @@ class HifdhDao extends DatabaseAccessor<AppDatabase>
     int newConsecutive;
     String newStatus;
 
+    MemorizationProgress? existing;
+    if (rows.isNotEmpty) {
+      existing = MemorizationProgress.fromMap(rows.first);
+    }
+
     if (existing == null) {
-      // First time reviewing this ayah
       newEase = AppConstants.initialEaseFactor;
       newRepetitions = 1;
       newConsecutive = quality >= 3 ? 1 : 0;
@@ -76,9 +73,7 @@ class HifdhDao extends DatabaseAccessor<AppDatabase>
       newConsecutive = existing.consecutiveCorrect;
 
       if (quality >= 3) {
-        // Correct response
         newConsecutive = newConsecutive + 1;
-
         if (newRepetitions == 1) {
           newInterval = 1;
         } else if (newRepetitions == 2) {
@@ -86,20 +81,16 @@ class HifdhDao extends DatabaseAccessor<AppDatabase>
         } else {
           newInterval = (existing.intervalDays * newEase).round();
         }
-
         if (quality == 5) {
-          // Easy bonus
           newInterval =
               (newInterval * AppConstants.easyBonusMultiplier).round();
         }
-
-        // Update ease factor
-        newEase = newEase + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+        newEase =
+            newEase + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
         if (newEase < AppConstants.minimumEaseFactor / 10) {
           newEase = AppConstants.minimumEaseFactor / 10;
         }
       } else {
-        // Incorrect response - reset repetition chain
         newConsecutive = 0;
         newRepetitions = 0;
         newInterval = 1;
@@ -108,36 +99,32 @@ class HifdhDao extends DatabaseAccessor<AppDatabase>
           newEase = AppConstants.minimumEaseFactor / 10;
         }
       }
-
-      // Cap the maximum interval
       if (newInterval > AppConstants.maxRevisionIntervalDays) {
         newInterval = AppConstants.maxRevisionIntervalDays;
       }
-
       newStatus = _deriveStatus(quality, existing.totalAttempts);
     }
 
     final nextReview = now.add(Duration(days: newInterval));
 
-    await into(memorizationProgress).insertOnConflictUpdate(
-      MemorizationProgressCompanion.insert(
-        surahNumber: Value(surahNumber),
-        ayahNumber: Value(ayahNumber),
-        status: Value(newStatus),
-        repetitions: Value(newRepetitions),
-        easeFactor: Value(newEase),
-        intervalDays: Value(newInterval),
-        consecutiveCorrect: Value(newConsecutive),
-        totalAttempts: Value((existing?.totalAttempts ?? 0) + 1),
-        totalCorrect: Value(
+    await _db.insert('memorization_progress', {
+      'surah_number': surahNumber,
+      'ayah_number': ayahNumber,
+      'status': newStatus,
+      'repetitions': newRepetitions,
+      'ease_factor': newEase,
+      'interval_days': newInterval,
+      'consecutive_correct': newConsecutive,
+      'total_attempts': (existing?.totalAttempts ?? 0) + 1,
+      'total_correct':
           (existing?.totalCorrect ?? 0) + (quality >= 3 ? 1 : 0),
-        ),
-        lastReviewed: Value(now),
-        nextReviewDate: Value(nextReview),
-        createdAt: Value(existing?.createdAt ?? now),
-        updatedAt: Value(now),
-      ),
-    );
+      'last_reviewed': now.toIso8601String(),
+      'next_review_date': nextReview.toIso8601String(),
+      'created_at':
+          existing?.createdAt.toIso8601String() ?? now.toIso8601String(),
+      'updated_at': now.toIso8601String(),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    notifyProgressChanged();
   }
 
   String _deriveStatus(int quality, int previousAttempts) {
@@ -148,59 +135,45 @@ class HifdhDao extends DatabaseAccessor<AppDatabase>
     return 'new';
   }
 
-  Future<List<MemorizationProgress>> getProgressBySurah(int surahNumber) {
-    return (select(memorizationProgress)
-          ..where((t) => t.surahNumber.equals(surahNumber))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.ayahNumber),
-          ]))
-        .get();
+  Future<List<MemorizationProgress>> getProgressBySurah(
+      int surahNumber) async {
+    final rows = await _db.query('memorization_progress',
+        where: 'surah_number = ?',
+        whereArgs: [surahNumber],
+        orderBy: 'ayah_number ASC');
+    return rows.map((r) => MemorizationProgress.fromMap(r)).toList();
   }
 
-  Future<List<MemorizationProgress>> getProgressByStatus(String status) {
-    return (select(memorizationProgress)
-          ..where((t) => t.status.equals(status))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.surahNumber),
-            (t) => OrderingTerm.asc(t.ayahNumber),
-          ]))
-        .get();
+  Future<List<MemorizationProgress>> getProgressByStatus(
+      String status) async {
+    final rows = await _db.query('memorization_progress',
+        where: 'status = ?',
+        whereArgs: [status],
+        orderBy: 'surah_number ASC, ayah_number ASC');
+    return rows.map((r) => MemorizationProgress.fromMap(r)).toList();
   }
 
-  Future<List<MemorizationProgress>> getDueReviews() {
-    final now = DateTime.now();
-    return (select(memorizationProgress)
-          ..where((t) => t.nextReviewDate.isSmallerThanValue(now)))
-        .get();
+  Future<List<MemorizationProgress>> getDueReviews() async {
+    final now = DateTime.now().toIso8601String();
+    final rows = await _db.query('memorization_progress',
+        where: 'next_review_date IS NOT NULL AND next_review_date <= ?',
+        whereArgs: [now]);
+    return rows.map((r) => MemorizationProgress.fromMap(r)).toList();
   }
 
-  Future<List<MemorizationProgress>> getAllProgress() {
-    return (select(memorizationProgress)
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.surahNumber),
-            (t) => OrderingTerm.asc(t.ayahNumber),
-          ]))
-        .get();
+  Future<List<MemorizationProgress>> getAllProgress() async {
+    final rows = await _db.query('memorization_progress',
+        orderBy: 'surah_number ASC, ayah_number ASC');
+    return rows.map((r) => MemorizationProgress.fromMap(r)).toList();
   }
 
-  Stream<List<MemorizationProgress>> watchDueReviews() {
-    final now = DateTime.now();
-    return (select(memorizationProgress)
-          ..where((t) => t.nextReviewDate.isSmallerThanValue(now))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.nextReviewDate),
-          ]))
-        .watch();
+  Stream<List<MemorizationProgress>> watchDueReviews() async* {
+    yield await getDueReviews();
   }
 
   Stream<List<MemorizationProgress>> watchProgressBySurah(
-      int surahNumber) {
-    return (select(memorizationProgress)
-          ..where((t) => t.surahNumber.equals(surahNumber))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.ayahNumber),
-          ]))
-        .watch();
+      int surahNumber) async* {
+    yield await getProgressBySurah(surahNumber);
   }
 
   Future<Map<String, int>> getProgressStats() async {
@@ -222,28 +195,22 @@ class HifdhDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<int> getMemorizedAyahCount() async {
-    final countExpr = memorizationProgress.id.count();
-    final query = selectOnly(memorizationProgress)
-      ..addColumns([countExpr])
-      ..where(
-          memorizationProgress.status.isIn(['memorized', 'mastered']));
-    final row = await query.getSingle();
-    return row.read(countExpr) ?? 0;
+    final result = await _db.rawQuery(
+        "SELECT COUNT(*) as cnt FROM memorization_progress WHERE status IN ('memorized', 'mastered')");
+    return Sqflite.firstIntValue(result) ?? 0;
   }
 
-  Future<void> deleteProgressForAyah(int surahNumber, int ayahNumber) {
-    return (delete(memorizationProgress)
-          ..where(
-            (t) =>
-                t.surahNumber.equals(surahNumber) &
-                t.ayahNumber.equals(ayahNumber),
-          ))
-        .go()
-        .then((_) {});
+  Future<void> deleteProgressForAyah(int surahNumber, int ayahNumber) async {
+    await _db.delete('memorization_progress',
+        where: 'surah_number = ? AND ayah_number = ?',
+        whereArgs: [surahNumber, ayahNumber]);
+    notifyProgressChanged();
   }
 
-  Future<int> clearAllProgress() {
-    return delete(memorizationProgress).go();
+  Future<int> clearAllProgress() async {
+    final count = await _db.delete('memorization_progress');
+    if (count > 0) notifyProgressChanged();
+    return count;
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -258,110 +225,98 @@ class HifdhDao extends DatabaseAccessor<AppDatabase>
     String status = 'pending',
     int priority = 0,
     String notes = '',
-  }) {
+  }) async {
     final now = DateTime.now();
-    return into(revisionSchedule).insert(RevisionScheduleCompanion.insert(
-      surahNumber: Value(surahNumber),
-      ayahStart: Value(ayahStart),
-      ayahEnd: Value(ayahEnd),
-      scheduledDate: Value(scheduledDate),
-      status: Value(status),
-      priority: Value(priority),
-      notes: Value(notes),
-      completedAt: const Value.absent(),
-      createdAt: Value(now),
-      updatedAt: Value(now),
-    ));
+    final id = await _db.insert('revision_schedule', {
+      'surah_number': surahNumber,
+      'ayah_start': ayahStart,
+      'ayah_end': ayahEnd,
+      'scheduled_date': scheduledDate.toIso8601String(),
+      'status': status,
+      'priority': priority,
+      'notes': notes,
+      'completed_at': null,
+      'created_at': now.toIso8601String(),
+      'updated_at': now.toIso8601String(),
+    });
+    notifyRevisionsChanged();
+    return id;
   }
 
-  Future<List<RevisionSchedule>> getPendingRevisions() {
-    final now = DateTime.now();
-    return (select(revisionSchedule)
-          ..where((t) => t.status.equals('pending') & t.scheduledDate.isSmallerThanValue(now))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.scheduledDate),
-            (t) => OrderingTerm.desc(t.priority),
-          ]))
-        .get();
+  Future<List<RevisionSchedule>> getPendingRevisions() async {
+    final now = DateTime.now().toIso8601String();
+    final rows = await _db.query('revision_schedule',
+        where: "status = 'pending' AND scheduled_date <= ?",
+        whereArgs: [now],
+        orderBy: 'scheduled_date ASC, priority DESC');
+    return rows.map((r) => RevisionSchedule.fromMap(r)).toList();
   }
 
   Future<List<RevisionSchedule>> getRevisionsByDateRange(
-    DateTime start,
-    DateTime end,
-  ) {
-    return (select(revisionSchedule)
-          ..where((t) =>
-              t.scheduledDate.isBiggerOrEqualValue(start) &
-              t.scheduledDate.isSmallerOrEqualValue(end))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.scheduledDate),
-          ]))
-        .get();
+      DateTime start, DateTime end) async {
+    final rows = await _db.query('revision_schedule',
+        where: 'scheduled_date >= ? AND scheduled_date <= ?',
+        whereArgs: [start.toIso8601String(), end.toIso8601String()],
+        orderBy: 'scheduled_date ASC');
+    return rows.map((r) => RevisionSchedule.fromMap(r)).toList();
   }
 
-  Future<List<RevisionSchedule>> getAllRevisions() {
-    return (select(revisionSchedule)
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.scheduledDate),
-          ]))
-        .get();
+  Future<List<RevisionSchedule>> getAllRevisions() async {
+    final rows = await _db.query('revision_schedule',
+        orderBy: 'scheduled_date ASC');
+    return rows.map((r) => RevisionSchedule.fromMap(r)).toList();
   }
 
-  Stream<List<RevisionSchedule>> watchPendingRevisions() {
-    final now = DateTime.now();
-    return (select(revisionSchedule)
-          ..where((t) => t.status.equals('pending'))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.scheduledDate),
-          ]))
-        .watch();
+  Stream<List<RevisionSchedule>> watchPendingRevisions() async* {
+    yield await getPendingRevisions();
   }
 
-  Future<bool> completeRevision(int id) {
-    return (update(revisionSchedule)..where((t) => t.id.equals(id))).write(
-      RevisionScheduleCompanion(
-        status: const Value('completed'),
-        completedAt: Value(DateTime.now()),
-        updatedAt: Value(DateTime.now()),
-      ),
-    ).then((rows) => rows > 0);
+  Future<bool> completeRevision(int id) async {
+    final count = await _db.update('revision_schedule', {
+      'status': 'completed',
+      'completed_at': DateTime.now().toIso8601String(),
+      'updated_at': DateTime.now().toIso8601String(),
+    }, where: 'id = ?', whereArgs: [id]);
+    if (count > 0) notifyRevisionsChanged();
+    return count > 0;
   }
 
-  Future<bool> skipRevision(int id) {
-    return (update(revisionSchedule)..where((t) => t.id.equals(id))).write(
-      RevisionScheduleCompanion(
-        status: const Value('skipped'),
-        updatedAt: Value(DateTime.now()),
-      ),
-    ).then((rows) => rows > 0);
+  Future<bool> skipRevision(int id) async {
+    final count = await _db.update('revision_schedule', {
+      'status': 'skipped',
+      'updated_at': DateTime.now().toIso8601String(),
+    }, where: 'id = ?', whereArgs: [id]);
+    if (count > 0) notifyRevisionsChanged();
+    return count > 0;
   }
 
-  Future<int> deleteRevision(int id) {
-    return (delete(revisionSchedule)..where((t) => t.id.equals(id))).go();
+  Future<int> deleteRevision(int id) async {
+    final count =
+        await _db.delete('revision_schedule', where: 'id = ?', whereArgs: [id]);
+    if (count > 0) notifyRevisionsChanged();
+    return count;
   }
 
-  Future<int> clearCompletedRevisions() {
-    return (delete(revisionSchedule)
-          ..where((t) => t.status.equals('completed')))
-        .go();
+  Future<int> clearCompletedRevisions() async {
+    final count = await _db.delete('revision_schedule',
+        where: "status = 'completed'");
+    if (count > 0) notifyRevisionsChanged();
+    return count;
   }
 
-  Future<int> clearAllRevisions() {
-    return delete(revisionSchedule).go();
+  Future<int> clearAllRevisions() async {
+    final count = await _db.delete('revision_schedule');
+    if (count > 0) notifyRevisionsChanged();
+    return count;
   }
 
-  /// Mark overdue revisions as overdue status
-  Future<int> markOverdueRevisions() {
-    final now = DateTime.now();
-    return (update(revisionSchedule)
-          ..where((t) =>
-              t.status.equals('pending') &
-              t.scheduledDate.isSmallerThanValue(now)))
-        .write(
-      const RevisionScheduleCompanion(
-        status: Value('overdue'),
-      ),
-    );
+  Future<int> markOverdueRevisions() async {
+    final now = DateTime.now().toIso8601String();
+    final count = await _db.update('revision_schedule', {'status': 'overdue'},
+        where: "status = 'pending' AND scheduled_date <= ?",
+        whereArgs: [now]);
+    if (count > 0) notifyRevisionsChanged();
+    return count;
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -375,111 +330,109 @@ class HifdhDao extends DatabaseAccessor<AppDatabase>
     String mistakenText = '',
     String correctText = '',
     String context = '',
-  }) {
-    return into(mistakeLog).insert(MistakeLogCompanion.insert(
-      surahNumber: Value(surahNumber),
-      ayahNumber: Value(ayahNumber),
-      mistakeType: Value(mistakeType),
-      mistakenText: Value(mistakenText),
-      correctText: Value(correctText),
-      context: Value(context),
-      reviewCount: const Value(0),
-      isResolved: const Value(false),
-      createdAt: Value(DateTime.now()),
-      resolvedAt: const Value.absent(),
-    ));
+  }) async {
+    final id = await _db.insert('mistake_log', {
+      'surah_number': surahNumber,
+      'ayah_number': ayahNumber,
+      'mistake_type': mistakeType,
+      'mistaken_text': mistakenText,
+      'correct_text': correctText,
+      'context': context,
+      'review_count': 0,
+      'is_resolved': 0,
+      'created_at': DateTime.now().toIso8601String(),
+      'resolved_at': null,
+    });
+    notifyMistakesChanged();
+    return id;
   }
 
-  Future<List<MistakeLog>> getUnresolvedMistakes() {
-    return (select(mistakeLog)
-          ..where((t) => t.isResolved.equals(false))
-          ..orderBy([
-            (t) => OrderingTerm.desc(t.createdAt),
-          ]))
-        .get();
+  Future<List<MistakeLog>> getUnresolvedMistakes() async {
+    final rows = await _db.query('mistake_log',
+        where: 'is_resolved = 0', orderBy: 'created_at DESC');
+    return rows.map((r) => MistakeLog.fromMap(r)).toList();
   }
 
-  Future<List<MistakeLog>> getMistakesBySurah(int surahNumber) {
-    return (select(mistakeLog)
-          ..where((t) => t.surahNumber.equals(surahNumber))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.ayahNumber),
-          ]))
-        .get();
+  Future<List<MistakeLog>> getMistakesBySurah(int surahNumber) async {
+    final rows = await _db.query('mistake_log',
+        where: 'surah_number = ?',
+        whereArgs: [surahNumber],
+        orderBy: 'ayah_number ASC');
+    return rows.map((r) => MistakeLog.fromMap(r)).toList();
   }
 
-  Future<List<MistakeLog>> getMistakesByType(String mistakeType) {
-    return (select(mistakeLog)
-          ..where((t) => t.mistakeType.equals(mistakeType))
-          ..orderBy([
-            (t) => OrderingTerm.desc(t.createdAt),
-          ]))
-        .get();
+  Future<List<MistakeLog>> getMistakesByType(String mistakeType) async {
+    final rows = await _db.query('mistake_log',
+        where: 'mistake_type = ?',
+        whereArgs: [mistakeType],
+        orderBy: 'created_at DESC');
+    return rows.map((r) => MistakeLog.fromMap(r)).toList();
   }
 
-  Future<List<MistakeLog>> getFrequentMistakes({int limit = 20}) {
-    return (select(mistakeLog)
-          ..where((t) => t.isResolved.equals(false))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.reviewCount),
-            (t) => OrderingTerm.desc(t.createdAt),
-          ])
-          ..limit(limit))
-        .get();
+  Future<List<MistakeLog>> getFrequentMistakes({int limit = 20}) async {
+    final rows = await _db.query('mistake_log',
+        where: 'is_resolved = 0',
+        orderBy: 'review_count ASC, created_at DESC',
+        limit: limit);
+    return rows.map((r) => MistakeLog.fromMap(r)).toList();
   }
 
-  Stream<List<MistakeLog>> watchUnresolvedMistakes() {
-    return (select(mistakeLog)
-          ..where((t) => t.isResolved.equals(false))
-          ..orderBy([
-            (t) => OrderingTerm.desc(t.createdAt),
-          ]))
-        .watch();
+  Stream<List<MistakeLog>> watchUnresolvedMistakes() async* {
+    yield await getUnresolvedMistakes();
   }
 
-  Future<bool> resolveMistake(int id) {
-    return (update(mistakeLog)..where((t) => t.id.equals(id))).write(
-      MistakeLogCompanion(
-        isResolved: const Value(true),
-        resolvedAt: Value(DateTime.now()),
-      ),
-    ).then((rows) => rows > 0);
+  Future<bool> resolveMistake(int id) async {
+    final count = await _db.update('mistake_log', {
+      'is_resolved': 1,
+      'resolved_at': DateTime.now().toIso8601String(),
+    }, where: 'id = ?', whereArgs: [id]);
+    if (count > 0) notifyMistakesChanged();
+    return count > 0;
   }
 
   Future<bool> incrementReviewCount(int id) async {
-    final existing = await (select(mistakeLog)..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
-    if (existing == null) return false;
-    return (update(mistakeLog)..where((t) => t.id.equals(id))).write(
-      MistakeLogCompanion(
-        reviewCount: Value(existing.reviewCount + 1),
-      ),
-    ).then((rows) => rows > 0);
+    final rows = await _db.query('mistake_log',
+        where: 'id = ?', whereArgs: [id], limit: 1);
+    if (rows.isEmpty) return false;
+    final current = rows.first['review_count'] as int? ?? 0;
+    final count = await _db.update('mistake_log',
+        {'review_count': current + 1},
+        where: 'id = ?',
+        whereArgs: [id]);
+    return count > 0;
   }
 
-  Future<int> deleteMistake(int id) {
-    return (delete(mistakeLog)..where((t) => t.id.equals(id))).go();
+  Future<int> deleteMistake(int id) async {
+    final count =
+        await _db.delete('mistake_log', where: 'id = ?', whereArgs: [id]);
+    if (count > 0) notifyMistakesChanged();
+    return count;
   }
 
-  Future<int> clearResolvedMistakes() {
-    return (delete(mistakeLog)
-          ..where((t) => t.isResolved.equals(true)))
-        .go();
+  Future<int> clearResolvedMistakes() async {
+    final count = await _db.delete('mistake_log', where: 'is_resolved = 1');
+    if (count > 0) notifyMistakesChanged();
+    return count;
   }
 
-  Future<int> clearAllMistakes() {
-    return delete(mistakeLog).go();
+  Future<int> clearAllMistakes() async {
+    final count = await _db.delete('mistake_log');
+    if (count > 0) notifyMistakesChanged();
+    return count;
   }
 
   Future<Map<String, int>> getMistakeStats() async {
-    final mistakes = await (select(mistakeLog)).get();
+    final mistakes = await _db.query('mistake_log');
     final stats = <String, int>{};
     for (final m in mistakes) {
-      stats[m.mistakeType] = (stats[m.mistakeType] ?? 0) + 1;
+      final ml = MistakeLog.fromMap(m);
+      stats[ml.mistakeType] = (stats[ml.mistakeType] ?? 0) + 1;
     }
     stats['total'] = mistakes.length;
-    stats['resolved'] = mistakes.where((m) => m.isResolved).length;
-    stats['unresolved'] = mistakes.where((m) => !m.isResolved).length;
+    stats['resolved'] =
+        mistakes.where((m) => (m['is_resolved'] as int) == 1).length;
+    stats['unresolved'] =
+        mistakes.where((m) => (m['is_resolved'] as int) == 0).length;
     return stats;
   }
 }

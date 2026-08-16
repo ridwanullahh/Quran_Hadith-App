@@ -1,13 +1,13 @@
-import 'package:drift/drift.dart';
+import 'dart:async';
+
+import 'package:sqflite/sqflite.dart';
+
 import '../tables.dart';
-import '../database.dart';
+import '../database.dart' show notifyBookmarksChanged;
 
-part 'bookmark_dao.g.dart';
-
-@DriftAccessor(tables: [Bookmarks])
-class BookmarkDao extends DatabaseAccessor<AppDatabase>
-    with _$BookmarkDaoMixin {
-  BookmarkDao(super.db);
+class BookmarkDao {
+  final Database _db;
+  BookmarkDao(this._db);
 
   // ── Create ──────────────────────────────────────────────────────
   Future<int> addBookmark({
@@ -18,127 +18,115 @@ class BookmarkDao extends DatabaseAccessor<AppDatabase>
     required String surahName,
     String ayahText = '',
     String category = 'general',
-  }) {
-    return into(bookmarks).insertOnConflictUpdate(BookmarksCompanion.insert(
-      surahNumber: Value(surahNumber),
-      ayahNumber: Value(ayahNumber),
-      juzNumber: Value(juzNumber),
-      page: Value(page),
-      surahName: Value(surahName),
-      ayahText: Value(ayahText),
-      category: Value(category),
-      createdAt: Value(DateTime.now()),
-    ));
+  }) async {
+    final id = await _db.insert('bookmarks', {
+      'surah_number': surahNumber,
+      'ayah_number': ayahNumber,
+      'juz_number': juzNumber,
+      'page': page,
+      'surah_name': surahName,
+      'ayah_text': ayahText,
+      'category': category,
+      'created_at': DateTime.now().toIso8601String(),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    notifyBookmarksChanged();
+    return id;
   }
 
   // ── Read ────────────────────────────────────────────────────────
-  Future<List<Bookmark>> getAllBookmarks() {
-    return (select(bookmarks)
-          ..orderBy([
-            (t) => OrderingTerm.desc(t.createdAt),
-          ]))
-        .get();
+  Future<List<Bookmark>> getAllBookmarks() async {
+    final rows = await _db.query('bookmarks',
+        orderBy: 'created_at DESC');
+    return rows.map((r) => Bookmark.fromMap(r)).toList();
   }
 
-  Future<List<Bookmark>> getBookmarksByCategory(String category) {
-    return (select(bookmarks)
-          ..where((t) => t.category.equals(category))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.surahNumber),
-            (t) => OrderingTerm.asc(t.ayahNumber),
-          ]))
-        .get();
+  Future<List<Bookmark>> getBookmarksByCategory(String category) async {
+    final rows = await _db.query('bookmarks',
+        where: 'category = ?',
+        whereArgs: [category],
+        orderBy: 'surah_number ASC, ayah_number ASC');
+    return rows.map((r) => Bookmark.fromMap(r)).toList();
   }
 
-  Future<List<Bookmark>> getBookmarksBySurah(int surahNumber) {
-    return (select(bookmarks)
-          ..where((t) => t.surahNumber.equals(surahNumber))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.ayahNumber),
-          ]))
-        .get();
+  Future<List<Bookmark>> getBookmarksBySurah(int surahNumber) async {
+    final rows = await _db.query('bookmarks',
+        where: 'surah_number = ?',
+        whereArgs: [surahNumber],
+        orderBy: 'ayah_number ASC');
+    return rows.map((r) => Bookmark.fromMap(r)).toList();
   }
 
-  Future<Bookmark?> getBookmark(int surahNumber, int ayahNumber) {
-    return (select(bookmarks)
-          ..where((t) => t.surahNumber.equals(surahNumber) & t.ayahNumber.equals(ayahNumber)))
-        .getSingleOrNull();
+  Future<Bookmark?> getBookmark(int surahNumber, int ayahNumber) async {
+    final rows = await _db.query('bookmarks',
+        where: 'surah_number = ? AND ayah_number = ?',
+        whereArgs: [surahNumber, ayahNumber],
+        limit: 1);
+    if (rows.isEmpty) return null;
+    return Bookmark.fromMap(rows.first);
   }
 
-  /// Returns distinct categories used in bookmarks
   Future<List<String>> getBookmarkCategories() async {
-    final query = selectOnly(bookmarks)
-      ..addColumns([bookmarks.category])
-      ..groupBy([bookmarks.category]);
-    final rows = await query.get();
+    final rows = await _db.rawQuery(
+        'SELECT DISTINCT category FROM bookmarks');
     return rows
-        .map((row) => row.read(bookmarks.category) ?? 'general')
+        .map((r) => r['category'] as String? ?? 'general')
         .toList();
   }
 
-  /// Watches all bookmarks for reactive UI
-  Stream<List<Bookmark>> watchAllBookmarks() {
-    return (select(bookmarks)
-          ..orderBy([
-            (t) => OrderingTerm.desc(t.createdAt),
-          ]))
-        .watch();
+  Stream<List<Bookmark>> watchAllBookmarks() async* {
+    yield await getAllBookmarks();
   }
 
-  /// Watches bookmarks for a specific surah
-  Stream<List<Bookmark>> watchBookmarksBySurah(int surahNumber) {
-    return (select(bookmarks)
-          ..where((t) => t.surahNumber.equals(surahNumber))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.ayahNumber),
-          ]))
-        .watch();
+  Stream<List<Bookmark>> watchBookmarksBySurah(int surahNumber) async* {
+    yield await getBookmarksBySurah(surahNumber);
   }
 
-  /// Checks if a specific ayah is bookmarked
   Future<bool> isBookmarked(int surahNumber, int ayahNumber) async {
-    final result = await getBookmark(surahNumber, ayahNumber);
-    return result != null;
+    final bookmark = await getBookmark(surahNumber, ayahNumber);
+    return bookmark != null;
   }
 
   // ── Update ──────────────────────────────────────────────────────
-  Future<bool> updateBookmarkCategory(
-    int id,
-    String newCategory,
-  ) {
-    return (update(bookmarks)..where((t) => t.id.equals(id))).write(
-      BookmarksCompanion(
-        category: Value(newCategory),
-      ),
-    ).then((rows) => rows > 0);
+  Future<bool> updateBookmarkCategory(int id, String newCategory) async {
+    final count = await _db.update('bookmarks', {'category': newCategory},
+        where: 'id = ?', whereArgs: [id]);
+    notifyBookmarksChanged();
+    return count > 0;
   }
 
   // ── Delete ──────────────────────────────────────────────────────
-  Future<int> removeBookmark(int surahNumber, int ayahNumber) {
-    return (delete(bookmarks)
-          ..where((t) =>
-              t.surahNumber.equals(surahNumber) &
-              t.ayahNumber.equals(ayahNumber)))
-        .go();
+  Future<int> removeBookmark(int surahNumber, int ayahNumber) async {
+    final count = await _db.delete('bookmarks',
+        where: 'surah_number = ? AND ayah_number = ?',
+        whereArgs: [surahNumber, ayahNumber]);
+    if (count > 0) notifyBookmarksChanged();
+    return count;
   }
 
-  Future<int> removeBookmarkById(int id) {
-    return (delete(bookmarks)..where((t) => t.id.equals(id))).go();
+  Future<int> removeBookmarkById(int id) async {
+    final count =
+        await _db.delete('bookmarks', where: 'id = ?', whereArgs: [id]);
+    if (count > 0) notifyBookmarksChanged();
+    return count;
   }
 
-  Future<int> removeBookmarksByCategory(String category) {
-    return (delete(bookmarks)..where((t) => t.category.equals(category))).go();
+  Future<int> removeBookmarksByCategory(String category) async {
+    final count = await _db.delete('bookmarks',
+        where: 'category = ?', whereArgs: [category]);
+    if (count > 0) notifyBookmarksChanged();
+    return count;
   }
 
-  Future<int> clearAllBookmarks() {
-    return delete(bookmarks).go();
+  Future<int> clearAllBookmarks() async {
+    final count = await _db.delete('bookmarks');
+    if (count > 0) notifyBookmarksChanged();
+    return count;
   }
 
   // ── Count ───────────────────────────────────────────────────────
   Future<int> getBookmarkCount() async {
-    final countExpr = bookmarks.id.count();
-    final query = selectOnly(bookmarks)..addColumns([countExpr]);
-    final row = await query.getSingle();
-    return row.read(countExpr) ?? 0;
+    final result =
+        await _db.rawQuery('SELECT COUNT(*) as cnt FROM bookmarks');
+    return Sqflite.firstIntValue(result) ?? 0;
   }
 }

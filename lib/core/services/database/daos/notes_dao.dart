@@ -1,13 +1,11 @@
-import 'package:drift/drift.dart';
+import 'package:sqflite/sqflite.dart';
+
 import '../tables.dart';
-import '../database.dart';
+import '../database.dart' show notifyNotesChanged;
 
-part 'notes_dao.g.dart';
-
-@DriftAccessor(tables: [Notes])
-class NotesDao extends DatabaseAccessor<AppDatabase>
-    with _$NotesDaoMixin {
-  NotesDao(super.db);
+class NotesDao {
+  final Database _db;
+  NotesDao(this._db);
 
   // ── Create ──────────────────────────────────────────────────────
   Future<int> addNote({
@@ -16,104 +14,75 @@ class NotesDao extends DatabaseAccessor<AppDatabase>
     required String content,
     String title = '',
     int colorIndex = 0,
-  }) {
+  }) async {
     final now = DateTime.now();
-    return into(notes).insert(NotesCompanion.insert(
-      surahNumber: Value(surahNumber),
-      ayahNumber: Value(ayahNumber),
-      content: Value(content),
-      title: Value(title),
-      colorIndex: Value(colorIndex),
-      createdAt: Value(now),
-      updatedAt: Value(now),
-    ));
+    final id = await _db.insert('notes', {
+      'surah_number': surahNumber,
+      'ayah_number': ayahNumber,
+      'content': content,
+      'title': title,
+      'color_index': colorIndex,
+      'created_at': now.toIso8601String(),
+      'updated_at': now.toIso8601String(),
+    });
+    notifyNotesChanged();
+    return id;
   }
 
   // ── Read ────────────────────────────────────────────────────────
-  Future<List<Note>> getAllNotes() {
-    return (select(notes)
-          ..orderBy([
-            (t) => OrderingTerm.desc(t.updatedAt),
-          ]))
-        .get();
+  Future<List<Note>> getAllNotes() async {
+    final rows = await _db.query('notes', orderBy: 'updated_at DESC');
+    return rows.map((r) => Note.fromMap(r)).toList();
   }
 
-  Future<List<Note>> getNotesBySurah(int surahNumber) {
-    return (select(notes)
-          ..where((t) => t.surahNumber.equals(surahNumber))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.ayahNumber),
-            (t) => OrderingTerm.desc(t.updatedAt),
-          ]))
-        .get();
+  Future<List<Note>> getNotesBySurah(int surahNumber) async {
+    final rows = await _db.query('notes',
+        where: 'surah_number = ?',
+        whereArgs: [surahNumber],
+        orderBy: 'ayah_number ASC, updated_at DESC');
+    return rows.map((r) => Note.fromMap(r)).toList();
   }
 
-  Future<List<Note>> getNotesForAyah(int surahNumber, int ayahNumber) {
-    return (select(notes)
-          ..where((t) =>
-              t.surahNumber.equals(surahNumber) &
-              t.ayahNumber.equals(ayahNumber))
-          ..orderBy([
-            (t) => OrderingTerm.desc(t.updatedAt),
-          ]))
-        .get();
+  Future<List<Note>> getNotesForAyah(int surahNumber, int ayahNumber) async {
+    final rows = await _db.query('notes',
+        where: 'surah_number = ? AND ayah_number = ?',
+        whereArgs: [surahNumber, ayahNumber],
+        orderBy: 'updated_at DESC');
+    return rows.map((r) => Note.fromMap(r)).toList();
   }
 
-  Future<Note?> getNoteById(int id) {
-    return (select(notes)..where((t) => t.id.equals(id))).getSingleOrNull();
+  Future<Note?> getNoteById(int id) async {
+    final rows = await _db.query('notes',
+        where: 'id = ?', whereArgs: [id], limit: 1);
+    if (rows.isEmpty) return null;
+    return Note.fromMap(rows.first);
   }
 
-  /// Search notes by content or title
-  Future<List<Note>> searchNotes(String query) {
+  Future<List<Note>> searchNotes(String query) async {
     final pattern = '%$query%';
-    return (select(notes)
-          ..where((t) =>
-              t.content.like(pattern) | t.title.like(pattern))
-          ..orderBy([
-            (t) => OrderingTerm.desc(t.updatedAt),
-          ]))
-        .get();
+    final rows = await _db.query('notes',
+        where: 'content LIKE ? OR title LIKE ?',
+        whereArgs: [pattern, pattern],
+        orderBy: 'updated_at DESC');
+    return rows.map((r) => Note.fromMap(r)).toList();
   }
 
-  /// Get recent notes (last N notes by update time)
-  Future<List<Note>> getRecentNotes({int limit = 10}) {
-    return (select(notes)
-          ..orderBy([
-            (t) => OrderingTerm.desc(t.updatedAt),
-          ])
-          ..limit(limit))
-        .get();
+  Future<List<Note>> getRecentNotes({int limit = 10}) async {
+    final rows = await _db.query('notes',
+        orderBy: 'updated_at DESC', limit: limit);
+    return rows.map((r) => Note.fromMap(r)).toList();
   }
 
-  /// Watch all notes for reactive UI
-  Stream<List<Note>> watchAllNotes() {
-    return (select(notes)
-          ..orderBy([
-            (t) => OrderingTerm.desc(t.updatedAt),
-          ]))
-        .watch();
+  Stream<List<Note>> watchAllNotes() async* {
+    yield await getAllNotes();
   }
 
-  /// Watch notes for a specific surah
-  Stream<List<Note>> watchNotesBySurah(int surahNumber) {
-    return (select(notes)
-          ..where((t) => t.surahNumber.equals(surahNumber))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.ayahNumber),
-          ]))
-        .watch();
+  Stream<List<Note>> watchNotesBySurah(int surahNumber) async* {
+    yield await getNotesBySurah(surahNumber);
   }
 
-  /// Watch notes for a specific ayah
-  Stream<List<Note>> watchNotesForAyah(int surahNumber, int ayahNumber) {
-    return (select(notes)
-          ..where((t) =>
-              t.surahNumber.equals(surahNumber) &
-              t.ayahNumber.equals(ayahNumber))
-          ..orderBy([
-            (t) => OrderingTerm.desc(t.updatedAt),
-          ]))
-        .watch();
+  Stream<List<Note>> watchNotesForAyah(int surahNumber, int ayahNumber) async* {
+    yield await getNotesForAyah(surahNumber, ayahNumber);
   }
 
   // ── Update ──────────────────────────────────────────────────────
@@ -122,53 +91,58 @@ class NotesDao extends DatabaseAccessor<AppDatabase>
     required String content,
     String? title,
     int? colorIndex,
-  }) {
-    return (update(notes)..where((t) => t.id.equals(id))).write(
-      NotesCompanion(
-        content: Value(content),
-        title: title != null ? Value(title) : const Value.absent(),
-        colorIndex:
-            colorIndex != null ? Value(colorIndex) : const Value.absent(),
-        updatedAt: Value(DateTime.now()),
-      ),
-    ).then((rows) => rows > 0);
+  }) async {
+    final values = <String, dynamic>{
+      'content': content,
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+    if (title != null) values['title'] = title;
+    if (colorIndex != null) values['color_index'] = colorIndex;
+    final count =
+        await _db.update('notes', values, where: 'id = ?', whereArgs: [id]);
+    if (count > 0) notifyNotesChanged();
+    return count > 0;
   }
 
   // ── Delete ──────────────────────────────────────────────────────
-  Future<int> deleteNote(int id) {
-    return (delete(notes)..where((t) => t.id.equals(id))).go();
+  Future<int> deleteNote(int id) async {
+    final count =
+        await _db.delete('notes', where: 'id = ?', whereArgs: [id]);
+    if (count > 0) notifyNotesChanged();
+    return count;
   }
 
-  Future<int> deleteNotesForAyah(int surahNumber, int ayahNumber) {
-    return (delete(notes)
-          ..where((t) =>
-              t.surahNumber.equals(surahNumber) &
-              t.ayahNumber.equals(ayahNumber)))
-        .go();
+  Future<int> deleteNotesForAyah(int surahNumber, int ayahNumber) async {
+    final count = await _db.delete('notes',
+        where: 'surah_number = ? AND ayah_number = ?',
+        whereArgs: [surahNumber, ayahNumber]);
+    if (count > 0) notifyNotesChanged();
+    return count;
   }
 
-  Future<int> deleteNotesBySurah(int surahNumber) {
-    return (delete(notes)..where((t) => t.surahNumber.equals(surahNumber))).go();
+  Future<int> deleteNotesBySurah(int surahNumber) async {
+    final count = await _db.delete('notes',
+        where: 'surah_number = ?', whereArgs: [surahNumber]);
+    if (count > 0) notifyNotesChanged();
+    return count;
   }
 
-  Future<int> clearAllNotes() {
-    return delete(notes).go();
+  Future<int> clearAllNotes() async {
+    final count = await _db.delete('notes');
+    if (count > 0) notifyNotesChanged();
+    return count;
   }
 
   // ── Count ───────────────────────────────────────────────────────
   Future<int> getNoteCount() async {
-    final countExpr = notes.id.count();
-    final query = selectOnly(notes)..addColumns([countExpr]);
-    final row = await query.getSingle();
-    return row.read(countExpr) ?? 0;
+    final result = await _db.rawQuery('SELECT COUNT(*) as cnt FROM notes');
+    return Sqflite.firstIntValue(result) ?? 0;
   }
 
   Future<int> getNoteCountForSurah(int surahNumber) async {
-    final countExpr = notes.id.count();
-    final query = selectOnly(notes)
-      ..addColumns([countExpr])
-      ..where(notes.surahNumber.equals(surahNumber));
-    final row = await query.getSingle();
-    return row.read(countExpr) ?? 0;
+    final result = await _db.rawQuery(
+        'SELECT COUNT(*) as cnt FROM notes WHERE surah_number = ?',
+        [surahNumber]);
+    return Sqflite.firstIntValue(result) ?? 0;
   }
 }

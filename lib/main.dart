@@ -22,8 +22,9 @@ final _initProvider = FutureProvider<_AppInitResult>((ref) async {
   await Hive.openBox('download_state');
 
   // ── Database ──────────────────────────────────────────────────
+  await AppDatabase.ensureInitialized();
   final database = AppDatabase.instance;
-  await database.select(database.readingHistory).get();
+  await database.getReadingHistory(limit: 1);
 
   // ── Audio Service ─────────────────────────────────────────────
   final audioRepository = AudioRepository();

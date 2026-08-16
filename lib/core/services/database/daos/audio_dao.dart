@@ -1,14 +1,12 @@
 import 'dart:io';
-import 'package:drift/drift.dart';
+
+import 'package:sqflite/sqflite.dart';
+
 import '../tables.dart';
-import '../database.dart';
 
-part 'audio_dao.g.dart';
-
-@DriftAccessor(tables: [AudioDownloads])
-class AudioDao extends DatabaseAccessor<AppDatabase>
-    with _$AudioDaoMixin {
-  AudioDao(super.db);
+class AudioDao {
+  final Database _db;
+  AudioDao(this._db);
 
   // ── Create ──────────────────────────────────────────────────────
 
@@ -20,44 +18,40 @@ class AudioDao extends DatabaseAccessor<AppDatabase>
     int fileSizeBytes = 0,
     String downloadStatus = 'completed',
     String fileHash = '',
-  }) {
+  }) async {
     final now = DateTime.now();
-    return into(audioDownloads).insertOnConflictUpdate(
-      AudioDownloadsCompanion.insert(
-        surahNumber: Value(surahNumber),
-        ayahNumber: Value(ayahNumber),
-        reciterId: Value(reciterId),
-        filePath: Value(filePath),
-        fileSizeBytes: Value(fileSizeBytes),
-        downloadStatus: Value(downloadStatus),
-        downloadedAt: Value(now),
-        fileHash: Value(fileHash),
-        playbackCount: const Value(0),
-        lastPlayedAt: const Value.absent(),
-      ),
-    );
+    return await _db.insert('audio_downloads', {
+      'surah_number': surahNumber,
+      'ayah_number': ayahNumber,
+      'reciter_id': reciterId,
+      'file_path': filePath,
+      'file_size_bytes': fileSizeBytes,
+      'download_status': downloadStatus,
+      'downloaded_at': now.toIso8601String(),
+      'file_hash': fileHash,
+      'playback_count': 0,
+      'last_played_at': null,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<int> recordDownloadPending({
     required int surahNumber,
     required int ayahNumber,
     required String reciterId,
-  }) {
+  }) async {
     final now = DateTime.now();
-    return into(audioDownloads).insertOnConflictUpdate(
-      AudioDownloadsCompanion.insert(
-        surahNumber: Value(surahNumber),
-        ayahNumber: Value(ayahNumber),
-        reciterId: Value(reciterId),
-        filePath: const Value(''),
-        fileSizeBytes: const Value(0),
-        downloadStatus: const Value('pending'),
-        downloadedAt: Value(now),
-        fileHash: const Value(''),
-        playbackCount: const Value(0),
-        lastPlayedAt: const Value.absent(),
-      ),
-    );
+    return await _db.insert('audio_downloads', {
+      'surah_number': surahNumber,
+      'ayah_number': ayahNumber,
+      'reciter_id': reciterId,
+      'file_path': '',
+      'file_size_bytes': 0,
+      'download_status': 'pending',
+      'downloaded_at': now.toIso8601String(),
+      'file_hash': '',
+      'playback_count': 0,
+      'last_played_at': null,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<int> updateDownloadStatus({
@@ -68,114 +62,82 @@ class AudioDao extends DatabaseAccessor<AppDatabase>
     String? filePath,
     int? fileSizeBytes,
     String? fileHash,
-  }) {
-    return (update(audioDownloads)
-          ..where(
-            (t) =>
-                t.surahNumber.equals(surahNumber) &
-                t.ayahNumber.equals(ayahNumber) &
-                t.reciterId.equals(reciterId),
-          ))
-        .write(
-      AudioDownloadsCompanion(
-        downloadStatus: Value(status),
-        filePath: filePath != null ? Value(filePath) : const Value.absent(),
-        fileSizeBytes: fileSizeBytes != null
-            ? Value(fileSizeBytes)
-            : const Value.absent(),
-        fileHash:
-            fileHash != null ? Value(fileHash) : const Value.absent(),
-      ),
-    );
+  }) async {
+    final values = <String, dynamic>{'download_status': status};
+    if (filePath != null) values['file_path'] = filePath;
+    if (fileSizeBytes != null) values['file_size_bytes'] = fileSizeBytes;
+    if (fileHash != null) values['file_hash'] = fileHash;
+    return await _db.update('audio_downloads', values,
+        where: 'surah_number = ? AND ayah_number = ? AND reciter_id = ?',
+        whereArgs: [surahNumber, ayahNumber, reciterId]);
   }
 
   // ── Read ────────────────────────────────────────────────────────
 
-  Future<List<AudioDownload>> getAllDownloads() {
-    return (select(audioDownloads)
-          ..orderBy([
-            (t) => OrderingTerm.desc(t.downloadedAt),
-          ]))
-        .get();
+  Future<List<AudioDownload>> getAllDownloads() async {
+    final rows = await _db.query('audio_downloads',
+        orderBy: 'downloaded_at DESC');
+    return rows.map((r) => AudioDownload.fromMap(r)).toList();
   }
 
-  Future<List<AudioDownload>> getDownloadsByReciter(String reciterId) {
-    return (select(audioDownloads)
-          ..where((t) => t.reciterId.equals(reciterId))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.surahNumber),
-            (t) => OrderingTerm.asc(t.ayahNumber),
-          ]))
-        .get();
+  Future<List<AudioDownload>> getDownloadsByReciter(String reciterId) async {
+    final rows = await _db.query('audio_downloads',
+        where: 'reciter_id = ?',
+        whereArgs: [reciterId],
+        orderBy: 'surah_number ASC, ayah_number ASC');
+    return rows.map((r) => AudioDownload.fromMap(r)).toList();
   }
 
-  Future<List<AudioDownload>> getCompletedDownloads() {
-    return (select(audioDownloads)
-          ..where((t) => t.downloadStatus.equals('completed'))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.surahNumber),
-          ]))
-        .get();
+  Future<List<AudioDownload>> getCompletedDownloads() async {
+    final rows = await _db.query('audio_downloads',
+        where: "download_status = 'completed'",
+        orderBy: 'surah_number ASC');
+    return rows.map((r) => AudioDownload.fromMap(r)).toList();
   }
 
-  Future<List<AudioDownload>> getFailedDownloads() {
-    return (select(audioDownloads)
-          ..where((t) => t.downloadStatus.equals('failed'))
-          ..orderBy([
-            (t) => OrderingTerm.desc(t.downloadedAt),
-          ]))
-        .get();
+  Future<List<AudioDownload>> getFailedDownloads() async {
+    final rows = await _db.query('audio_downloads',
+        where: "download_status = 'failed'",
+        orderBy: 'downloaded_at DESC');
+    return rows.map((r) => AudioDownload.fromMap(r)).toList();
   }
 
   Future<AudioDownload?> getDownloadRecord(
-    int surahNumber,
-    int ayahNumber,
-    String reciterId,
-  ) {
-    return (select(audioDownloads)
-          ..where(
-            (t) =>
-                t.surahNumber.equals(surahNumber) &
-                t.ayahNumber.equals(ayahNumber) &
-                t.reciterId.equals(reciterId),
-          ))
-        .getSingleOrNull();
+      int surahNumber, int ayahNumber, String reciterId) async {
+    final rows = await _db.query('audio_downloads',
+        where:
+            'surah_number = ? AND ayah_number = ? AND reciter_id = ?',
+        whereArgs: [surahNumber, ayahNumber, reciterId],
+        limit: 1);
+    if (rows.isEmpty) return null;
+    return AudioDownload.fromMap(rows.first);
   }
 
   Future<AudioDownload?> getSurahDownload(
-    int surahNumber,
-    String reciterId,
-  ) {
-    return (select(audioDownloads)
-          ..where(
-            (t) =>
-                t.surahNumber.equals(surahNumber) &
-                t.ayahNumber.equals(0) &
-                t.reciterId.equals(reciterId),
-          ))
-        .getSingleOrNull();
+      int surahNumber, String reciterId) async {
+    final rows = await _db.query('audio_downloads',
+        where:
+            'surah_number = ? AND ayah_number = 0 AND reciter_id = ?',
+        whereArgs: [surahNumber, reciterId],
+        limit: 1);
+    if (rows.isEmpty) return null;
+    return AudioDownload.fromMap(rows.first);
   }
 
-  /// Check if audio file exists on disk and its record is valid
   Future<bool> isAudioFileAvailable(
-    int surahNumber,
-    int ayahNumber,
-    String reciterId,
-  ) async {
-    final record = await getDownloadRecord(surahNumber, ayahNumber, reciterId);
+      int surahNumber, int ayahNumber, String reciterId) async {
+    final record =
+        await getDownloadRecord(surahNumber, ayahNumber, reciterId);
     if (record == null) return false;
     if (record.downloadStatus != 'completed') return false;
     if (record.filePath.isEmpty) return false;
     return File(record.filePath).existsSync();
   }
 
-  /// Get the file path for a downloaded audio
   Future<String?> getAudioFilePath(
-    int surahNumber,
-    int ayahNumber,
-    String reciterId,
-  ) async {
-    final record = await getDownloadRecord(surahNumber, ayahNumber, reciterId);
+      int surahNumber, int ayahNumber, String reciterId) async {
+    final record =
+        await getDownloadRecord(surahNumber, ayahNumber, reciterId);
     if (record == null) return null;
     if (record.downloadStatus != 'completed') return null;
     if (record.filePath.isEmpty) return null;
@@ -183,7 +145,6 @@ class AudioDao extends DatabaseAccessor<AppDatabase>
     return record.filePath;
   }
 
-  /// Get total size of all downloaded audio files in bytes
   Future<int> getTotalDownloadSize() async {
     final completed = await getCompletedDownloads();
     int total = 0;
@@ -193,7 +154,6 @@ class AudioDao extends DatabaseAccessor<AppDatabase>
     return total;
   }
 
-  /// Get download count per reciter
   Future<Map<String, int>> getDownloadCountsByReciter() async {
     final all = await getCompletedDownloads();
     final counts = <String, int>{};
@@ -203,11 +163,11 @@ class AudioDao extends DatabaseAccessor<AppDatabase>
     return counts;
   }
 
-  /// Get total number of downloaded surahs
   Future<int> getDownloadedSurahCount(String reciterId) async {
     final downloads = await getDownloadsByReciter(reciterId);
     return downloads
-        .where((d) => d.ayahNumber == 0 && d.downloadStatus == 'completed')
+        .where(
+            (d) => d.ayahNumber == 0 && d.downloadStatus == 'completed')
         .length;
   }
 
@@ -218,82 +178,59 @@ class AudioDao extends DatabaseAccessor<AppDatabase>
     required int ayahNumber,
     required String reciterId,
   }) async {
-    final record = await getDownloadRecord(surahNumber, ayahNumber, reciterId);
+    final record =
+        await getDownloadRecord(surahNumber, ayahNumber, reciterId);
     if (record == null) return;
-    await (update(audioDownloads)
-          ..where(
-            (t) =>
-                t.surahNumber.equals(surahNumber) &
-                t.ayahNumber.equals(ayahNumber) &
-                t.reciterId.equals(reciterId),
-          ))
-        .write(
-      AudioDownloadsCompanion(
-        playbackCount: Value(record.playbackCount + 1),
-        lastPlayedAt: Value(DateTime.now()),
-      ),
-    );
+    await _db.update('audio_downloads', {
+      'playback_count': record.playbackCount + 1,
+      'last_played_at': DateTime.now().toIso8601String(),
+    },
+        where:
+            'surah_number = ? AND ayah_number = ? AND reciter_id = ?',
+        whereArgs: [surahNumber, ayahNumber, reciterId]);
   }
 
-  Future<List<AudioDownload>> getMostPlayed({int limit = 10}) {
-    return (select(audioDownloads)
-          ..where((t) => t.downloadStatus.equals('completed'))
-          ..orderBy([
-            (t) => OrderingTerm.desc(t.playbackCount),
-          ])
-          ..limit(limit))
-        .get();
+  Future<List<AudioDownload>> getMostPlayed({int limit = 10}) async {
+    final rows = await _db.query('audio_downloads',
+        where: "download_status = 'completed'",
+        orderBy: 'playback_count DESC',
+        limit: limit);
+    return rows.map((r) => AudioDownload.fromMap(r)).toList();
   }
 
   // ── Delete ──────────────────────────────────────────────────────
 
   Future<int> removeDownloadRecord(
-    int surahNumber,
-    int ayahNumber,
-    String reciterId,
-  ) {
-    return (delete(audioDownloads)
-          ..where(
-            (t) =>
-                t.surahNumber.equals(surahNumber) &
-                t.ayahNumber.equals(ayahNumber) &
-                t.reciterId.equals(reciterId),
-          ))
-        .go();
+      int surahNumber, int ayahNumber, String reciterId) async {
+    return await _db.delete('audio_downloads',
+        where:
+            'surah_number = ? AND ayah_number = ? AND reciter_id = ?',
+        whereArgs: [surahNumber, ayahNumber, reciterId]);
   }
 
-  Future<int> removeDownloadsByReciter(String reciterId) {
-    return (delete(audioDownloads)
-          ..where((t) => t.reciterId.equals(reciterId)))
-        .go();
+  Future<int> removeDownloadsByReciter(String reciterId) async {
+    return await _db.delete('audio_downloads',
+        where: 'reciter_id = ?', whereArgs: [reciterId]);
   }
 
   Future<int> removeDownloadsBySurah(
-    int surahNumber,
-    String reciterId,
-  ) {
-    return (delete(audioDownloads)
-          ..where(
-            (t) =>
-                t.surahNumber.equals(surahNumber) &
-                t.reciterId.equals(reciterId),
-          ))
-        .go();
+      int surahNumber, String reciterId) async {
+    return await _db.delete('audio_downloads',
+        where: 'surah_number = ? AND reciter_id = ?',
+        whereArgs: [surahNumber, reciterId]);
   }
 
-  Future<int> clearFailedDownloads() {
-    return (delete(audioDownloads)
-          ..where((t) => t.downloadStatus.equals('failed')))
-        .go();
+  Future<int> clearFailedDownloads() async {
+    return await _db.delete('audio_downloads',
+        where: "download_status = 'failed'");
   }
 
-  Future<int> clearAllDownloads() {
-    return delete(audioDownloads).go();
+  Future<int> clearAllDownloads() async {
+    return await _db.delete('audio_downloads');
   }
 
   // ── Cleanup ─────────────────────────────────────────────────────
 
-  /// Remove records where the file no longer exists on disk
   Future<int> cleanupOrphanedRecords() async {
     final all = await getAllDownloads();
     int removed = 0;

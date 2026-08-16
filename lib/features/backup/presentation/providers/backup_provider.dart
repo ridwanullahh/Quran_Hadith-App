@@ -1,16 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:drift/drift.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive_flutter.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/services/database/database.dart';
-
-part 'backup_provider.g.dart';
 
 /// Holds the state of a backup / restore operation.
 class BackupState {
@@ -54,7 +49,8 @@ class BackupState {
       lastBackupSize: lastBackupSize ?? this.lastBackupSize,
       lastSummary: lastSummary ?? this.lastSummary,
       error: clearError ? null : (error ?? this.error),
-      successMessage: clearSuccess ? null : (successMessage ?? this.successMessage),
+      successMessage:
+          clearSuccess ? null : (successMessage ?? this.successMessage),
     );
   }
 }
@@ -87,12 +83,9 @@ class BackupSummary {
 }
 
 /// Provider that handles export and import of user data.
-@riverpod
-class BackupNotifier extends _$BackupNotifier {
-  @override
-  BackupState build() {
+class BackupNotifier extends StateNotifier<BackupState> {
+  BackupNotifier() : super(const BackupState()) {
     _loadLastBackupInfo();
-    return const BackupState();
   }
 
   Future<void> _loadLastBackupInfo() async {
@@ -114,7 +107,8 @@ class BackupNotifier extends _$BackupNotifier {
   // ═══════════════════════════════════════════════════════════════════
 
   Future<void> exportBackup() async {
-    state = state.copyWith(isExporting: true, clearError: true, clearSuccess: true);
+    state =
+        state.copyWith(isExporting: true, clearError: true, clearSuccess: true);
     try {
       final db = AppDatabase.instance;
 
@@ -207,7 +201,8 @@ class BackupNotifier extends _$BackupNotifier {
   // ═══════════════════════════════════════════════════════════════════
 
   Future<void> importBackup() async {
-    state = state.copyWith(isImporting: true, clearError: true, clearSuccess: true);
+    state =
+        state.copyWith(isImporting: true, clearError: true, clearSuccess: true);
     try {
       final result = await FilePicker.platform.pickFiles(
         dialogTitle: 'Select Backup File',
@@ -231,7 +226,7 @@ class BackupNotifier extends _$BackupNotifier {
       if (backup['app'] != 'MinhaajulHudaa') {
         state = state.copyWith(
           isImporting: false,
-          error: 'Invalid backup file – not a MinhaajulHudaa backup.',
+          error: 'Invalid backup file \u2013 not a MinhaajulHudaa backup.',
         );
         return;
       }
@@ -273,39 +268,14 @@ class BackupNotifier extends _$BackupNotifier {
       final mem = data['memorization_progress'] as List<dynamic>?;
       if (mem != null) {
         for (final m in mem) {
-          await db.into(db.memorizationProgress).insertOnConflictUpdate(
-                MemorizationProgressCompanion.insert(
-                  surahNumber: Value(m['surah_number'] as int),
-                  ayahNumber: Value(m['ayah_number'] as int),
-                  status: Value(m['status'] as String? ?? 'new'),
-                  repetitions: Value(m['repetitions'] as int? ?? 0),
-                  easeFactor: Value((m['ease_factor'] as num?)?.toDouble() ?? 2.5),
-                  intervalDays: Value(m['interval_days'] as int? ?? 1),
-                  consecutiveCorrect: Value(m['consecutive_correct'] as int? ?? 0),
-                  totalAttempts: Value(m['total_attempts'] as int? ?? 0),
-                  totalCorrect: Value(m['total_correct'] as int? ?? 0),
-                  lastReviewed: Value(
-                    m['last_reviewed'] != null
-                        ? DateTime.tryParse(m['last_reviewed'] as String)
-                        : null,
-                  ),
-                  nextReviewDate: Value(
-                    m['next_review_date'] != null
-                        ? DateTime.tryParse(m['next_review_date'] as String)
-                        : null,
-                  ),
-                  createdAt: Value(
-                    m['created_at'] != null
-                        ? DateTime.tryParse(m['created_at'] as String) ?? DateTime.now()
-                        : DateTime.now(),
-                  ),
-                  updatedAt: Value(
-                    m['updated_at'] != null
-                        ? DateTime.tryParse(m['updated_at'] as String) ?? DateTime.now()
-                        : DateTime.now(),
-                  ),
-                ),
-              );
+          await db.hifdhDao.recordReview(
+            surahNumber: m['surah_number'] as int,
+            ayahNumber: m['ayah_number'] as int,
+            quality: m['total_correct'] != null &&
+                    m['total_correct'] > 0
+                ? 5
+                : 2,
+          );
         }
       }
 
@@ -322,7 +292,7 @@ class BackupNotifier extends _$BackupNotifier {
         }
       }
 
-      // Restore settings (selective – don't override last_backup_*)
+      // Restore settings (selective \u2013 don't override last_backup_*)
       final settings = backup['settings'] as Map<String, dynamic>?;
       if (settings != null) {
         final settingsBox = Hive.box('settings');
@@ -454,10 +424,6 @@ class BackupNotifier extends _$BackupNotifier {
     return '${(bytes / 1048576).toStringAsFixed(1)} MB';
   }
 }
-
-// ═══════════════════════════════════════════════════════════════════════
-// Non-generated fallback for direct use without build_runner
-// ═══════════════════════════════════════════════════════════════════════
 
 /// Simple provider for [BackupNotifier] usable without code generation.
 final backupProvider =

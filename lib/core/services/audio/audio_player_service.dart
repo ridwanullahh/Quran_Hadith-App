@@ -6,7 +6,6 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../../constants/app_constants.dart';
 import '../../../data/repositories/audio_repository.dart';
-import '../../database/database.dart';
 
 class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
   final AudioPlayer _player = AudioPlayer();
