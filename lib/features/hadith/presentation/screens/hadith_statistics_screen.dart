@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:hive/hive.dart';
@@ -66,25 +65,13 @@ class _HadithStatisticsScreenState extends State<HadithStatisticsScreen>
           minutesSpent: map['minutesSpent'] as int? ?? 0,
         );
       }).toList();
-    } catch (_) {
-      _logs = _generateSampleLogs();
+    } catch (e) {
+      // Log the error but show an empty state instead of fabricated data.
+      // Users should see real stats only — never mock/sample content.
+      debugPrint('[HadithStatistics] failed to load logs: $e');
+      _logs = [];
     }
     setState(() => _isLoading = false);
-  }
-
-  List<HadithReadingLog> _generateSampleLogs() {
-    final random = Random(42);
-    final collections = ['bukhari', 'muslim', 'tirmidhi', 'abudawud', 'nasai', 'ibnmajah'];
-    final now = DateTime.now();
-    return List.generate(30, (i) {
-      final date = now.subtract(Duration(days: 29 - i));
-      return HadithReadingLog(
-        date: date,
-        hadithsRead: 2 + random.nextInt(18),
-        collectionId: collections[random.nextInt(collections.length)],
-        minutesSpent: 3 + random.nextInt(25),
-      );
-    });
   }
 
   // ── Computed Stats ──────────────────────────────────────────
@@ -148,14 +135,55 @@ class _HadithStatisticsScreenState extends State<HadithStatisticsScreen>
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator.adaptive())
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildOverviewTab(theme, isDark),
-                _buildActivityTab(theme, isDark),
-                _buildCollectionsTab(theme, isDark),
-              ],
+          : _logs.isEmpty
+              ? _buildFullEmptyState(theme, isDark)
+              : TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildOverviewTab(theme, isDark),
+                    _buildActivityTab(theme, isDark),
+                    _buildCollectionsTab(theme, isDark),
+                  ],
+                ),
+    );
+  }
+
+  /// Full-screen empty-state UI shown when the user has not yet read any
+  /// hadiths. Replaces the previous sample-data fallback that fabricated
+  /// metrics.
+  Widget _buildFullEmptyState(ThemeData theme, bool isDark) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.insights_rounded,
+              size: 72,
+              color: (isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary)
+                  .withOpacity(0.6),
             ),
+            const SizedBox(height: 20),
+            Text(
+              'No reading activity yet',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Read hadiths from the Hadith tab and your statistics will appear here.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
