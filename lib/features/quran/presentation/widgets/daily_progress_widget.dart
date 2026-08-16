@@ -94,7 +94,7 @@ class DailyProgressWidget extends ConsumerWidget {
 
     return progressAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (_) => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
       data: (data) => _buildWidget(context, data, isDark),
     );
   }

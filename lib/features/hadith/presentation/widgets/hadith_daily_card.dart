@@ -6,7 +6,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
-import '../../screens/hadith_of_day_screen.dart';
+import '../screens/hadith_of_day_screen.dart';
 import '../providers/hadith_bookmark_provider.dart';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -104,7 +104,7 @@ class HadithDailyCard extends ConsumerWidget {
                     // Remove bookmark - find and remove
                     final existing = ref.read(hadithBookmarkProvider).firstWhere(
                       (b) => b.hadithText == todayHadith.english,
-                      orElse: () => const HadithBookmark(
+                      orElse: () => HadithBookmark(
                         collectionId: '',
                         bookNumber: 0,
                         hadithNumber: 0,

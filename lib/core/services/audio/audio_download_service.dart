@@ -4,10 +4,10 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:path/path.dart' as p;
 
-import '../../../constants/app_constants.dart';
+import '../../constants/app_constants.dart';
 import '../../../data/repositories/audio_repository.dart';
-import '../../database/database.dart';
-import '../../database/daos/audio_dao.dart';
+import '../database/database.dart';
+import '../database/daos/audio_dao.dart';
 
 /// Progress data for a single download
 class DownloadProgress {
@@ -412,7 +412,7 @@ class AudioDownloadService {
 
   /// Auto-download the next ayah in the background when playing.
   /// Call this when an ayah starts playing.
-  Future<void> autoCacheOnPlay({
+  Future<void> precacheAyahsOnPlay({
     required int surahNumber,
     required int ayahNumber,
     required int totalAyahs,
@@ -444,7 +444,7 @@ class AudioDownloadService {
   }
 
   /// Auto-cache surah when starting playback of any ayah
-  Future<void> autoCacheSurah({
+  Future<void> precacheSurah({
     required int surahNumber,
     required int totalAyahs,
     String reciterId = AppConstants.defaultReciterId,

@@ -411,6 +411,7 @@ class _HadithRandomScreenState extends State<HadithRandomScreen>
                       ),
                     ],
                   ),
+                ),
                 const Divider(height: 1, color: AppColors.darkBorder),
                 Expanded(
                   child: ListView.builder(

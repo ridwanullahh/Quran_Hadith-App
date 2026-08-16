@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../data/repositories/quran_repository.dart';
 import '../../../../data/models/quran/surah_info.dart';
+import '../../../../data/models/quran/ayah_data.dart';
 
 /// Background theme for the shareable verse card.
 enum VerseShareTheme {
