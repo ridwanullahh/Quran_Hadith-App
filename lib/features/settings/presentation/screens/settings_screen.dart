@@ -284,6 +284,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const _Divider(),
               _SettingsTile(
+                icon: Icons.system_update_rounded,
+                iconColor: AppColors.success,
+                title: 'Check for Updates',
+                subtitle: 'See if a newer version is available',
+                onTap: () => context.push('/update'),
+              ),
+              const _Divider(),
+              _SettingsTile(
                 icon: Icons.code_rounded,
                 iconColor: AppColors.darkTextTertiary,
                 title: 'MinhaajulHudaa',
@@ -428,6 +436,7 @@ class _SettingsTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final Widget? trailing;
+  final VoidCallback? onTap;
 
   const _SettingsTile({
     required this.icon,
@@ -435,16 +444,20 @@ class _SettingsTile extends StatelessWidget {
     required this.title,
     this.subtitle = '',
     this.trailing,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
           Container(
             width: 36,
             height: 36,
@@ -481,7 +494,8 @@ class _SettingsTile extends StatelessWidget {
             const SizedBox(width: 8),
             trailing!,
           ],
-        ],
+          ],
+        ),
       ),
     );
   }

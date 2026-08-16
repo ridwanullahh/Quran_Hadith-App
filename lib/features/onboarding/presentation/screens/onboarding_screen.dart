@@ -17,7 +17,7 @@ final onboardingCompletedProvider = Provider<bool>((ref) {
   }
 });
 
-/// A beautiful 3-page onboarding flow shown only on first launch.
+/// A beautiful 4-page onboarding flow shown only on first launch.
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -31,6 +31,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   String _selectedLanguage = 'en';
   ThemeMode _selectedTheme = ThemeMode.dark;
+  String _notifPermissionStatus = 'Pending';
+  String _storagePermissionStatus = 'Pending';
+  String _overlayPermissionStatus = 'Pending';
 
   @override
   void dispose() {
@@ -70,7 +73,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: TextButton(
-                  onPressed: _currentPage == 2 ? null : _completeOnboarding,
+                  onPressed: _currentPage == 3 ? null : _completeOnboarding,
                   child: const Text('Skip'),
                 ),
               ),
@@ -85,6 +88,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   _buildWelcomePage(),
                   _buildFeaturesPage(),
                   _buildSetupPage(),
+                  _buildPermissionsPage(),
                 ],
               ),
             ),
@@ -439,6 +443,115 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   // ═══════════════════════════════════════════════════════════════════
+  // Page 4: Permissions
+  // ═══════════════════════════════════════════════════════════════════
+
+  Widget _buildPermissionsPage() {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Permissions',
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: AppColors.darkTextPrimary,
+            ),
+          )
+              .animate()
+              .fadeIn(duration: 400.ms),
+          const SizedBox(height: 6),
+          Text(
+            'Grant permissions for the best experience.',
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 14,
+              color: AppColors.darkTextSecondary,
+            ),
+          )
+              .animate()
+              .fadeIn(duration: 400.ms, delay: 100.ms),
+          const SizedBox(height: 24),
+
+          // Notifications permission
+          _PermissionCard(
+            icon: Icons.notifications_rounded,
+            title: 'Notifications',
+            description: 'Receive daily Quran verses, hadith reminders, and Surah Al-Kahf Friday alerts.',
+            color: AppColors.primary,
+            status: _notifPermissionStatus,
+            onGrant: () {
+              setState(() => _notifPermissionStatus = 'Granted');
+            },
+            onDeny: () {
+              setState(() => _notifPermissionStatus = 'Denied');
+            },
+          )
+              .animate()
+              .fadeIn(duration: 400.ms, delay: 200.ms)
+              .slideX(begin: 0.05, end: 0),
+
+          const SizedBox(height: 12),
+
+          // Storage permission
+          _PermissionCard(
+            icon: Icons.folder_rounded,
+            title: 'Storage',
+            description: 'Allow storage access to backup your bookmarks, notes, and memorization progress.',
+            color: AppColors.secondary,
+            status: _storagePermissionStatus,
+            onGrant: () {
+              setState(() => _storagePermissionStatus = 'Granted');
+            },
+            onDeny: () {
+              setState(() => _storagePermissionStatus = 'Denied');
+            },
+          )
+              .animate()
+              .fadeIn(duration: 400.ms, delay: 300.ms)
+              .slideX(begin: 0.05, end: 0),
+
+          const SizedBox(height: 12),
+
+          // Overlay permission
+          _PermissionCard(
+            icon: Icons.layers_rounded,
+            title: 'Overlay / Pop-up',
+            description: 'Show prayer time reminders and hadith pop-ups on top of other apps.',
+            color: AppColors.revisionBlue,
+            status: _overlayPermissionStatus,
+            onGrant: () {
+              setState(() => _overlayPermissionStatus = 'Granted');
+            },
+            onDeny: () {
+              setState(() => _overlayPermissionStatus = 'Denied');
+            },
+          )
+              .animate()
+              .fadeIn(duration: 400.ms, delay: 400.ms)
+              .slideX(begin: 0.05, end: 0),
+
+          const Spacer(),
+          Text(
+            'You can change these permissions later in Settings.',
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 12,
+              color: AppColors.darkTextTertiary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
   // Bottom Navigation
   // ═══════════════════════════════════════════════════════════════════
 
@@ -451,7 +564,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(3, (index) {
+              children: List.generate(4, (index) {
                 final isActive = index == _currentPage;
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
@@ -480,7 +593,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _currentPage == 2 ? 'Get Started' : 'Next',
+                  _currentPage == 3 ? 'Get Started' : 'Next',
                   style: const TextStyle(
                     fontFamily: 'Inter',
                     fontWeight: FontWeight.w600,
@@ -489,7 +602,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
                 const SizedBox(width: 8),
                 Icon(
-                  _currentPage == 2
+                  _currentPage == 3
                       ? Icons.check_rounded
                       : Icons.arrow_forward_rounded,
                   size: 20,
@@ -503,7 +616,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _nextOrStart() {
-    if (_currentPage < 2) {
+    if (_currentPage < 3) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
@@ -640,5 +753,153 @@ class _FeatureCard extends StatelessWidget {
           duration: 400.ms,
           delay: delay,
         );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Permission Card Widget
+// ═══════════════════════════════════════════════════════════════════════
+
+class _PermissionCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+  final Color color;
+  final String status;
+  final VoidCallback onGrant;
+  final VoidCallback onDeny;
+
+  const _PermissionCard({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.color,
+    required this.status,
+    required this.onGrant,
+    required this.onDeny,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.darkSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.darkBorder,
+          width: 0.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, size: 20, color: color),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 12,
+                        color: AppColors.darkTextSecondary,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (status == 'Pending') ...[
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: onDeny,
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      side: BorderSide(color: AppColors.darkBorder),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text(
+                      'Deny',
+                      style: TextStyle(fontFamily: 'Inter', fontSize: 13),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: onGrant,
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      backgroundColor: color,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text(
+                      'Grant',
+                      style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ] else ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(
+                  status == 'Granted'
+                      ? Icons.check_circle_rounded
+                      : Icons.cancel_rounded,
+                  size: 18,
+                  color: status == 'Granted' ? AppColors.success : AppColors.error,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  status,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: status == 'Granted' ? AppColors.success : AppColors.error,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }

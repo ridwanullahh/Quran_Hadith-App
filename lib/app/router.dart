@@ -32,6 +32,15 @@ import '../../features/topics/presentation/screens/topic_screen.dart';
 import '../../features/cross_refs/presentation/screens/cross_ref_screen.dart';
 import '../../features/reciters/presentation/screens/reciter_screen.dart';
 import '../../features/reading_plan/presentation/screens/reading_plan_screen.dart';
+import '../../features/hadith/presentation/screens/hadith_of_day_screen.dart';
+import '../../features/hadith/presentation/screens/hadith_favorites_screen.dart';
+import '../../features/hadith/presentation/screens/hadith_collection_detail_screen.dart';
+import '../../features/hadith/presentation/screens/narrator_screen.dart';
+import '../../features/hadith/presentation/screens/grading_screen.dart';
+import '../../features/notifications/presentation/screens/notification_settings_screen.dart';
+import '../../features/engagement/presentation/screens/engagement_screen.dart';
+import '../../features/engagement/presentation/screens/weekly_digest_screen.dart';
+import '../../features/update/presentation/screens/update_screen.dart';
 
 /// Top-level route paths used throughout the app.
 abstract class AppRoutes {
@@ -61,6 +70,15 @@ abstract class AppRoutes {
   static const String dua = '/dua';
   static const String asma = '/asma';
   static const String dailyVerse = '/daily';
+  static const String hadithOfDay = '/hadith/daily';
+  static const String hadithFavorites = '/hadith/favorites';
+  static const String hadithCollectionDetail = '/hadith/detail/:collectionId';
+  static const String hadithNarrators = '/hadith/narrators';
+  static const String hadithGrading = '/hadith/grading';
+  static const String notifications = '/notifications';
+  static const String engagement = '/engagement';
+  static const String weeklyDigest = '/weekly-digest';
+  static const String update = '/update';
 }
 
 /// Provides the [GoRouter] instance for the application.
@@ -293,6 +311,82 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/daily',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: DailyVerseScreen(),
+            ),
+          ),
+
+          // Hadith of the Day
+          GoRoute(
+            path: '/hadith/daily',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: HadithOfDayScreen(),
+            ),
+          ),
+
+          // Hadith Favorites
+          GoRoute(
+            path: '/hadith/favorites',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: HadithFavoritesScreen(),
+            ),
+          ),
+
+          // Hadith Collection Detail
+          GoRoute(
+            path: '/hadith/detail/:collectionId',
+            pageBuilder: (context, state) {
+              final collectionId =
+                  state.pathParameters['collectionId'] ?? 'bukhari';
+              return NoTransitionPage(
+                child: HadithCollectionDetailScreen(collectionId: collectionId),
+              );
+            },
+          ),
+
+          // Hadith Narrators
+          GoRoute(
+            path: '/hadith/narrators',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: NarratorScreen(),
+            ),
+          ),
+
+          // Hadith Grading
+          GoRoute(
+            path: '/hadith/grading',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: GradingScreen(),
+            ),
+          ),
+
+          // Notification Settings
+          GoRoute(
+            path: '/notifications',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: NotificationSettingsScreen(),
+            ),
+          ),
+
+          // Engagement / Streak Tracker
+          GoRoute(
+            path: '/engagement',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: EngagementScreen(),
+            ),
+          ),
+
+          // Weekly Digest
+          GoRoute(
+            path: '/weekly-digest',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: WeeklyDigestScreen(),
+            ),
+          ),
+
+          // Update
+          GoRoute(
+            path: '/update',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: UpdateScreen(),
             ),
           ),
         ],
