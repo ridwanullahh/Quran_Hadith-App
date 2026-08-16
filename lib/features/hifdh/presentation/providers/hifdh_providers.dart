@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/services/database/database.dart';
 import '../../../../data/models/quran/ayah_data.dart';
 import '../../../../data/models/quran/surah_info.dart';
@@ -577,38 +578,36 @@ final weeklyChartDataProvider = FutureProvider<List<DailyChartData>>((ref) async
 // Helpers
 // ═══════════════════════════════════════════════════════════════════
 
-/// Rough juz boundary check based on surah number ranges.
-/// In production this would use exact juz boundary data.
+/// Precise juz boundary check using AppConstants.juzBreakdown.
+///
+/// Each juz boundary is defined by a starting (surah, ayah) tuple in
+/// AppConstants.juzBreakdown (30 entries, index j-1 = start of juz j).
+/// An ayah at (surahNumber, ayahNumber) belongs to juz j if its position
+/// is >= juzBreakdown[j-1] and < juzBreakdown[j] (or juz 30 has no upper
+/// bound — it extends to the end of the Quran).
 bool _isInJuz(int surahNumber, int ayahNumber, int juz) {
-  // Juz 1: Surah 1 (all) + Surah 2:1-141
-  if (juz == 1) {
-    return surahNumber == 1 || (surahNumber == 2 && ayahNumber <= 141);
-  }
-  // Juz 30: Surah 78-114
-  if (juz == 30) {
-    return surahNumber >= 78;
-  }
-  // Rough approximation for middle juz
-  final juzStartSurah = _juzStartSurah(juz);
-  final nextJuzStartSurah = juz < 30 ? _juzStartSurah(juz + 1) : 115;
-  return surahNumber >= juzStartSurah && surahNumber < nextJuzStartSurah;
+  if (juz < 1 || juz > AppConstants.juzBreakdown.length) return false;
+
+  // Position of the ayah as a comparable (surah, ayah) tuple.
+  // We compare by: surah * 1000 + ayah (ayat within a surah are <= 286).
+  final ayahPos = surahNumber * 1000 + ayahNumber;
+
+  final startBound = AppConstants.juzBreakdown[juz - 1];
+  final startPos = startBound['surah']! * 1000 + startBound['ayah']!;
+
+  if (ayahPos < startPos) return false;
+
+  // Juz 30 has no upper bound — extends to end of Quran.
+  if (juz >= AppConstants.juzBreakdown.length) return true;
+
+  final nextStartBound = AppConstants.juzBreakdown[juz];
+  final nextPos = nextStartBound['surah']! * 1000 + nextStartBound['ayah']!;
+
+  return ayahPos < nextPos;
 }
 
+/// Returns the surah number where juz N starts.
 int _juzStartSurah(int juz) {
-  const juzSurahStarts = [
-    1, 2, 2, 2, 3, 3, 4, 4, 4, 5,
-    5, 6, 6, 7, 7, 8, 8, 9, 9, 10,
-    10, 11, 11, 12, 14, 15, 16, 17, 18, 19,
-    21, 22, 23, 25, 25, 27, 27, 28, 29, 31,
-    32, 33, 34, 35, 36, 37, 38, 39, 40, 41,
-    42, 43, 44, 46, 47, 49, 51, 52, 53, 58,
-    59, 61, 62, 63, 65, 66, 67, 68, 69, 70,
-    72, 73, 74, 75, 76, 78, 79, 80, 81, 82,
-    84, 85, 86, 87, 88, 89, 90, 91, 92, 93,
-    94, 95, 96, 97, 98, 99, 100, 101, 102, 103,
-    104, 105, 106, 107, 108, 109, 110, 111, 112, 113,
-    114, 114, 114, 114
-  ];
-  if (juz < 1 || juz >= juzSurahStarts.length) return 114;
-  return juzSurahStarts[juz - 1];
+  if (juz < 1 || juz > AppConstants.juzBreakdown.length) return 114;
+  return AppConstants.juzBreakdown[juz - 1]['surah']!;
 }
