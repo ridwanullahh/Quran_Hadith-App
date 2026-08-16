@@ -111,8 +111,13 @@ final updateProvider =
 
 class UpdateNotifier extends StateNotifier<UpdateState> {
   final Dio _dio;
+  // IMPORTANT: this URL must match the actual GitHub repository slug.
+  // The repo is github.com/ridwanullahh/Quran_Hadith-App — note the
+  // capital Q, H, A and the underscore. The previous URL
+  // (minhaajulhudaa/quran-hadith-app) returned 404, which silently broke
+  // the auto-update check on every app launch.
   static const String _githubApiUrl =
-      'https://api.github.com/repos/minhaajulhudaa/quran-hadith-app/releases/latest';
+      'https://api.github.com/repos/ridwanullahh/Quran_Hadith-App/releases/latest';
 
   UpdateNotifier() : _dio = Dio(), super(const UpdateState()) {
     _loadCurrentVersion();

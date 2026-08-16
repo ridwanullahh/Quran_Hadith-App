@@ -157,8 +157,15 @@ class AppDatabase {
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
+    // PRAGMA foreign_keys = ON is a no-result statement — safe to use execute().
     await db.execute('PRAGMA foreign_keys = ON');
-    await db.execute('PRAGMA journal_mode = WAL');
+    // PRAGMA journal_mode = WAL returns a single-row result set (the new
+    // journal mode). On Android, sqflite's execute() routes to
+    // SQLiteDatabase.execSQL() which throws "Queries can be performed using
+    // SQLiteDatabase query or rawQuery methods only" for any statement
+    // returning a result set. We must use rawQuery() here instead.
+    // See: https://github.com/tekartik/sqflite/issues/219
+    await db.rawQuery('PRAGMA journal_mode = WAL');
     _instance = AppDatabase._(db);
     return _instance!;
   }
