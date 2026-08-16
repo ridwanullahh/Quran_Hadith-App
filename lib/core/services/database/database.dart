@@ -21,6 +21,12 @@ export 'daos/audio_dao.dart';
 // ═══════════════════════════════════════════════════════════════════
 // Stream controllers for reactive queries
 // ═══════════════════════════════════════════════════════════════════
+//
+// The pattern: every write to a table calls the corresponding notify*Changed
+// function. That function re-queries the table and emits the fresh list to
+// the broadcast StreamController. watch* methods on the DAOs return a stream
+// that yields the initial result immediately and then re-emits on every
+// notify*Changed event.
 
 final _bookmarksController = StreamController<List<Bookmark>>.broadcast();
 final _notesController = StreamController<List<Note>>.broadcast();
@@ -29,30 +35,97 @@ final _progressController =
 final _revisionsController = StreamController<List<RevisionSchedule>>.broadcast();
 final _mistakesController = StreamController<List<MistakeLog>>.broadcast();
 
-/// Notify that bookmarks table changed
+/// Expose the controllers so DAOs can subscribe in their watch* methods.
+Stream<List<Bookmark>> get bookmarksStream => _bookmarksController.stream;
+Stream<List<Note>> get notesStream => _notesController.stream;
+Stream<List<MemorizationProgress>> get progressStream => _progressController.stream;
+Stream<List<RevisionSchedule>> get revisionsStream => _revisionsController.stream;
+Stream<List<MistakeLog>> get mistakesStream => _mistakesController.stream;
+
+/// Notify that bookmarks table changed — re-queries and emits the fresh list.
 void notifyBookmarksChanged() {
-  // Re-emit current data is handled by the stream implementation
-  _bookmarksController.add(const []);
+  _refreshBookmarks();
 }
 
-/// Notify that notes table changed
+void _refreshBookmarks() async {
+  try {
+    final db = AppDatabase._instance?._db;
+    if (db == null) return;
+    final rows = await db.query('bookmarks', orderBy: 'created_at DESC');
+    final list = rows.map(Bookmark.fromMap).toList();
+    _bookmarksController.add(list);
+  } catch (e) {
+    // Emit empty list on error so subscribers don't hang waiting.
+    _bookmarksController.add(const []);
+  }
+}
+
+/// Notify that notes table changed.
 void notifyNotesChanged() {
-  _notesController.add(const []);
+  _refreshNotes();
 }
 
-/// Notify that memorization progress table changed
+void _refreshNotes() async {
+  try {
+    final db = AppDatabase._instance?._db;
+    if (db == null) return;
+    final rows = await db.query('notes', orderBy: 'updated_at DESC');
+    final list = rows.map(Note.fromMap).toList();
+    _notesController.add(list);
+  } catch (e) {
+    _notesController.add(const []);
+  }
+}
+
+/// Notify that memorization progress table changed.
 void notifyProgressChanged() {
-  _progressController.add(const []);
+  _refreshProgress();
 }
 
-/// Notify that revision schedule table changed
+void _refreshProgress() async {
+  try {
+    final db = AppDatabase._instance?._db;
+    if (db == null) return;
+    final rows = await db.query('memorization_progress', orderBy: 'updated_at DESC');
+    final list = rows.map(MemorizationProgress.fromMap).toList();
+    _progressController.add(list);
+  } catch (e) {
+    _progressController.add(const []);
+  }
+}
+
+/// Notify that revision schedule table changed.
 void notifyRevisionsChanged() {
-  _revisionsController.add(const []);
+  _refreshRevisions();
 }
 
-/// Notify that mistakes table changed
+void _refreshRevisions() async {
+  try {
+    final db = AppDatabase._instance?._db;
+    if (db == null) return;
+    final rows = await db.query('revision_schedule', orderBy: 'scheduled_date ASC');
+    final list = rows.map(RevisionSchedule.fromMap).toList();
+    _revisionsController.add(list);
+  } catch (e) {
+    _revisionsController.add(const []);
+  }
+}
+
+/// Notify that mistakes log table changed.
 void notifyMistakesChanged() {
-  _mistakesController.add(const []);
+  _refreshMistakes();
+}
+
+void _refreshMistakes() async {
+  try {
+    final db = AppDatabase._instance?._db;
+    if (db == null) return;
+    final rows = await db.query('mistake_log', orderBy: 'logged_at DESC');
+    final list = rows.map(MistakeLog.fromMap).toList();
+    _mistakesController.add(list);
+  } catch (e) {
+    _mistakesController.add(const []);
+  }
 }
 
 class AppDatabase {

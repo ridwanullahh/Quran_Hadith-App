@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:sqflite/sqflite.dart';
 
 import '../tables.dart';
-import '../database.dart' show notifyBookmarksChanged;
+import '../database.dart'
+    show notifyBookmarksChanged, bookmarksStream;
 
 class BookmarkDao {
   final Database _db;
@@ -74,11 +75,20 @@ class BookmarkDao {
   }
 
   Stream<List<Bookmark>> watchAllBookmarks() async* {
+    // Emit the initial snapshot immediately so the UI has data on first render.
     yield await getAllBookmarks();
+    // Then re-emit on every notifyBookmarksChanged() event (triggered by
+    // any write to the bookmarks table from any DAO instance).
+    await for (final _ in bookmarksStream) {
+      yield await getAllBookmarks();
+    }
   }
 
   Stream<List<Bookmark>> watchBookmarksBySurah(int surahNumber) async* {
     yield await getBookmarksBySurah(surahNumber);
+    await for (final _ in bookmarksStream) {
+      yield await getBookmarksBySurah(surahNumber);
+    }
   }
 
   Future<bool> isBookmarked(int surahNumber, int ayahNumber) async {

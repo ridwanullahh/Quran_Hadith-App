@@ -3,7 +3,13 @@ import 'package:sqflite/sqflite.dart';
 import '../tables.dart';
 import '../../../constants/app_constants.dart';
 import '../database.dart'
-    show notifyProgressChanged, notifyRevisionsChanged, notifyMistakesChanged;
+    show
+        notifyProgressChanged,
+        notifyRevisionsChanged,
+        notifyMistakesChanged,
+        progressStream,
+        revisionsStream,
+        mistakesStream;
 
 class HifdhDao {
   final Database _db;
@@ -169,11 +175,17 @@ class HifdhDao {
 
   Stream<List<MemorizationProgress>> watchDueReviews() async* {
     yield await getDueReviews();
+    await for (final _ in progressStream) {
+      yield await getDueReviews();
+    }
   }
 
   Stream<List<MemorizationProgress>> watchProgressBySurah(
       int surahNumber) async* {
     yield await getProgressBySurah(surahNumber);
+    await for (final _ in progressStream) {
+      yield await getProgressBySurah(surahNumber);
+    }
   }
 
   Future<Map<String, int>> getProgressStats() async {
@@ -269,6 +281,9 @@ class HifdhDao {
 
   Stream<List<RevisionSchedule>> watchPendingRevisions() async* {
     yield await getPendingRevisions();
+    await for (final _ in revisionsStream) {
+      yield await getPendingRevisions();
+    }
   }
 
   Future<bool> completeRevision(int id) async {
@@ -379,6 +394,9 @@ class HifdhDao {
 
   Stream<List<MistakeLog>> watchUnresolvedMistakes() async* {
     yield await getUnresolvedMistakes();
+    await for (final _ in mistakesStream) {
+      yield await getUnresolvedMistakes();
+    }
   }
 
   Future<bool> resolveMistake(int id) async {

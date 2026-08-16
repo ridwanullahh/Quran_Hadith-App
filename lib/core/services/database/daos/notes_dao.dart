@@ -1,7 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../tables.dart';
-import '../database.dart' show notifyNotesChanged;
+import '../database.dart' show notifyNotesChanged, notesStream;
 
 class NotesDao {
   final Database _db;
@@ -75,14 +75,23 @@ class NotesDao {
 
   Stream<List<Note>> watchAllNotes() async* {
     yield await getAllNotes();
+    await for (final _ in notesStream) {
+      yield await getAllNotes();
+    }
   }
 
   Stream<List<Note>> watchNotesBySurah(int surahNumber) async* {
     yield await getNotesBySurah(surahNumber);
+    await for (final _ in notesStream) {
+      yield await getNotesBySurah(surahNumber);
+    }
   }
 
   Stream<List<Note>> watchNotesForAyah(int surahNumber, int ayahNumber) async* {
     yield await getNotesForAyah(surahNumber, ayahNumber);
+    await for (final _ in notesStream) {
+      yield await getNotesForAyah(surahNumber, ayahNumber);
+    }
   }
 
   // ── Update ──────────────────────────────────────────────────────
