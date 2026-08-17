@@ -142,6 +142,39 @@ late ProviderContainer globalProviderContainer;
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Show actual error messages in release mode instead of a blank gray
+  // screen. This is CRITICAL for debugging — without this, widget build
+  // errors in release mode show nothing, making it impossible to diagnose
+  // crashes.
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return Material(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline_rounded,
+                size: 56, color: Colors.red),
+            const SizedBox(height: 16),
+            const Text('Widget build error',
+                style: TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              child: Text(
+                '${details.exception}\n\n${details.stack}',
+                style: const TextStyle(
+                    fontSize: 11,
+                    fontFamily: 'monospace',
+                    color: Colors.red),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  };
+
   // Create the root Riverpod container with overrides for
   // providers that need initialized singletons.
   globalProviderContainer = ProviderContainer(
@@ -178,16 +211,18 @@ class _InitGateway extends ConsumerWidget {
             audioHandlerProvider.overrideWithValue(result.audioPlayerService),
             themeModeProvider.overrideWith((ref) {
               // Default to light theme. Users can switch to Dark / Amoled
-              // from Settings; the choice is persisted to Hive.
+              // from Settings; the choice is persisted to Hive by the
+              // settings screen itself (via _saveSetting).
+              //
+              // NOTE: do NOT call ref.listen(themeModeProvider) here —
+              // that creates a circular dependency (the provider listening
+              // to itself) which throws CircularDependencyError and shows
+              // a blank gray screen.
               final savedMode = result.settingsBox
                   .get('theme_mode', defaultValue: 'light') as String;
               final notifier = ThemeModeNotifier();
               final initialMode = ThemeModeNotifier.fromString(savedMode);
               notifier.setThemeMode(initialMode);
-              // Persist future changes so the choice survives app restarts.
-              ref.listen<AppThemeMode>(themeModeProvider, (_, next) {
-                result.settingsBox.put('theme_mode', ThemeModeNotifier.toStringValue(next));
-              });
               return notifier;
             }),
           ],
@@ -366,6 +401,6 @@ class _ProviderLogger extends ProviderObserver {
     StackTrace stackTrace,
     ProviderContainer container,
   ) {
-    debugPrint('[Provider Error] ${provider.name}: $error');
+    debugPrint('[Provider Error] ${provider.name ?? provider.runtimeType}: $error\n$stackTrace');
   }
 }

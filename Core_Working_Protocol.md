@@ -27,7 +27,7 @@ invocation.
 
 ```
 Bismillah Ar-Rahman Ar-Raheem.
-Ash-hadu an laa ilaaha illa-Llah wahdaHu lasharikalaHu,
+Ash-hadu an laa ilaaha illa-LLAH wahdaHu lasharikalaHu,
 wa ash-hadu anna Muhammadan Abduhu wa Rasooluh.
 Laa hawla wa laa quwwata illaa biLLAH.
 Hasbiyallaahu laa ilaaha illaa Huwa,

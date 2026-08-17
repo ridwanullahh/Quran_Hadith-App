@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
@@ -10,11 +10,26 @@ import '../../core/services/database/daos/audio_dao.dart';
 class AudioRepository {
   static const String _audioDirName = 'quran_audio';
 
-  final AudioDao _audioDao;
+  /// Null when AppDatabase failed to initialize. All DAO methods are
+  /// no-ops in that case (audio downloads won't be tracked, but
+  /// streaming playback still works via remote URLs).
+  final AudioDao? _audioDao;
   String? _audioBaseDirPath;
 
   AudioRepository({AudioDao? audioDao})
-      : _audioDao = audioDao ?? AppDatabase.instance.audioDao;
+      : _audioDao = audioDao ?? _tryGetAudioDao();
+
+  /// Try to get the AudioDao from AppDatabase. Returns null if the
+  /// database failed to initialize, so the repository degrades
+  /// gracefully instead of throwing.
+  static AudioDao? _tryGetAudioDao() {
+    try {
+      return AppDatabase.instance.audioDao;
+    } catch (e) {
+      debugPrint('[AudioRepository] AppDatabase not initialized, audio DAO unavailable: $e');
+      return null;
+    }
+  }
 
   // ═══════════════════════════════════════════════════════════════
   // Path Helpers
@@ -119,7 +134,7 @@ class AudioRepository {
     required String reciterId,
   }) async {
     // First check the database record
-    final dbPath = await _audioDao.getAudioFilePath(
+    final dbPath = await _audioDao?.getAudioFilePath(
       surahNumber,
       ayahNumber,
       reciterId,
@@ -144,11 +159,11 @@ class AudioRepository {
     required int ayahNumber,
     required String reciterId,
   }) async {
-    return await _audioDao.isAudioFileAvailable(
+    return await _audioDao?.isAudioFileAvailable(
       surahNumber,
       ayahNumber,
       reciterId,
-    );
+    ) ?? false;
   }
 
   /// Check if a full surah is downloaded
@@ -220,7 +235,7 @@ class AudioRepository {
       }
     }
 
-    await _audioDao.removeDownloadRecord(
+    await _audioDao?.removeDownloadRecord(
       surahNumber,
       ayahNumber,
       reciterId,
@@ -234,7 +249,7 @@ class AudioRepository {
     required String reciterId,
   }) async {
     // Delete all individual ayah files
-    final downloads = await _audioDao.getDownloadsByReciter(reciterId);
+    final downloads = await _audioDao?.getDownloadsByReciter(reciterId) ?? [];
     int deleted = 0;
     for (final d in downloads) {
       if (d.surahNumber == surahNumber) {
@@ -258,20 +273,20 @@ class AudioRepository {
       deleted++;
     }
 
-    await _audioDao.removeDownloadsBySurah(surahNumber, reciterId);
+    await _audioDao?.removeDownloadsBySurah(surahNumber, reciterId);
     return deleted;
   }
 
   /// Delete all downloaded audio for a reciter
   Future<void> deleteAllAudioForReciter(String reciterId) async {
-    final downloads = await _audioDao.getDownloadsByReciter(reciterId);
+    final downloads = await _audioDao?.getDownloadsByReciter(reciterId) ?? [];
     for (final d in downloads) {
       final file = File(d.filePath);
       if (await file.exists()) {
         await file.delete();
       }
     }
-    await _audioDao.removeDownloadsByReciter(reciterId);
+    await _audioDao?.removeDownloadsByReciter(reciterId);
 
     // Also try to delete the reciter directory
     try {
@@ -297,7 +312,7 @@ class AudioRepository {
     } catch (_) {
       // Best-effort
     }
-    await _audioDao.clearAllDownloads();
+    await _audioDao?.clearAllDownloads();
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -306,7 +321,7 @@ class AudioRepository {
 
   /// Get total size of downloaded audio files
   Future<int> getTotalDownloadSize() async {
-    return await _audioDao.getTotalDownloadSize();
+    return await _audioDao?.getTotalDownloadSize() ?? 0;
   }
 
   /// Get the size of a specific downloaded file
@@ -340,16 +355,16 @@ class AudioRepository {
 
   /// Get list of all downloaded files with metadata
   Future<List<AudioDownload>> getAllDownloads() async {
-    return await _audioDao.getCompletedDownloads();
+    return await _audioDao?.getCompletedDownloads() ?? [];
   }
 
   /// Get number of downloaded surahs for a reciter
   Future<int> getDownloadedCount(String reciterId) async {
-    return await _audioDao.getDownloadedSurahCount(reciterId);
+    return await _audioDao?.getDownloadedSurahCount(reciterId) ?? 0;
   }
 
   /// Cleanup orphaned database records (files that no longer exist)
   Future<int> cleanupOrphanedRecords() async {
-    return await _audioDao.cleanupOrphanedRecords();
+    return await _audioDao?.cleanupOrphanedRecords() ?? 0;
   }
 }
