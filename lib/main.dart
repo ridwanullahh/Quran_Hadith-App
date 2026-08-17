@@ -32,44 +32,55 @@ final _initProvider = FutureProvider<_AppInitResult>((ref) async {
   await Hive.openBox('download_state');
 
   // ── Open all feature Hive boxes in parallel ──────────────────────
-  // These boxes are accessed by various features (bookmarks, notes,
-  // plans, history, stats, favorites, engagement, prayer settings).
-  // If they aren't opened before the first read, Hive throws
-  // "Box not found. Did you forget to call Hive.openBox()?" which
-  // either crashes or (when wrapped in try/catch) silently disables
-  // persistence for that feature. Open them all up front.
+  // Each box open is wrapped in try/catch so a corrupt box doesn't
+  // prevent the rest from opening.
   await Future.wait([
-    Hive.openBox('engagement'),
-    Hive.openBox('hadith_bookmarks'),
-    Hive.openBox('hadith_history'),
-    Hive.openBox('hadith_notes'),
-    Hive.openBox('hadith_plans'),
-    Hive.openBox('hadith_daily_tracker'),
-    Hive.openBox('hadith_stats'),
-    Hive.openBox('hadith_bookmark_folders'),
-    Hive.openBox('favorites'),
-    Hive.openBox('prayer_settings'),
+    _safeOpenBox('engagement'),
+    _safeOpenBox('hadith_bookmarks'),
+    _safeOpenBox('hadith_history'),
+    _safeOpenBox('hadith_notes'),
+    _safeOpenBox('hadith_plans'),
+    _safeOpenBox('hadith_daily_tracker'),
+    _safeOpenBox('hadith_stats'),
+    _safeOpenBox('hadith_bookmark_folders'),
+    _safeOpenBox('favorites'),
+    _safeOpenBox('prayer_settings'),
   ]);
 
   // ── Database ──────────────────────────────────────────────────
-  await AppDatabase.ensureInitialized();
-  final database = AppDatabase.instance;
-  await database.getReadingHistory(limit: 1);
+  // Wrap in try/catch so a corrupt DB doesn't crash the app.
+  AudioPlayerService? audioPlayerService;
+  try {
+    await AppDatabase.ensureInitialized();
+    final database = AppDatabase.instance;
+    await database.getReadingHistory(limit: 1);
+  } catch (e, st) {
+    debugPrint('[Startup] AppDatabase init failed (degraded DB): $e\n$st');
+  }
 
   // ── Audio Service ─────────────────────────────────────────────
-  // Initialize the audio_service media handler BEFORE constructing
-  // AudioPlayerService — the handler owns the shared AudioPlayer and
-  // registers the system media session (notification, lock-screen, BT).
-  await AudioSessionService.init();
-  final audioRepository = AudioRepository();
-  final audioPlayerService = AudioPlayerService(audioRepository);
+  // If AudioService.init() fails, the app still starts —
+  // AudioPlayerService falls back to a standalone AudioPlayer.
+  try {
+    await AudioSessionService.init();
+  } catch (e, st) {
+    debugPrint('[Startup] AudioSessionService.init failed: $e\n$st');
+  }
+  try {
+    final audioRepository = AudioRepository();
+    audioPlayerService = AudioPlayerService(audioRepository);
+  } catch (e, st) {
+    debugPrint('[Startup] AudioPlayerService construction failed: $e\n$st');
+  }
 
-  // ── Popup Service (ensure defaults are in Hive) ──────────────
-  PopupService.instance.isEnabled;
+  // ── Popup Service ─────────────────────────────────────────────
+  try {
+    PopupService.instance.isEnabled;
+  } catch (e, st) {
+    debugPrint('[Startup] PopupService init failed: $e\n$st');
+  }
 
-  // ── Background startup hooks (fire-and-forget; do not block UI) ──
-  // These providers improve UX but are not required for first paint.
-  // Errors are caught and logged so a failing hook never breaks startup.
+  // ── Background startup hooks (fire-and-forget) ────────────────
   Future<void> _safeStartupHook(String name, Future<void> Function() task) async {
     try {
       await task();
@@ -78,9 +89,6 @@ final _initProvider = FutureProvider<_AppInitResult>((ref) async {
     }
   }
 
-  // Use a fresh container for background hooks so they don't block the UI
-  // build pipeline. They will be re-evaluated lazily when the user navigates
-  // to the corresponding screens.
   final hookContainer = ProviderContainer();
   unawaited(_safeStartupHook('autoUpdateCheck', () {
     ref.read(updateProvider.notifier).autoCheckOnStart();
@@ -101,14 +109,29 @@ final _initProvider = FutureProvider<_AppInitResult>((ref) async {
   );
 });
 
+/// Open a Hive box, returning an empty box on failure so a corrupt box
+/// doesn't crash the app.
+Future<Box> _safeOpenBox(String name) async {
+  try {
+    return await Hive.openBox(name);
+  } catch (e, st) {
+    debugPrint('[Startup] Hive.openBox("$name") failed: $e\n$st');
+    try {
+      return await Hive.openBox(name);
+    } catch (_) {
+      return Hive.box(name);
+    }
+  }
+}
+
 class _AppInitResult {
   final Box settingsBox;
-  final AudioPlayerService audioPlayerService;
+  final AudioPlayerService? audioPlayerService;
   final bool onboardingCompleted;
 
   const _AppInitResult({
     required this.settingsBox,
-    required this.audioPlayerService,
+    this.audioPlayerService,
     required this.onboardingCompleted,
   });
 }

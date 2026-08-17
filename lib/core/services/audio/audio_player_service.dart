@@ -45,16 +45,17 @@ class AudioPlayerService {
   );
 
   AudioPlayerService(this._audioRepository) {
-    if (!AudioSessionService.isInitialized) {
-      // Defensive: this should never happen because main.dart calls
-      // AudioSessionService.init() during startup. If it does, we throw
-      // immediately so the developer notices.
-      throw StateError(
-        'AudioSessionService.init() must be called in main.dart before '
-        'constructing AudioPlayerService.',
-      );
+    // Try to use the shared AudioPlayer from the AudioHandler so the
+    // system media notification stays in sync. If AudioSessionService
+    // failed to initialize (e.g. on a device where the media session
+    // service can't be registered), fall back to a standalone
+    // AudioPlayer so the app still works — just without lock-screen
+    // controls and notification media widget.
+    if (AudioSessionService.isInitialized) {
+      _player = AudioSessionService.handler.player;
+    } else {
+      _player = AudioPlayer();
     }
-    _player = AudioSessionService.handler.player;
     _listenForTrackChanges();
   }
 
@@ -70,14 +71,18 @@ class AudioPlayerService {
         _currentIndex = idx;
         final item = _queue[idx];
         // Update the system media notification with the current track.
-        final mediaItem = MediaItem(
-          id: 'surah_${item.surahNumber}_ayah_${item.ayahNumber}',
-          album: 'Surah ${item.surahNumber}',
-          title: item.title,
-          artist: item.artist,
-          artUri: Uri.parse('https://quran.com/favicon.ico'),
-        );
-        AudioSessionService.handler.mediaItem.add(mediaItem);
+        // Guard with isInitialized so this is a no-op if AudioSessionService
+        // failed to initialize (standalone player mode).
+        if (AudioSessionService.isInitialized) {
+          final mediaItem = MediaItem(
+            id: 'surah_${item.surahNumber}_ayah_${item.ayahNumber}',
+            album: 'Surah ${item.surahNumber}',
+            title: item.title,
+            artist: item.artist,
+            artUri: Uri.parse('https://quran.com/favicon.ico'),
+          );
+          AudioSessionService.handler.mediaItem.add(mediaItem);
+        }
         // Update the surah progress subject so the mini player + surah
         // reading screen auto-scroll to the current ayah during playback.
         _surahProgressSubject.add({
