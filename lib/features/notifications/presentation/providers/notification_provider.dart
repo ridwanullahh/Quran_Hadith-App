@@ -65,9 +65,23 @@ const List<Map<String, String>> _ayahOfTheDayCollection = [
 // Notification Provider
 // ═══════════════════════════════════════════════════════════════════
 
-final flutterLocalNotificationsPlugin = Provider<FlutterLocalNotificationsPlugin>((ref) {
-  final plugin = FlutterLocalNotificationsPlugin();
-  plugin.initialize(
+/// Lazily-initialized, shared plugin instance. Initialized on first access
+/// (rather than in a Riverpod provider) because [NotificationSettingsNotifier]
+/// is constructed outside of a ProviderScope in some flows (e.g. main.dart
+/// startup hooks use a fresh ProviderContainer).
+FlutterLocalNotificationsPlugin? _sharedPlugin;
+bool _pluginInitAttempted = false;
+
+/// Get the shared, initialized [FlutterLocalNotificationsPlugin] instance.
+/// On first call, creates and initializes the plugin. If initialization
+/// fails, returns the uninitialized instance (scheduling calls will be
+/// no-ops on platforms that don't support notifications).
+FlutterLocalNotificationsPlugin getSharedNotificationsPlugin() {
+  if (_sharedPlugin != null) return _sharedPlugin!;
+  if (_pluginInitAttempted) return _sharedPlugin ?? FlutterLocalNotificationsPlugin();
+  _pluginInitAttempted = true;
+  _sharedPlugin = FlutterLocalNotificationsPlugin();
+  _sharedPlugin!.initialize(
     const InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       iOS: DarwinInitializationSettings(
@@ -77,7 +91,11 @@ final flutterLocalNotificationsPlugin = Provider<FlutterLocalNotificationsPlugin
       ),
     ),
   );
-  return plugin;
+  return _sharedPlugin!;
+}
+
+final flutterLocalNotificationsPlugin = Provider<FlutterLocalNotificationsPlugin>((ref) {
+  return getSharedNotificationsPlugin();
 });
 
 final notificationSettingsProvider =
@@ -126,7 +144,7 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
   }
 
   Future<bool> requestPermissions() async {
-    final plugin = FlutterLocalNotificationsPlugin();
+    final plugin = getSharedNotificationsPlugin();
     final androidPlugin = plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
     if (androidPlugin != null) {
       final granted = await androidPlugin.requestNotificationsPermission() ?? false;
@@ -184,7 +202,7 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
   }
 
   Future<void> scheduleMorningNotification() async {
-    final plugin = FlutterLocalNotificationsPlugin();
+    final plugin = getSharedNotificationsPlugin();
     final now = tz.TZDateTime.now(tz.local);
     final scheduled = tz.TZDateTime(
       tz.local, now.year, now.month, now.day,
@@ -217,7 +235,7 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
   }
 
   Future<void> scheduleEveningNotification() async {
-    final plugin = FlutterLocalNotificationsPlugin();
+    final plugin = getSharedNotificationsPlugin();
     final now = tz.TZDateTime.now(tz.local);
     final scheduled = tz.TZDateTime(
       tz.local, now.year, now.month, now.day,
@@ -248,7 +266,7 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
   }
 
   Future<void> scheduleFridayNotification() async {
-    final plugin = FlutterLocalNotificationsPlugin();
+    final plugin = getSharedNotificationsPlugin();
     final now = tz.TZDateTime.now(tz.local);
     var nextFriday = tz.TZDateTime(tz.local, now.year, now.month, now.day);
     while (nextFriday.weekday != DateTime.friday || nextFriday.isBefore(now)) {
@@ -278,7 +296,7 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
   }
 
   Future<void> cancelNotification(int id) async {
-    final plugin = FlutterLocalNotificationsPlugin();
+    final plugin = getSharedNotificationsPlugin();
     await plugin.cancel(id);
   }
 

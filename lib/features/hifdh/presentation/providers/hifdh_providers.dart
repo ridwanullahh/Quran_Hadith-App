@@ -378,7 +378,7 @@ class HifdhTestNotifier extends StateNotifier<HifdhTestState> {
     state = state.copyWith(isRevealed: true);
   }
 
-  void markCorrect() {
+  Future<void> markCorrect() async {
     if (state.ayahs.isEmpty) return;
     final ayah = state.ayahs[state.currentAyahIndex];
 
@@ -388,18 +388,23 @@ class HifdhTestNotifier extends StateNotifier<HifdhTestState> {
       isCorrect: true,
     );
 
-    // Record review with quality 5 (perfect)
-    _dao.recordReview(
-      surahNumber: state.selectedSurah!,
-      ayahNumber: ayah.ayahNumber,
-      quality: 5,
-    );
+    // Record review with quality 5 (perfect). Await so DB errors are
+    // surfaced and notifyProgressChanged fires before _advanceToNext.
+    try {
+      await _dao.recordReview(
+        surahNumber: state.selectedSurah!,
+        ayahNumber: ayah.ayahNumber,
+        quality: 5,
+      );
+    } catch (e, st) {
+      debugPrint('[HifdhTestNotifier.markCorrect] DB error: $e\n$st');
+    }
 
     final newResults = [...state.results, result];
     _advanceToNext(newResults);
   }
 
-  void markMistake({List<String> mistakes = const []}) {
+  Future<void> markMistake({List<String> mistakes = const []}) async {
     if (state.ayahs.isEmpty) return;
     final ayah = state.ayahs[state.currentAyahIndex];
 
@@ -411,20 +416,28 @@ class HifdhTestNotifier extends StateNotifier<HifdhTestState> {
     );
 
     // Record review with quality 2 (incorrect)
-    _dao.recordReview(
-      surahNumber: state.selectedSurah!,
-      ayahNumber: ayah.ayahNumber,
-      quality: 2,
-    );
+    try {
+      await _dao.recordReview(
+        surahNumber: state.selectedSurah!,
+        ayahNumber: ayah.ayahNumber,
+        quality: 2,
+      );
+    } catch (e, st) {
+      debugPrint('[HifdhTestNotifier.markMistake] DB error: $e\n$st');
+    }
 
     // Log mistake
     for (final mistake in mistakes) {
-      _dao.logMistake(
-        surahNumber: state.selectedSurah!,
-        ayahNumber: ayah.ayahNumber,
-        mistakeType: mistake,
-        correctText: ayah.textUthmani,
-      );
+      try {
+        await _dao.logMistake(
+          surahNumber: state.selectedSurah!,
+          ayahNumber: ayah.ayahNumber,
+          mistakeType: mistake,
+          correctText: ayah.textUthmani,
+        );
+      } catch (e, st) {
+        debugPrint('[HifdhTestNotifier.markMistake] logMistake error: $e\n$st');
+      }
     }
 
     final newResults = [...state.results, result];

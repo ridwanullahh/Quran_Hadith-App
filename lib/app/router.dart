@@ -737,7 +737,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -756,7 +756,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -775,7 +775,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -845,7 +845,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -915,7 +915,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -934,7 +934,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -953,7 +953,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -972,7 +972,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -991,7 +991,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -1010,7 +1010,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -1029,7 +1029,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -1048,7 +1048,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -1067,7 +1067,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -1086,7 +1086,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -1105,7 +1105,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -1124,7 +1124,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -1143,7 +1143,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -1213,7 +1213,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -1232,7 +1232,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -1251,7 +1251,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -1270,7 +1270,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -1289,7 +1289,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -1308,7 +1308,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -1327,7 +1327,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -1346,7 +1346,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: Container(
@@ -1407,7 +1407,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: const Icon(Icons.note_rounded),
@@ -1417,7 +1417,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: const Icon(Icons.settings_rounded),
@@ -1427,7 +1427,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: const Icon(Icons.bar_chart_rounded),
@@ -1437,7 +1437,7 @@ class _MoreScreen extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: AppColors.darkBorder),
+                  child: Divider(height: 1),
                 ),
                 ListTile(
                   leading: const Icon(Icons.cloud_upload_rounded),
