@@ -109,18 +109,17 @@ final _initProvider = FutureProvider<_AppInitResult>((ref) async {
   );
 });
 
-/// Open a Hive box, returning an empty box on failure so a corrupt box
-/// doesn't crash the app.
-Future<Box> _safeOpenBox(String name) async {
+/// Try to open a Hive box. Never throws — if the box can't be opened
+/// (corrupt file, disk full, etc.), the error is logged and the function
+/// returns. Code that later reads from this box should handle the
+/// "Box not found" error with its own try/catch (most already do).
+Future<void> _safeOpenBox(String name) async {
   try {
-    return await Hive.openBox(name);
+    await Hive.openBox(name);
   } catch (e, st) {
     debugPrint('[Startup] Hive.openBox("$name") failed: $e\n$st');
-    try {
-      return await Hive.openBox(name);
-    } catch (_) {
-      return Hive.box(name);
-    }
+    // Box stays unopened. Feature code that reads from it should
+    // catch the HiveError and degrade gracefully.
   }
 }
 
