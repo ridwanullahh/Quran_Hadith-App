@@ -15,8 +15,13 @@ final hifdhDatabaseProvider = Provider<AppDatabase>((ref) {
   return AppDatabase.instance;
 });
 
-final hifdhDaoProvider = Provider<HifdhDao>((ref) {
-  return ref.watch(hifdhDatabaseProvider).hifdhDao;
+final hifdhDaoProvider = Provider<HifdhDao?>((ref) {
+  try {
+    return ref.watch(hifdhDatabaseProvider).hifdhDao;
+  } catch (e) {
+    debugPrint('[hifdhDaoProvider] AppDatabase not initialized: $e');
+    return null;
+  }
 });
 
 final hifdhQuranRepoProvider = Provider<QuranRepository>((ref) {
@@ -74,15 +79,22 @@ class HifzhStats {
 final hifzhStatsProvider = FutureProvider<HifzhStats>((ref) async {
   final dao = ref.watch(hifdhDaoProvider);
 
-  final results = await Future.wait([
-    dao.getProgressStats(),
-    dao.getDueReviews(),
-    dao.getFrequentMistakes(limit: 10),
-    dao.getPendingRevisions(),
-    dao.getAllProgress(),
-  ]);
+  // If the database failed to initialize, return empty stats so the
+  // dashboard shows a graceful empty state instead of hanging.
+  if (dao == null) {
+    return const HifzhStats();
+  }
 
-  final statusStats = results[0] as Map<String, int>;
+  try {
+    final results = await Future.wait([
+      dao.getProgressStats(),
+      dao.getDueReviews(),
+      dao.getFrequentMistakes(limit: 10),
+      dao.getPendingRevisions(),
+      dao.getAllProgress(),
+    ]);
+
+    final statusStats = results[0] as Map<String, int>;
   final dueReviews = results[1] as List<MemorizationProgress>;
   final weakAreas = results[2] as List<MistakeLog>;
   final pendingRevisions = results[3] as List<RevisionSchedule>;
@@ -161,6 +173,10 @@ final hifzhStatsProvider = FutureProvider<HifzhStats>((ref) async {
     pendingRevisions: pendingRevisions,
     progressBySurah: progressBySurah,
   );
+  } catch (e, st) {
+    debugPrint('[hifzhStatsProvider] DB error, returning empty stats: $e\n$st');
+    return const HifzhStats();
+  }
 });
 
 // ═══════════════════════════════════════════════════════════════════
@@ -177,8 +193,9 @@ final surahListForHifdhProvider = FutureProvider<List<SurahInfo>>((ref) {
 // ═══════════════════════════════════════════════════════════════════
 
 final surahHifdhProgressProvider =
-    FutureProvider.family<List<MemorizationProgress>, int>((ref, surahNumber) {
+    FutureProvider.family<List<MemorizationProgress>, int>((ref, surahNumber) async {
   final dao = ref.watch(hifdhDaoProvider);
+  if (dao == null) return [];
   return dao.getProgressBySurah(surahNumber);
 });
 
@@ -320,7 +337,7 @@ class HifdhTestState {
 }
 
 class HifdhTestNotifier extends StateNotifier<HifdhTestState> {
-  final HifdhDao _dao;
+  final HifdhDao? _dao;
   final QuranRepository _repo;
 
   HifdhTestNotifier(this._dao, this._repo) : super(HifdhTestState());
@@ -391,7 +408,7 @@ class HifdhTestNotifier extends StateNotifier<HifdhTestState> {
     // Record review with quality 5 (perfect). Await so DB errors are
     // surfaced and notifyProgressChanged fires before _advanceToNext.
     try {
-      await _dao.recordReview(
+      await _dao?.recordReview(
         surahNumber: state.selectedSurah!,
         ayahNumber: ayah.ayahNumber,
         quality: 5,
@@ -417,7 +434,7 @@ class HifdhTestNotifier extends StateNotifier<HifdhTestState> {
 
     // Record review with quality 2 (incorrect)
     try {
-      await _dao.recordReview(
+      await _dao?.recordReview(
         surahNumber: state.selectedSurah!,
         ayahNumber: ayah.ayahNumber,
         quality: 2,
@@ -429,7 +446,7 @@ class HifdhTestNotifier extends StateNotifier<HifdhTestState> {
     // Log mistake
     for (final mistake in mistakes) {
       try {
-        await _dao.logMistake(
+        await _dao?.logMistake(
           surahNumber: state.selectedSurah!,
           ayahNumber: ayah.ayahNumber,
           mistakeType: mistake,
@@ -539,7 +556,9 @@ class DailyChartData {
 
 final weeklyChartDataProvider = FutureProvider<List<DailyChartData>>((ref) async {
   final dao = ref.watch(hifdhDaoProvider);
-  final allProgress = await dao.getAllProgress();
+  if (dao == null) return [];
+  try {
+    final allProgress = await dao.getAllProgress();
 
   final now = DateTime.now();
   final chartData = <DailyChartData>[];
@@ -585,6 +604,10 @@ final weeklyChartDataProvider = FutureProvider<List<DailyChartData>>((ref) async
   }
 
   return chartData;
+  } catch (e, st) {
+    debugPrint('[weeklyChartDataProvider] error: $e\n$st');
+    return [];
+  }
 });
 
 // ═══════════════════════════════════════════════════════════════════

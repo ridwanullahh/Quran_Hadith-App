@@ -82,7 +82,7 @@ class _SurahReadingScreenState extends ConsumerState<SurahReadingScreen> {
                 Expanded(
                   child: ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.only(top: 8, bottom: 120),
+                    padding: const EdgeInsets.only(top: 8, bottom: 160),
                     itemCount: detail.ayahs.length +
                         (surah.hasBismillah ? 2 : 1),
                     itemBuilder: (context, index) {
