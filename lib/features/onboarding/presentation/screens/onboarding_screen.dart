@@ -256,7 +256,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -363,7 +363,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               fontSize: 14,
               fontWeight: FontWeight.w600,
               letterSpacing: 3.0,
-              color: AppColors.darkTextSecondary.withOpacity(0.7),
+              color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
             ),
           ).animate().fadeIn(duration: 600.ms, delay: 400.ms),
 
@@ -377,7 +377,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               fontSize: 16,
               fontWeight: FontWeight.w500,
               height: 1.7,
-              color: AppColors.darkTextSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           )
               .animate()
@@ -429,11 +429,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         children: [
           Text(
             'Everything You Need',
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 24,
               fontWeight: FontWeight.w700,
-              color: AppColors.darkTextPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ).animate().fadeIn(duration: 400.ms),
           const SizedBox(height: 6),
@@ -442,7 +442,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 14,
-              color: AppColors.darkTextSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ).animate().fadeIn(duration: 400.ms, delay: 100.ms),
           const SizedBox(height: 24),
@@ -481,11 +481,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         children: [
           Text(
             'Permissions',
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 24,
               fontWeight: FontWeight.w700,
-              color: AppColors.darkTextPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ).animate().fadeIn(duration: 400.ms),
           const SizedBox(height: 6),
@@ -494,7 +494,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 14,
-              color: AppColors.darkTextSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               height: 1.5,
             ),
           ).animate().fadeIn(duration: 400.ms, delay: 100.ms),
@@ -535,11 +535,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         children: [
           Text(
             'Preferences',
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 24,
               fontWeight: FontWeight.w700,
-              color: AppColors.darkTextPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ).animate().fadeIn(duration: 400.ms),
           const SizedBox(height: 6),
@@ -548,7 +548,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 14,
-              color: AppColors.darkTextSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ).animate().fadeIn(duration: 400.ms, delay: 100.ms),
           const SizedBox(height: 28),
@@ -560,7 +560,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               fontFamily: 'Inter',
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: AppColors.darkTextPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 12),
@@ -570,10 +570,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   const Color(0xFFF8F6F1), const Color(0xFF1A1A2E)),
               const SizedBox(width: 10),
               _buildThemeCard(AppThemeMode.dark, Icons.dark_mode_rounded, 'Dark',
-                  AppColors.darkSurface, AppColors.darkTextPrimary),
+                  (Theme.of(context).brightness == Brightness.dark ? AppColors.darkSurface : AppColors.lightSurface), Theme.of(context).colorScheme.onSurface),
               const SizedBox(width: 10),
               _buildThemeCard(AppThemeMode.amoled, Icons.brightness_3_rounded, 'AMOLED',
-                  const Color(0xFF000000), AppColors.darkTextPrimary),
+                  const Color(0xFF000000), Theme.of(context).colorScheme.onSurface),
             ],
           ),
 
@@ -586,7 +586,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               fontFamily: 'Inter',
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: AppColors.darkTextPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 10),
@@ -594,22 +594,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: AppColors.darkSurface,
+              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkSurface : AppColors.lightSurface),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.darkBorder, width: 0.5),
+              border: Border.all(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkBorder : AppColors.lightBorder), width: 0.5),
             ),
             child: Row(
               children: [
                 Icon(Icons.translate_rounded,
                     size: 20, color: AppColors.primary),
                 const SizedBox(width: 12),
-                const Text(
+                Text(
                   'English',
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.darkTextPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const Spacer(),
@@ -618,7 +618,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 12,
-                    color: AppColors.darkTextTertiary,
+                    color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary),
                   ),
                 ),
               ],
@@ -634,7 +634,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               fontFamily: 'Inter',
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: AppColors.darkTextPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 4),
@@ -643,7 +643,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 13,
-              color: AppColors.darkTextSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 10),
@@ -651,7 +651,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             data: SliderThemeData(
               activeTrackColor: AppColors.primary,
               thumbColor: AppColors.primary,
-              inactiveTrackColor: AppColors.darkBorder,
+              inactiveTrackColor: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkBorder : AppColors.lightBorder),
               overlayColor: AppColors.primary.withOpacity(0.2),
               trackHeight: 4,
             ),
@@ -668,13 +668,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             children: [
               Text('1',
                   style: TextStyle(
-                      fontSize: 11, color: AppColors.darkTextTertiary)),
+                      fontSize: 11, color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary))),
               Text('10',
                   style: TextStyle(
-                      fontSize: 11, color: AppColors.darkTextTertiary)),
+                      fontSize: 11, color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary))),
               Text('20',
                   style: TextStyle(
-                      fontSize: 11, color: AppColors.darkTextTertiary)),
+                      fontSize: 11, color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary))),
             ],
           ),
         ],
@@ -695,9 +695,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             borderRadius: BorderRadius.circular(14),
             color: selected
                 ? AppColors.primary.withOpacity(0.12)
-                : AppColors.darkSurface,
+                : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkSurface : AppColors.lightSurface),
             border: Border.all(
-              color: selected ? AppColors.primary : AppColors.darkBorder,
+              color: selected ? AppColors.primary : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkBorder : AppColors.lightBorder),
               width: selected ? 1.5 : 0.5,
             ),
           ),
@@ -722,14 +722,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              Icon(icon, size: 20, color: selected ? AppColors.primary : AppColors.darkTextSecondary),
+              Icon(icon, size: 20, color: selected ? AppColors.primary : Theme.of(context).colorScheme.onSurfaceVariant),
               const SizedBox(height: 4),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                  color: selected ? AppColors.primary : AppColors.darkTextSecondary,
+                  color: selected ? AppColors.primary : Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -769,7 +769,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   height: 8,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(4),
-                    color: isActive ? AppColors.primary : AppColors.darkBorder,
+                    color: isActive ? AppColors.primary : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkBorder : AppColors.lightBorder),
                   ),
                 );
               }),
@@ -791,7 +791,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               children: [
                 Text(
                   buttonText,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Inter',
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
@@ -823,9 +823,9 @@ class _FeatureGridCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkSurface : AppColors.lightSurface),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.darkBorder, width: 0.5),
+        border: Border.all(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkBorder : AppColors.lightBorder), width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -842,29 +842,29 @@ class _FeatureGridCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             feature.title,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: AppColors.darkTextPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             feature.line1,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 12,
-              color: AppColors.darkTextSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               height: 1.4,
             ),
           ),
           Text(
             feature.line2,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 12,
-              color: AppColors.darkTextSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               height: 1.4,
             ),
           ),
@@ -906,9 +906,9 @@ class _PermissionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkSurface : AppColors.lightSurface),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.darkBorder, width: 0.5),
+        border: Border.all(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkBorder : AppColors.lightBorder), width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -932,20 +932,20 @@ class _PermissionCard extends StatelessWidget {
                   children: [
                     Text(
                       entry.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.darkTextPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       entry.description,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 12,
-                        color: AppColors.darkTextSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         height: 1.5,
                       ),
                     ),
@@ -1000,7 +1000,7 @@ class _PermissionCard extends StatelessWidget {
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 11,
-                color: AppColors.darkTextTertiary,
+                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary),
                 fontStyle: FontStyle.italic,
               ),
             ),
@@ -1052,11 +1052,11 @@ class _StatusIndicator extends StatelessWidget {
           width: 28,
           height: 28,
           decoration: BoxDecoration(
-            color: AppColors.darkTextTertiary.withOpacity(0.1),
+            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary).withOpacity(0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(Icons.remove_rounded,
-              size: 16, color: AppColors.darkTextTertiary.withOpacity(0.5)),
+              size: 16, color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary).withOpacity(0.5)),
         ),
     };
   }
