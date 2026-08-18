@@ -110,5 +110,39 @@
     "chapter_title_arabic": "كتاب بدء الوحي",
     "reference": "Sahih al-Bukhari 6133",
     "tags": []
+  },
+  {
+    "hadith_number": 8,
+    "hadith_number_in_book": 8,
+    "collection_id": "bukhari",
+    "book_number": 1,
+    "text_arabic": "بُنِيَ الإِسْلاَمُ عَلَى خَمْسٍ",
+    "text_english": "Islam is built upon five pillars.",
+    "narrator": "Ibn Umar",
+    "grade": "Sahih",
+    "reference": "Sahih al-Bukhari 8",
+    "tags": [
+      "pillars",
+      "faith"
+    ],
+    "chapter_title": "Book of Faith",
+    "chapter_title_arabic": "كتاب الإيمان"
+  },
+  {
+    "hadith_number": 9,
+    "hadith_number_in_book": 9,
+    "collection_id": "bukhari",
+    "book_number": 1,
+    "text_arabic": "أُمِرْتُ أَنْ أُقَاتِلَ النَّاسَ حَتَّى يَقُولُوا لاَ إِلَهَ إِلاَّ اللَّهُ",
+    "text_english": "I have been ordered to fight against people until they testify that there is no god but Allah.",
+    "narrator": "Abdullah ibn Umar",
+    "grade": "Sahih",
+    "reference": "Sahih al-Bukhari 25",
+    "tags": [
+      "faith",
+      "testimony"
+    ],
+    "chapter_title": "Book of Faith",
+    "chapter_title_arabic": "كتاب الإيمان"
   }
 ]

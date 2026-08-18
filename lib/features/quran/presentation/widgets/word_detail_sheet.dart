@@ -254,7 +254,8 @@ class _WordCard extends StatelessWidget {
                   _buildWordHeader(isDark),
                   if (isExpanded) ...[
                     const SizedBox(height: 14),
-                    _buildTransliteration(isDark),
+                    if (word.textTransliteration.isNotEmpty)
+                      _buildTransliteration(isDark),
                     if (word.translation != null &&
                         word.translation!.isNotEmpty) ...[
                       const SizedBox(height: 10),
@@ -277,6 +278,18 @@ class _WordCard extends StatelessWidget {
                         word.grammarNote!.isNotEmpty) ...[
                       const SizedBox(height: 10),
                       _buildGrammarNote(isDark),
+                    ],
+                    if (word.textTransliteration.isEmpty &&
+                        (word.translation == null ||
+                            word.translation!.isEmpty) &&
+                        !word.hasRootAnalysis &&
+                        (word.partOfSpeech == null ||
+                            word.partOfSpeech!.isEmpty) &&
+                        !word.hasMorphology &&
+                        (word.grammarNote == null ||
+                            word.grammarNote!.isEmpty)) ...[
+                      const SizedBox(height: 6),
+                      _buildComingSoonMessage(isDark),
                     ],
                   ],
                 ],
@@ -622,5 +635,34 @@ class _WordCard extends StatelessWidget {
   String _capitalizeFirst(String text) {
     if (text.isEmpty) return text;
     return text[0].toUpperCase() + text.substring(1).toLowerCase();
+  }
+
+  Widget _buildComingSoonMessage(bool isDark) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.info.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.info.withOpacity(0.15)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline_rounded, size: 14, color: AppColors.info),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Detailed word analysis (transliteration, root, morphology) will be available in a future update.',
+              style: TextStyle(
+                fontFamily: AppTheme.latinFontFamily,
+                fontSize: 12,
+                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

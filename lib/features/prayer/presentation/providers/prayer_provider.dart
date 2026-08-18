@@ -276,7 +276,7 @@ class PrayerCalculator {
       ),
     );
     final asrAltRad = _degToRad(
-      _radToDeg(math.atan(1.0 / (asrFactor + math.tan(_degToRad(90.0 - noonAlt))))),
+      _radToDeg(math.atan(1.0 / (asrFactor + math.tan(_degToRad((90.0 - noonAlt).abs().clamp(0.1, 90.0)))))),
     );
     final asrCosHa = (math.sin(asrAltRad) - math.sin(latRad) * math.sin(declRad)) /
         (math.cos(latRad) * math.cos(declRad));

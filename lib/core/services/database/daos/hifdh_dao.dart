@@ -108,7 +108,7 @@ class HifdhDao {
       if (newInterval > AppConstants.maxRevisionIntervalDays) {
         newInterval = AppConstants.maxRevisionIntervalDays;
       }
-      newStatus = _deriveStatus(quality, existing.totalAttempts);
+      newStatus = _deriveStatus(quality, (existing?.totalAttempts ?? 0) + 1);
     }
 
     final nextReview = now.add(Duration(days: newInterval));

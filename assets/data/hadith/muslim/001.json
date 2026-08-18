@@ -110,5 +110,38 @@
     "chapter_title_arabic": "كتاب الإيمان",
     "reference": "Sahih Muslim 1631",
     "tags": []
+  },
+  {
+    "hadith_number": 8,
+    "hadith_number_in_book": 8,
+    "collection_id": "muslim",
+    "book_number": 1,
+    "text_arabic": "الإِسْلاَمُ يَعْلُو وَلاَ يُعْلَى عَلَيْهِ",
+    "text_english": "Islam is supreme and nothing is supreme over it.",
+    "narrator": "Abu Hurairah",
+    "grade": "Sahih",
+    "reference": "Sahih Muslim 920",
+    "tags": [
+      "faith"
+    ],
+    "chapter_title": "Book of Faith",
+    "chapter_title_arabic": "كتاب الإيمان"
+  },
+  {
+    "hadith_number": 9,
+    "hadith_number_in_book": 9,
+    "collection_id": "muslim",
+    "book_number": 1,
+    "text_arabic": "مَنْ أَحَبَّ لِقَاءِ اللَّهِ أَحَبَّ اللَّهُ لِقَاءَهُ",
+    "text_english": "Whoever loves to meet Allah, Allah loves to meet him.",
+    "narrator": "Aisha",
+    "grade": "Sahih",
+    "reference": "Sahih Muslim 2683",
+    "tags": [
+      "death",
+      "love"
+    ],
+    "chapter_title": "Book of Faith",
+    "chapter_title_arabic": "كتاب الإيمان"
   }
 ]

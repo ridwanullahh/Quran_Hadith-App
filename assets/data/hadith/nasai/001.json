@@ -46,5 +46,21 @@
     "chapter_title_arabic": "كتاب الطهارة",
     "reference": "Sunan al-Nasa'i 75",
     "tags": []
+  },
+  {
+    "hadith_number": 4,
+    "hadith_number_in_book": 4,
+    "collection_id": "nasai",
+    "book_number": 1,
+    "text_arabic": "النَّظَافَةُ تُنْظِفُ الْقُلُوبَ",
+    "text_english": "Cleanliness purifies the heart.",
+    "narrator": "Anas ibn Malik",
+    "grade": "Hasan",
+    "reference": "Sunan al-Nasa'i 156",
+    "tags": [
+      "purification"
+    ],
+    "chapter_title": "Book of Purification",
+    "chapter_title_arabic": "كتاب الطهارة"
   }
 ]

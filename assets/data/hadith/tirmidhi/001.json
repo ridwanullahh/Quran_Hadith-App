@@ -62,5 +62,22 @@
     "chapter_title_arabic": "كتاب الطهارة",
     "reference": "Jami' al-Tirmidhi 408",
     "tags": []
+  },
+  {
+    "hadith_number": 5,
+    "hadith_number_in_book": 5,
+    "collection_id": "tirmidhi",
+    "book_number": 1,
+    "text_arabic": "مَنْ لاَ يَرْحَمُ النَّاسَ لاَ يَرْحَمُهُ اللَّهُ",
+    "text_english": "Allah does not show mercy to one who does not show mercy to people.",
+    "narrator": "Jarir ibn Abdullah",
+    "grade": "Sahih",
+    "reference": "Jami' al-Tirmidhi 1924",
+    "tags": [
+      "mercy",
+      "character"
+    ],
+    "chapter_title": "Book of Purification",
+    "chapter_title_arabic": "كتاب الطهارة"
   }
 ]

@@ -247,13 +247,7 @@ const List<DailyVerseData> kDailyVerses = [
  surahName: 'Al-Asr',
  ayahNumber: 1,
  ),
- DailyVerseData(
- arabicText: 'اللَّهُمَّ لَا سَهْلَ إِلَّا مَا جَعَلْتَهُ سَهْلًا وَأَنْتَ تَجْعَلُ الْحَزْنَ إِذَا شِئْتَ سَهْلًا',
- englishTranslation: 'O Allah, there is no ease except what You make easy. And You make the difficulty easy if You will.',
- surahNumber: 0,
- surahName: 'Hadith',
- ayahNumber: 0,
- ),
+ 
  DailyVerseData(
  arabicText: 'إِنَّمَا الْمُؤْمِنُونَ إِخْوَةٌ',
  englishTranslation: 'The believers are but brothers.',

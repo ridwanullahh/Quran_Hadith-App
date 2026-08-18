@@ -62,5 +62,21 @@
     "chapter_title_arabic": "كتاب السنة",
     "reference": "Sunan Ibn Majah 224",
     "tags": []
+  },
+  {
+    "hadith_number": 5,
+    "hadith_number_in_book": 5,
+    "collection_id": "ibnmajah",
+    "book_number": 1,
+    "text_arabic": "إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ",
+    "text_english": "Actions are but by intentions.",
+    "narrator": "Umar ibn al-Khattab",
+    "grade": "Sahih",
+    "reference": "Sunan Ibn Majah 2722",
+    "tags": [
+      "intentions"
+    ],
+    "chapter_title": "Book of the Sunnah",
+    "chapter_title_arabic": "كتاب السنة"
   }
 ]

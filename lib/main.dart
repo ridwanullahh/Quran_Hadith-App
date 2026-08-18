@@ -75,7 +75,6 @@ final _initProvider = FutureProvider<_AppInitResult>((ref) async {
 
   // ── Popup Service ─────────────────────────────────────────────
   try {
-    PopupService.instance.isEnabled;
   } catch (e, st) {
     debugPrint('[Startup] PopupService init failed: $e\n$st');
   }

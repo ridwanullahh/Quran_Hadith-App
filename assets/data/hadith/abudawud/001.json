@@ -62,5 +62,21 @@
     "chapter_title_arabic": "كتاب الطهارة",
     "reference": "Sunan Abi Dawud 63",
     "tags": []
+  },
+  {
+    "hadith_number": 5,
+    "hadith_number_in_book": 5,
+    "collection_id": "abudawud",
+    "book_number": 1,
+    "text_arabic": "الطُّهُورُ شَطْرُ الإِيمَانِ",
+    "text_english": "Cleanliness is half of faith.",
+    "narrator": "Abu Malik al-Ash'ari",
+    "grade": "Sahih",
+    "reference": "Sunan Abi Dawud 60",
+    "tags": [
+      "purification"
+    ],
+    "chapter_title": "Book of Purification",
+    "chapter_title_arabic": "كتاب الطهارة"
   }
 ]
